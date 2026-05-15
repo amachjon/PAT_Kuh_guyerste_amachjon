@@ -89,10 +89,10 @@ Für einige Unterfragen haben wir folglich konkrete Erwartungen:
 
 Die Unterfragen möchten wir wie folgt Visualisieren:
 
-| Unterfrage | Mögliche Visualisierung | Ziel der Darstellung |
+| Unterfrage | Mögliche Visualisierung (Parameter) | Ziel der Darstellung |
 |----------------|---------------------|-----------------------------------|
-| U1 | scatter plot (t\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
-| U2 | boxplot |  |
+| U1 | scatter plot (temp\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
+| U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops)  | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster |
 | U3 |  |  |
 | U4 |  |  |
 
