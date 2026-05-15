@@ -1,23 +1,28 @@
+---
+bibliography: references.bib
+---
+
 # Proposal for Semester Project
 
-
+```{=html}
 <!-- 
 Please render a pdf version of this Markdown document with the command below (in your bash terminal) and push this file to Github. 
 Please do not Rename this file (Readme.md has a special meaning on GitHub).
 
 quarto render Readme.md --to pdf
 -->
+```
 
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
-| Semester:      | FS26                                     |
-|:---------------|:---------------------------------------- |
-| **Data:**      | What type of data are you focussing on?  |
-| **Title:**     | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand               |
-| **Student 1:** | Jonas Amacher                            |
-| **Student 2:** | Stefanie Guyer                           |
+| Semester: | FS26 |
+|:--------------------|:--------------------------------------------------|
+| **Data:** | What type of data are you focussing on? |
+| **Title:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
+| **Student 1:** | Jonas Amacher |
+| **Student 2:** | Stefanie Guyer |
 
-## Hintergrund 
+## Hintergrund
 
 Milchkühe gelten als kältetolerant, reagieren jedoch vergleichsweise empfindlich auf Wärme. Ihr thermoneutraler Bereich liegt zwischen 0°C und 16°C. Ab 22°C wird bei Milchkühen von leichtem Hitzestress ausgegangen. Diese Schwellentemperatur ab der Hitzestress auftreten kann, ist allerdings nicht immer gleich und hängt von verschiedenen Faktoren ab. Bekannt ist, das Tiere mit einer hohen Milchleistung viel schneller Hitzestress verspüren [@teamtierhaltungmilchwirtschaft2021].
 
@@ -25,49 +30,62 @@ Hitzestress äussert sich bei Milchkühen durch Abweichungen verschiedener physi
 
 Während der Einfluss der Temperatur auf physiologische Parameter von Milchkühen relativ gut untersucht ist, gibt es bislang nur wenige Studien zum Einfluss der Temperatur auf das Bewegungsverhalten. Da Verhaltensänderungen häufig bereits vor messbaren physiologischen Veränderungen auftreten, könnte das Bewegungsverhalten potenziell als sensitiver Indikator zur frühzeitigen Identifikation von Hitzestress bei Milchkühen herangezogen werden [@abeni2017]. Darüber hinaus kann die Analyse temperaturabhängiger Bewegungsmuster wichtige Hinweise für das räumliche Management von Milchkuhherden liefern, insbesondere im Hinblick auf Weideführung, Stallmanagement, Schattenangebot und Zugang zu Tränken [@paixão2026].
 
-Bisherige Untersuchungen zum Einfluss der Temperatur auf das Bewegungsverhalten der Tiere deuten darauf hin, dass Wärmebelastung bei Kühen mit Veränderungen des Aktivitäts- und Wiederkauverhaltens verbunden ist. So zeigten @abeni2017, @holinger2024, @paixão2026, dass erhöhte Temperatur-Feuchte-Indizes (THI) mit einer reduzierten Wiederkau- und Ruhezeit sowie einer erhöhten Bewegungsaktivität der Tiere einhergehen können. Zudem berichteten @holinger2024, dass sich bei moderater Wärmebelastung auch die räumliche Verteilung innerhalb der Herde veränderte, indem die individuellen Abstände zwischen den Kühen abnahmen. 
+Bisherige Untersuchungen zum Einfluss der Temperatur auf das Bewegungsverhalten der Tiere deuten darauf hin, dass Wärmebelastung bei Kühen mit Veränderungen des Aktivitäts- und Wiederkauverhaltens verbunden ist. So zeigten @abeni2017, @holinger2024, @paixão2026, dass erhöhte Temperatur-Feuchte-Indizes (THI) mit einer reduzierten Wiederkau- und Ruhezeit sowie einer erhöhten Bewegungsaktivität der Tiere einhergehen können. Zudem berichteten @holinger2024, dass sich bei moderater Wärmebelastung auch die räumliche Verteilung innerhalb der Herde veränderte, indem die individuellen Abstände zwischen den Kühen abnahmen.
 
-Ein aktuelles Projekt von Agroscope und AgroVet Strickhof mit dem Titel PeaMaps untersucht das Bewegungsverhalten dreier Kuhrassen mit unterschiedlichen Leistungsniveaus (Holstein, Original Braunvieh, Hinterwälder) auf der Alp Weissenstein (GR). Ziel des Projekts ist es insbesondere zu untersuchen, ob die verschiedenen Kuhrassen den alpinen Weideraum unterschiedlich nutzen und dadurch in unterschiedlichem Ausmass zur Offenhaltung der Alpflächen beziehungsweise zur Reduktion der Verbuschung beitragen können [@pauler2025]. Erste Ergebnisse aus dem Projekt zeigen, dass sich das Bewegungs- und Raumnutzungsverhalten zwischen den untersuchten Kuhrassen tatsächlich unterscheidet. Gemäss @pauler2025 scheinen Holstein-Kühe eher flachere Bereiche zu bevorzugen und ein selektiveres Fressverhalten zu zeigen als die beiden anderen Kuhassen. Original Braunvieh und insbesondere Hinterwälder scheinen besser an alpines Gelände angepasst zu sein und nutzen häufiger höher gelegene oder steilere Bereiche. Vor allem Hinterwälder gelten als besonders trittsicher im steilen Gelände und scheinen zudem besser mit nährstoffärmerem Futter zurechtzukommen [@srf.ch2025].
+Ein aktuelles Projekt von Agroscope und AgroVet Strickhof mit dem Titel PeaMaps untersucht das Bewegungsverhalten dreier Kuhrassen mit unterschiedlichen Leistungsniveaus (Holstein, Original Braunvieh, Hinterwälder) auf der Alp Weissenstein (GR). Ziel des Projekts ist es insbesondere zu untersuchen, ob die verschiedenen Kuhrassen den alpinen Weideraum unterschiedlich nutzen und dadurch in unterschiedlichem Ausmass zur Offenhaltung der Alpflächen beziehungsweise zur Reduktion der Verbuschung beitragen können [@pauler2024]. Erste Ergebnisse aus dem Projekt zeigen, dass sich das Bewegungs- und Raumnutzungsverhalten zwischen den untersuchten Kuhrassen tatsächlich unterscheidet. Gemäss @pauler2025 scheinen Holstein-Kühe eher flachere Bereiche zu bevorzugen und ein selektiveres Fressverhalten zu zeigen als die beiden anderen Kuhassen. Original Braunvieh und insbesondere Hinterwälder scheinen besser an alpines Gelände angepasst zu sein und nutzen häufiger höher gelegene oder steilere Bereiche. Vor allem Hinterwälder gelten als besonders trittsicher im steilen Gelände und scheinen zudem besser mit nährstoffärmerem Futter zurechtzukommen [@srf.ch2025].
 
 Im Rahmen des PeaMaps-Projekts wurde der Einfluss der Temperatur auf das Bewegungsverhalten der Kühe sowie mögliche Unterschiede zwischen den Rassen bislang noch nicht untersucht. Untersuchungen zur temperaturabhängigen Veränderung des Bewegungsverhaltens verschiedener Kuhrassen könnten zusätzliche Hinweise geben, welche Rassen für alpine Weidesysteme besonders geeignet sind. Zeigt eine Kuhrasse beispielsweise eine besonders hohe Temperatursensibilität, indem sich ihr Bewegungsverhalten bei steigenden Temperaturen stark verändert, könnte dies die bisherige Einschätzung ihrer Eignung für die Alpung beeinflussen.
 
 In Anbetracht des Klimawandels und dem damit verbundenen Temperaturanstieg gewinnt diese Fragestellung zusätzlich an Relevanz.
 
-## Research Questions
+## Fragestellung
 
 Beeinflusst die Temperatur das Bewegungsverhalten von Milchkühen auf dem Weg zum Melkstand und unterscheidet sich dieser Einflussfaktor zwischen den verschiedenen Milchkuhrassen?
 
-Unterfragen: 
+#### Unterfragen
 
-- Verändert sich die Wegdauer von der Weide zum Melkstand bei unterschiedlichen Temperaturen?
+-   Verändert sich die Wegdauer von der Weide zum Melkstand bei unterschiedlichen Temperaturen?
 
-- Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Stop-and-Move-Muster und gibt es hierbei Unterschiede zwischen den Rassen?
+-   Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Stop-and-Move-Muster und gibt es hierbei Unterschiede zwischen den Rassen?
 
-- Verändert sich bei unterschiedlichen Temperaturen die Position einzelner Tiere oder Rassen innerhalb der Gruppe auf dem Weg zum Melkstand?
+-   Verändert sich bei unterschiedlichen Temperaturen die Position einzelner Tiere oder Rassen innerhalb der Gruppe auf dem Weg zum Melkstand?
 
-- Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Gruppierungsverhalten, z. B. durch geringere Abstände zwischen den Tieren?
+-   Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Gruppierungsverhalten, z. B. durch geringere Abstände zwischen den Tieren?
+
+## Resultate
 
 
-## Results / products
+
 <!-- (50-100 words) -->
+
 <!-- What do you expect, anticipate? -->
 
 ## Data
+
 <!-- (100-150 words) -->
+
 <!-- What data will you use? Will you require additional context data? Where do you get this data from? Do you already have all the data? -->
 
 ## Analytical concepts
+
 <!-- (100-200 words) -->
+
 <!-- Which analytical concepts will you use? What conceptual movement spaces and respective modelling approaches of trajectories will you be using? What additional spatial analysis methods will you be using? -->
 
 ## R concepts
+
 <!-- (50-100 words) -->
+
 <!-- Which R concepts, functions, packages will you mainly use. What additional spatial analysis methods will you be using? -->
 
 ## Risk analysis
+
 <!-- (100-150 words) -->
+
 <!-- What could be the biggest challenges/problems you might face? What is your plan B? -->
 
-## Questions? 
+## Questions?
+
 <!-- (100-150 words) -->
+
 <!-- Which questions would you like to discuss at the coaching session? -->
