@@ -127,6 +127,7 @@ Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von d
 
 1) Wir haben ca. 50 gpkg-Files, welche jeweils noch ca. 22 Layers enthalten. Wie sollen wir am besten damit umgehen? 
 
+
 <!-- (100-150 words) -->
 
 <!-- Which questions would you like to discuss at the coaching session? -->
