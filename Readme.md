@@ -92,7 +92,7 @@ Die Unterfragen möchten wir wie folgt Visualisieren:
 | Unterfrage | Mögliche Visualisierung | Ziel der Darstellung |
 |----------------|---------------------|-----------------------------------|
 | U1 | scatter plot (t\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
-| U2 |  |  |
+| U2 | boxplot |  |
 | U3 |  |  |
 | U4 |  |  |
 
