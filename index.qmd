@@ -8,12 +8,24 @@ format:
 execute:
   warning: false
   message: false
-lang: en  # switch to "de" if you write your report in german
+lang: de  
 bibliography: bibliography.bib
 ---
 
 ```{r preprocessing}
 #| code-summary: preprocessing
+#| include: false
+
+library("sf")
+library("dplyr")
+
+# Einlesen der Daten: 
+
+list.files("data/GPS Path data")
+
+st_layers("data/GPS Path data/R1-HO01.gpkg")
+
+
 
 ``` 
 
