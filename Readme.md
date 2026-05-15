@@ -99,7 +99,7 @@ Die Unterfragen möchten wir wie folgt Visualisieren:
 
 ## Data
 
-Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von der Agroscope (Manuel Schneider) erhalten haben. Zusätzlich verwenden wir Temperaturdaten der nächsten Wetterstation zur Alp Weissenstein.
+Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von der Agroscope (Manuel Schneider) erhalten haben. Zusätzlich verwenden wir Temperaturdaten der nächsten Wetterstation zur Alp Weissenstein. Die nächste Wetterstation zur Alp Weissenstein ist die Wetterstation in Samedan. 
 
 <!-- (100-150 words) -->
 
