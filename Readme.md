@@ -125,7 +125,8 @@ Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von d
 
 ## Questions?
 
-1) Wir haben ca. 50 gpkg-Files, welche jeweils noch ca. 22 Layers enthalten. Wie sollen wir am besten damit umgehen? 
+1) Wir haben ca. 50 gpkg-Files, welche jeweils noch ca. 22 Layers enthalten. Wie sollen wir am besten damit umgehen? Einlesen, Zusammenfügen? 
+
 
 <!-- (100-150 words) -->
 
