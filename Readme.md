@@ -1,5 +1,6 @@
 ---
 bibliography: references.bib
+lang: de
 ---
 
 # Proposal for Semester Project
@@ -16,7 +17,7 @@ quarto render Readme.md --to pdf
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
 | Semester: | FS26 |
-|:--------------------|:--------------------------------------------------|
+|:----------------------|:-----------------------------------------------|
 | **Data:** | What type of data are you focussing on? |
 | **Title:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
 | **Student 1:** | Jonas Amacher |
@@ -44,21 +45,57 @@ Beeinflusst die Temperatur das Bewegungsverhalten von Milchkühen auf dem Weg zu
 
 #### Unterfragen
 
--   Verändert sich die Wegdauer von der Weide zum Melkstand bei unterschiedlichen Temperaturen?
+-   U1: Verändert sich die Wegdauer von der Weide zum Melkstand bei unterschiedlichen Temperaturen?
 
--   Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Stop-and-Move-Muster und gibt es hierbei Unterschiede zwischen den Rassen?
+-   U2: Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Stop-and-Move-Muster und gibt es hierbei Unterschiede zwischen den Rassen?
 
--   Verändert sich bei unterschiedlichen Temperaturen die Position einzelner Tiere oder Rassen innerhalb der Gruppe auf dem Weg zum Melkstand?
+-   U3: Verändert sich bei unterschiedlichen Temperaturen die Position einzelner Tiere oder Rassen innerhalb der Gruppe auf dem Weg zum Melkstand?
 
--   Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Gruppierungsverhalten, z. B. durch geringere Abstände zwischen den Tieren?
+-   U4: Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Gruppierungsverhalten, z. B. durch geringere Abstände zwischen den Tieren?
 
 ## Resultate
 
+### Erwartungen:
 
+Verschiedene wissenschaftliche Studien zur Reaktion des Bewegungsverhaltens auf die Wärmebelastung bei Kühen zeigen ein weitgehend konsistentes Bild. Unter Hitzestress passen Kühe ihr Bewegung- und Aktivitätsverhalten als thermoregulatorische Reaktion an. Gemäss @cook2007, @nordlund2019, @becker2020, @corazzin2021, @holinger2024 und @schütz2010 zeigen sich insbesondere Veränderungen im Liege-, Steh-, Fress-, Wiederkau-, Trink-, und Raumverhalten.
 
-<!-- (50-100 words) -->
+Bei zunehmender Wärmebelastung ist eine Abnahme folgender Verhaltensweisen zu erwarten:
 
-<!-- What do you expect, anticipate? -->
+-   Liegezeit
+
+-   Futteraufnahme
+
+-   Wiederkauzeit
+
+-   Distanz zu anderen Individuen
+
+Demgegenüber ist eine Zunahme folgender Verhaltensweisen zu erwarten:
+
+-   Stehzeit
+
+-   Trinkverhalten
+
+-   räumliche Konzentration der Tiere an thermisch günstigeren Standorten
+
+Durch unsere Datenanalyse erwarten wir Ergebnisse, welche den Beobachtungen in der Literatur nicht widersprechen sollen.
+
+Für einige Unterfragen haben wir folglich konkrete Erwartungen:
+
+-   U2: Aktiveres Stop-and Move-Muster bei steigenden Temperaturen
+-   U4: Reduktion der Distanz zwischen den Tieren bei steigenen Temperaturen
+
+### Visualisierung
+
+Die Unterfragen möchten wir wie folgt Visualisieren:
+
+| Unterfrage | Mögliche Visualisierung | Ziel der Darstellung |
+|------------|-----------------------|--------------------------------------|
+| U1 | scatter plot (t\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
+| U2 |  |  |
+| U3 |  |  |
+| U4 |  |  |
+
+\<!-- What do you expect, anticipate? --
 
 ## Data
 
