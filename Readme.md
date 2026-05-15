@@ -1,9 +1,6 @@
 ---
 bibliography: references.bib
-<<<<<<< HEAD
 lang: de
-=======
->>>>>>> c9e18de38d055e663b9dc56dc1d33da891a77d51
 ---
 
 # Proposal for Semester Project
@@ -19,13 +16,10 @@ quarto render Readme.md --to pdf
 
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
+
 | Semester: | FS26 |
-<<<<<<< HEAD
 |:----------------------|:-----------------------------------------------|
-=======
-|:--------------------|:--------------------------------------------------|
->>>>>>> c9e18de38d055e663b9dc56dc1d33da891a77d51
-| **Data:** | What type of data are you focussing on? |
+| **Data:** | GPS- und Bewegungsdaten von Milchkühen sowie Temperaturdaten |
 | **Title:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
 | **Student 1:** | Jonas Amacher |
 | **Student 2:** | Stefanie Guyer |
@@ -50,7 +44,6 @@ In Anbetracht des Klimawandels und dem damit verbundenen Temperaturanstieg gewin
 
 Beeinflusst die Temperatur das Bewegungsverhalten von Milchkühen auf dem Weg zum Melkstand und unterscheidet sich dieser Einflussfaktor zwischen den verschiedenen Milchkuhrassen?
 
-<<<<<<< HEAD
 #### Unterfragen
 
 -   U1: Verändert sich die Wegdauer von der Weide zum Melkstand bei unterschiedlichen Temperaturen?
@@ -63,7 +56,7 @@ Beeinflusst die Temperatur das Bewegungsverhalten von Milchkühen auf dem Weg zu
 
 ## Resultate
 
-### Erwartungen:
+#### Erwartungen:
 
 Verschiedene wissenschaftliche Studien zur Reaktion des Bewegungsverhaltens auf die Wärmebelastung bei Kühen zeigen ein weitgehend konsistentes Bild. Unter Hitzestress passen Kühe ihr Bewegung- und Aktivitätsverhalten als thermoregulatorische Reaktion an. Gemäss @cook2007, @nordlund2019, @becker2020, @corazzin2021, @holinger2024 und @schütz2010 zeigen sich insbesondere Veränderungen im Liege-, Steh-, Fress-, Wiederkau-, Trink-, und Raumverhalten.
 
@@ -92,35 +85,17 @@ Für einige Unterfragen haben wir folglich konkrete Erwartungen:
 -   U2: Aktiveres Stop-and Move-Muster bei steigenden Temperaturen
 -   U4: Reduktion der Distanz zwischen den Tieren bei steigenen Temperaturen
 
-### Visualisierung
+#### Visualisierung
 
 Die Unterfragen möchten wir wie folgt Visualisieren:
 
 | Unterfrage | Mögliche Visualisierung | Ziel der Darstellung |
-|------------|-----------------------|--------------------------------------|
+|----------------|---------------------|-----------------------------------|
 | U1 | scatter plot (t\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
 | U2 |  |  |
 | U3 |  |  |
 | U4 |  |  |
 
-\<!-- What do you expect, anticipate? --
-=======
-Unterfragen:
-
--   Verändert sich die Wegdauer von der Weide zum Melkstand bei unterschiedlichen Temperaturen?
-
--   Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Stop-and-Move-Muster und gibt es hierbei Unterschiede zwischen den Rassen?
-
--   Verändert sich bei unterschiedlichen Temperaturen die Position einzelner Tiere oder Rassen innerhalb der Gruppe auf dem Weg zum Melkstand?
-
--   Zeigt sich bei unterschiedlichen Temperaturen ein verändertes Gruppierungsverhalten, z. B. durch geringere Abstände zwischen den Tieren?
-
-## Results / products
-
-<!-- (50-100 words) -->
-
-<!-- What do you expect, anticipate? -->
->>>>>>> c9e18de38d055e663b9dc56dc1d33da891a77d51
 
 ## Data
 
