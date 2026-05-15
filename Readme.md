@@ -93,11 +93,12 @@ Die Unterfragen möchten wir wie folgt Visualisieren:
 |----------------|---------------------|-----------------------------------|
 | U1 | scatter plot (temp\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
 | U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops)  | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster |
-| U3 |  |  |
-| U4 |  |  |
+| U3 | tabellarisch (Nummerierung der Tiere nach Position), boxplots (Veränderung der Position, z.B. von vorne nach hintern) | Prüfung, ob Tiere bei steigenden Temperaturen häufiger ihre relative Position innerhalb der Herde verändern, beispielsweise von vorne nach hinten, und ob sich dabei Unterschiede zwischen den Rassen zeigen |
+| U4 | Boxplots der durchschnittlichen Grösse der Convex Hull | Identifikation der in der Literatur beschriebenen Abnahme der individuellen Distanzen bei steigenden Temperaturen |
 
 
 ## Data
+
 
 <!-- (100-150 words) -->
 
