@@ -19,8 +19,8 @@ quarto render Readme.md --to pdf
 
 | Semester: | FS26 |
 |:----------------------|:-----------------------------------------------|
-| **Data:** | GPS- und Bewegungsdaten von Milchkühen sowie Temperaturdaten |
-| **Title:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
+| **Daten:** | GPS-Daten von Milchkühen sowie Temperaturdaten |
+| **Titel:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
 | **Student 1:** | Jonas Amacher |
 | **Student 2:** | Stefanie Guyer |
 
@@ -92,13 +92,14 @@ Die Unterfragen möchten wir wie folgt Visualisieren:
 | Unterfrage | Mögliche Visualisierung (Parameter) | Ziel der Darstellung |
 |----------------|---------------------|-----------------------------------|
 | U1 | scatter plot (temp\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
-| U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops)  | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster |
+| U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops)  | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster, z.B. kürzere Stop-Move-Stop-Intervalle |
 | U3 | tabellarisch (Nummerierung der Tiere nach Position), boxplots (Veränderung der Position, z.B. von vorne nach hintern) | Prüfung, ob Tiere bei steigenden Temperaturen häufiger ihre relative Position innerhalb der Herde verändern, beispielsweise von vorne nach hinten, und ob sich dabei Unterschiede zwischen den Rassen zeigen |
-| U4 | Boxplots der durchschnittlichen Grösse der Convex Hull | Identifikation der in der Literatur beschriebenen Abnahme der individuellen Distanzen bei steigenden Temperaturen |
+| U4 | Boxplots der durchschnittlichen Grösse der Convex Hulls od. Distanzen zwischen den Tieren | Identifikation der in der Literatur beschriebenen Abnahme der individuellen Distanzen bei steigenden Temperaturen |
 
 
 ## Data
 
+Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von der Agroscope (Manuel Schneider) erhalten haben. Zusätzlich verwenden wir Temperaturdaten der nächsten Wetterstation zur Alp Weissenstein.
 
 <!-- (100-150 words) -->
 
