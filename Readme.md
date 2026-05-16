@@ -16,9 +16,8 @@ quarto render Readme.md --to pdf
 
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
-
 | Semester: | FS26 |
-|:----------------------|:-----------------------------------------------|
+|:-----------------------|:-----------------------------------------------|
 | **Daten:** | GPS-Daten von Milchkühen sowie Temperaturdaten |
 | **Titel:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
 | **Student 1:** | Jonas Amacher |
@@ -90,22 +89,27 @@ Für einige Unterfragen haben wir folglich konkrete Erwartungen:
 Die Unterfragen möchten wir wie folgt Visualisieren:
 
 | Unterfrage | Mögliche Visualisierung (Parameter) | Ziel der Darstellung |
-|----------------|---------------------|-----------------------------------|
+|------------------|---------------------|----------------------------------|
 | U1 | scatter plot (temp\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
-| U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops)  | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster, z.B. kürzere Stop-Move-Stop-Intervalle |
+| U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops) | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster, z.B. kürzere Stop-Move-Stop-Intervalle |
 | U3 | tabellarisch (Nummerierung der Tiere nach Position), boxplots (Veränderung der Position, z.B. von vorne nach hintern) | Prüfung, ob Tiere bei steigenden Temperaturen häufiger ihre relative Position innerhalb der Herde verändern, beispielsweise von vorne nach hinten, und ob sich dabei Unterschiede zwischen den Rassen zeigen |
 | U4 | Boxplots der durchschnittlichen Grösse der Convex Hulls od. Distanzen zwischen den Tieren | Identifikation der in der Literatur beschriebenen Abnahme der individuellen Distanzen bei steigenden Temperaturen |
 
-
 ## Data
 
-Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von der Agroscope (Manuel Schneider) erhalten haben. Zusätzlich verwenden wir Temperaturdaten der nächsten Wetterstation zur Alp Weissenstein. Die nächste Wetterstation zur Alp Weissenstein ist die Wetterstation in Samedan. 
+Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von der Agroscope (Manuel Schneider) erhalten haben. Zusätzlich verwenden wir Temperaturdaten der nächsten Wetterstation zur Alp Weissenstein. Die nächste Wetterstation zur Alp Weissenstein ist die Wetterstation in Samedan.
 
 <!-- (100-150 words) -->
 
 <!-- What data will you use? Will you require additional context data? Where do you get this data from? Do you already have all the data? -->
 
 ## Analytical concepts
+Pre processing: 
+Zuerst wird die Teilmenge der Daten ausgewählt welche den Weg von der Weide zum Melkstand beschreibt, dazu wird Räumlich ein Start und ein Ende das Weges definiert. Zudem werden die Daten nach Tageszeit (Morgen und Abend) sortiert, damit dies in der Analyse separat betrachtet werden kann. Meto daten werden in Temperatur Kategorien unterteilt, dabei dienen die in [@teamtierhaltungmilchwirtschaft2021] definierten Schwellenwerte für den Temperatur Haushalt der Kühe als Anhaltspunkt. 
+Analyse: 
+Analysiert wird die Zeitdauer des Weges so wie einzelner Wegabschnitte im zusammenhang mit der Teperatur. Die Geschwindikeit der Kühe soll mit einem moving Window berechnet werden um Stop and Go verhalten, Stehzeit so wie die Geschwindigkeit der Tiere auf den einzelnen Abschnitten darstellen zu können. Es wird betrchtet wie viel Umweg die Teire machen, indem die unterscheide der weglängen nach tempratur berchnet werden.
+Im Weiteren werden die Bewegung Richtungen Analysiert, folgen die Tire dem weg geradlinig, welcher Anteil der Bewegungen ist vorwärts gerichtet. Leader und Folaower werden mit der in (National ICT Australia Technical Reports, ISSN 1833-9646, Report Number PA006075) beschribenen methode identifiziert. 
+Das Gruppierung verhalten der Tire wird mittels Convex Hulls und der mitleren Fechet distanz für unteschidliche gurppen grössen analysiert. 
 
 <!-- (100-200 words) -->
 
@@ -125,8 +129,7 @@ Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von d
 
 ## Questions?
 
-1) Wir haben ca. 50 gpkg-Files, welche jeweils noch ca. 22 Layers enthalten. Wie sollen wir am besten damit umgehen? Einlesen, Zusammenfügen? 
-
+1)  Wir haben ca. 50 gpkg-Files, welche jeweils noch ca. 22 Layers enthalten. Wie sollen wir am besten damit umgehen? Einlesen, Zusammenfügen?
 
 <!-- (100-150 words) -->
 
