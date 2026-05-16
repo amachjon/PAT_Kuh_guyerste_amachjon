@@ -17,7 +17,7 @@ quarto render Readme.md --to pdf
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
 | Semester: | FS26 |
-|:---|:---|
+|:------------------------|:---------------------------------------------|
 | **Daten:** | GPS-Daten von Milchkühen sowie Temperaturdaten |
 | **Titel:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
 | **Student 1:** | Jonas Amacher |
@@ -89,7 +89,7 @@ Für einige Unterfragen haben wir folglich konkrete Erwartungen:
 Die Unterfragen möchten wir wie folgt Visualisieren:
 
 | Unterfrage | Mögliche Visualisierung (Parameter) | Ziel der Darstellung |
-|----|----|----|
+|-------------------|---------------------|--------------------------------|
 | U1 | scatter plot (temp\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
 | U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops) | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster, z.B. kürzere Stop-Move-Stop-Intervalle |
 | U3 | tabellarisch (Nummerierung der Tiere nach Position), boxplots (Veränderung der Position, z.B. von vorne nach hintern) | Prüfung, ob Tiere bei steigenden Temperaturen häufiger ihre relative Position innerhalb der Herde verändern, beispielsweise von vorne nach hinten, und ob sich dabei Unterschiede zwischen den Rassen zeigen |
@@ -109,7 +109,7 @@ Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von d
 
 Zuerst wird die Teilmenge der Daten ausgewählt, welche den Weg von der Weide zum Melkstand beschreibt. Dazu werden räumlich ein Start- und ein Endpunkt des Weges definiert, innerhalb derer die Trajektorien ausgeschnitten werden [@laube2014]. Zudem werden die Daten nach Tageszeit (Morgen und Abend) stratifiziert, um allfällige Tageszeit abhängige Effekte in der Analyse separat berücksichtigen zu können. Die Meteorologiedaten werden in Temperaturkategorien unterteilt, wobei die in [@teamtierhaltungmilchwirtschaft2021] definierten Schwellenwerte für den Temperaturhaushalt der Kühe als Orientierung dienen.
 
-#### nalyse:
+#### Analyse:
 
 Die Wegdauer sowie die Dauer einzelner Wegabschnitte werden in Abhängigkeit der Temperaturkategorie analysiert. Die Momentangeschwindigkeit der Kühe wird mittels eines gleitenden Zeitfensters (moving window) berechnet, um Stop-and-Move-Muster, Stehzeiten und die Geschwindigkeit auf einzelnen Wegabschnitten nach vollziehen zu können [@laubePurves2011; @sadeghian2022]. Die tatsächlich zurückgelegte Wegstrecke wird bei verschiedenen Temperaturen wird mit der Länge des Weges verglichen, dabei beschreibt die Sinuosität, wie viel Umweg die Tiere machen [@benhamou2004; @dodge2008]. Die Bewegungsrichtungen werden anhand von Lagervektoren analysiert. Es wird untersucht, inwiefern die Tiere dem Weg geradlinig folgen und welcher Anteil der Bewegungen vorwärts gerichtet ist [@dodge2008; @laube2014]. Leader-Follower-Beziehungen werden mit der Methode von @andersson2008 identifiziert. Das Gruppenverhalten, insbesondere die Temperaturabhängige Veränderungen der räumlichen Ausdehnung der Gruppe, wird mittels Convex Hulls sowie der mittleren Fréchet-Distanz für unterschiedliche Gruppengrößen quantifiziert [@tao2021; @tooheyDuckham2015].
 
