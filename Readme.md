@@ -17,7 +17,7 @@ quarto render Readme.md --to pdf
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
 | Semester: | FS26 |
-|:------------------------|:---------------------------------------------|
+|:-------------------------|:---------------------------------------------|
 | **Daten:** | GPS-Daten von Milchkühen sowie Temperaturdaten |
 | **Titel:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
 | **Student 1:** | Jonas Amacher |
@@ -115,15 +115,21 @@ Die Wegdauer sowie die Dauer einzelner Wegabschnitte werden in Abhängigkeit der
 
 ## R concepts
 
-<!-- (50-100 words) -->
-
-<!-- Which R concepts, functions, packages will you mainly use. What additional spatial analysis methods will you be using? -->
+Die Analyse wird in R [@R], Version 4.5.2, durchgeführt. Das Paket sf [@sf] wird für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) werden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben [@tidyverse]. Die Fréchet-Distanz wird mit dem Paket SimilarityMeasures [@SimilarityMeasures] berechnet. Visualisierungen werden mit tmap [@tmap] oder ggplot2 [@ggplot2] erstellt.
 
 ## Risk analysis
 
-<!-- (100-150 words) -->
+#### Definitionen:
 
-<!-- What could be the biggest challenges/problems you might face? What is your plan B? -->
+In der Räumlichen Analyse sind die Ergebnisse oft abhängig von Schwellenwerten und der gewählten Räumlichen Auflösung [@laubePurves2011]. Die Wahl sinnvoller Schwellenwerten und Auflösungen zu den jeweiligen Fragestellungen ist somit eine der grössten Herausforderungen dieser Analyse, um so wichtiger ist eine klare Begründung und transparente Kommunikation dieser Faktoren.
+
+#### Grosse Daten Menge:
+
+Wir haben ca. 50 .gpkg-Dateien mit je rund 22 Layern, wenn wir damit komplexe Analysen berechne wollen (z. B. Leader-Follower) könnte dies zu datenintensiv sein für unsere Laptops. Eine mögliche Lösung wäre, vor allem während der Erstellung des R-Scrips, Berechnungen nur mit einem kleinen subsett zu testen damit die Berechnungen nicht zu viel Zeit in Anspruch nehmen.
+
+#### Temperaturdaten:
+
+Die Wetterstation Samedan liegt im Tal die Alp Weissenstein liegt also deutlich höher. Trotz der Höhenkorrektur kann die Temperatur auf der Alp von den berechneten Werten abweichen, auch die lokalen Gegebenheiten Exposition und Beschattung können die Temperatur kleinräumig beeinflussen.
 
 ## Questions?
 
