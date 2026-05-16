@@ -18,6 +18,7 @@ bibliography: bibliography.bib
 
 library("sf")
 library("dplyr")
+library("readr")
 
 # Einlesen der Daten: 
 
@@ -25,9 +26,11 @@ list.files("data/GPS Path data")
 
 st_layers("data/GPS Path data/R1-HO01.gpkg")
 
-
+R1_HO01 <- st_read("data/GPS Path data/R1-HO01.gpkg") # importiert nur ein layer....
+R1_HO01
 
 ``` 
+
 
 
 ## Abstract
