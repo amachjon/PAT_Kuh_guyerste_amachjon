@@ -16,12 +16,17 @@ quarto render Readme.md --to pdf
 
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
-| Semester: | FS26 |
-|:-------------------------|:---------------------------------------------|
-| **Daten:** | GPS-Daten von Milchkühen sowie Temperaturdaten |
-| **Titel:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
-| **Student 1:** | Jonas Amacher |
-| **Student 2:** | Stefanie Guyer |
++----------------+------------------------------------------------------------------------------------------------------------------+
+| Semester:      | FS26                                                                                                             |
++:===============+:=================================================================================================================+
+| **Daten:**     | GPS-Daten von Milchkühen sowie Temperaturdaten                                                                   |
++----------------+------------------------------------------------------------------------------------------------------------------+
+| **Titel:**     | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
++----------------+------------------------------------------------------------------------------------------------------------------+
+| **Student 1:** | Jonas Amacher                                                                                                    |
++----------------+------------------------------------------------------------------------------------------------------------------+
+| **Student 2:** | Stefanie Guyer                                                                                                   |
++----------------+------------------------------------------------------------------------------------------------------------------+
 
 ## Hintergrund
 
@@ -88,20 +93,29 @@ Für einige Unterfragen haben wir folglich konkrete Erwartungen:
 
 Die Unterfragen möchten wir wie folgt Visualisieren:
 
-| Unterfrage | Mögliche Visualisierung (Parameter) | Ziel der Darstellung |
-|-------------------|---------------------|--------------------------------|
-| U1 | scatter plot (temp\~Wegdauer) | Identifikation von Abhängigkeiten, Linerarität? |
-| U2 | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops) | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster, z.B. kürzere Stop-Move-Stop-Intervalle |
-| U3 | tabellarisch (Nummerierung der Tiere nach Position), boxplots (Veränderung der Position, z.B. von vorne nach hintern) | Prüfung, ob Tiere bei steigenden Temperaturen häufiger ihre relative Position innerhalb der Herde verändern, beispielsweise von vorne nach hinten, und ob sich dabei Unterschiede zwischen den Rassen zeigen |
-| U4 | Boxplots der durchschnittlichen Grösse der Convex Hulls od. Distanzen zwischen den Tieren | Identifikation der in der Literatur beschriebenen Abnahme der individuellen Distanzen bei steigenden Temperaturen |
++------------+-----------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+| Unterfrage | Mögliche Visualisierung (Parameter)                                                                                   | Ziel der Darstellung                                                                                                   |
++============+=======================================================================================================================+========================================================================================================================+
+| U1         | scatter plot (Temperatur\~Wegdauer, Farbe = Rasse)                                                                    | Identifikation von Abhängigkeiten, Linerarität?                                                                        |
++------------+-----------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+| U2         | Geschwindigkeitsprofil entlang des Weges (x = Weg, y = Geschwindigkeit, Farbe = Temperatur)                           | Identifikation der in der Literatur beschriebenen Zunahme des Aktivitätsmuster, z.B. kürzere Stop-Move-Stop-Intervalle |
+|            |                                                                                                                       |                                                                                                                        |
+|            | boxplots (Anzahl Stops, Dauer der Stops, Zeit zwischen den Stops)                                                     |                                                                                                                        |
++------------+-----------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+| U3         | Rank Plot (x = Zeit, y = Position, Linie pro Tier, Farbe = Rasse)                                                     | Prüfung, ob Tiere bei steigenden Temperaturen häufiger ihre relative Position innerhalb der Herde verändern.           |
+|            |                                                                                                                       |                                                                                                                        |
+|            | tabellarisch (Nummerierung der Tiere nach Position), boxplots (Veränderung der Position, z.B. von vorne nach hintern) | Beispielsweise von vorne nach hinten, und ob sich dabei Unterschiede zwischen den Rassen zeigen.                       |
++------------+-----------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+| U4         | Boxplots der durchschnittlichen Distanzen zwischen den Tieren.                                                        | Identifikation der in der Literatur beschriebenen Abnahme der individuellen Distanzen bei steigenden Temperaturen      |
+|            |                                                                                                                       |                                                                                                                        |
+|            | Karte mit Convex Hulls Flächen                                                                                        |                                                                                                                        |
++------------+-----------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
 
 ## Data
 
-Für die Analyse verwenden wir Daten aus dem "PeaMaps"-Projekt, welche wir von der Agroscope (Manuel Schneider) erhalten haben. Zusätzlich verwenden wir Temperaturdaten der nächsten Wetterstation zur Alp Weissenstein. Die nächste Wetterstation zur Alp Weissenstein ist die Wetterstation in Samedan.
+Die Grundlage der Analyse bilden die GPS-Trackingdaten von Milchkühen dreier Rassen (Holstein, Originalbraunvieh, Hinterwälder) aus dem laufenden Projekt „PeaMaps", welche uns von der Agroscope (Manuel Schneider) zur Verfügung gestellt wurden. Erfasst wurden die Rückwege von der Weide zum Melkstand, dazu wurde alle 20 Sekunden ein Datenpunkt erhoben. Die Daten umfassen 50 GeoPackage-Dateien (.gpkg) for, jedes Package enthält die Aufzeichnungen eines Individuums, die Packages enthalten je rund 22 Layer, welche je einem Weg entsprechen.
 
-<!-- (100-150 words) -->
-
-<!-- What data will you use? Will you require additional context data? Where do you get this data from? Do you already have all the data? -->
+Die Temperatur Daten werden von der Wetterstation Samedan (MeteoSchweiz) bezogen, diese liegt am nächsten bei der Alp Weissenstein. Da sich Samedan etwas tiefer im Tal befindet, wird die Temperatur auf der Alp mittels der ICAO [@icao1993] Höhenkorrektur (6.5°C/km) ermittelt.
 
 ## Analytical concepts
 
@@ -123,6 +137,10 @@ Die Analyse wird in R [@R], Version 4.5.2, durchgeführt. Das Paket sf [@sf] wir
 
 In der Räumlichen Analyse sind die Ergebnisse oft abhängig von Schwellenwerten und der gewählten Räumlichen Auflösung [@laubePurves2011]. Die Wahl sinnvoller Schwellenwerten und Auflösungen zu den jeweiligen Fragestellungen ist somit eine der grössten Herausforderungen dieser Analyse, um so wichtiger ist eine klare Begründung und transparente Kommunikation dieser Faktoren.
 
+#### Convex Hulls:
+
+Convex Hulls könnte als Konzept schwer anwendbar sein auf eine Herde, die sich auf einem Weg vorwärtsbewegt. Gegebenenfalls muss hier mehr mit den Distanzen zwischen den Tieren gearbeitet werden. Mögliche Lösung könnte auch sein den Mittelpunkt der Herde (welcher mitwandert) jeweils als Referenz zu nehmen.
+
 #### Grosse Daten Menge:
 
 Wir haben ca. 50 .gpkg-Dateien mit je rund 22 Layern, wenn wir damit komplexe Analysen berechne wollen (z. B. Leader-Follower) könnte dies zu datenintensiv sein für unsere Laptops. Eine mögliche Lösung wäre, vor allem während der Erstellung des R-Scrips, Berechnungen nur mit einem kleinen subsett zu testen damit die Berechnungen nicht zu viel Zeit in Anspruch nehmen.
@@ -133,8 +151,8 @@ Die Wetterstation Samedan liegt im Tal die Alp Weissenstein liegt also deutlich 
 
 ## Questions?
 
-1)  Wir haben ca. 50 gpkg-Files, welche jeweils noch ca. 22 Layers enthalten. Wie sollen wir am besten damit umgehen? Einlesen, Zusammenfügen?
-
-<!-- (100-150 words) -->
-
-<!-- Which questions would you like to discuss at the coaching session? -->
+1)  Wir haben ca. 50 gpkg-Files, welche jeweils noch ca. 22 Layers enthalten. Wie sollen wir am besten mit dieser grossen Datenmenge umgehen? Einlesen, Zusammenfügen?
+2)  Ist das Konzept der Convex Hulls in unserem Fall sinnvoll anwendbar? Wie gehen wir dabei am besten vor? Was gibt es für alternativen, welche für unsere Arbeit eventuell besser passen?
+3)  Die Geländeneigung haben wir bis jetzt bewusst nicht mit einbezogen und die Temperatur als Fokus gewählt. Unter welchen Bedingungen müsste dieser Entscheid überdacht werden?
+4)  Welches sind die interessantesten punkte? Worauf sollten wir unseren Fokus legen?
+5)  Wo müssen wir aufpassen? Wo sind Stolpersteine, welche wir vermeiden sollten? Gibt es wichtige Punkte, die wir übersehen haben?
