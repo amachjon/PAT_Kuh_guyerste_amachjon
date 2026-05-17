@@ -113,7 +113,7 @@ Die Unterfragen möchten wir wie folgt Visualisieren:
 
 ## Data
 
-Die Grundlage der Analyse bilden die GPS-Trackingdaten von Milchkühen dreier Rassen (Holstein, Originalbraunvieh, Hinterwälder) aus dem laufenden Projekt „PeaMaps", welche uns von der Agroscope (Manuel Schneider) zur Verfügung gestellt wurden. Erfasst wurden die Rückwege von der Weide zum Melkstand, dazu wurde alle 20 Sekunden ein Datenpunkt erhoben. Die Daten umfassen 50 GeoPackage-Dateien (.gpkg) for, jedes Package enthält die Aufzeichnungen eines Individuums, die Packages enthalten je rund 22 Layer, welche je einem Weg entsprechen.
+Die Grundlage der Analyse bilden die GPS-Trackingdaten von Milchkühen dreier Rassen (Holstein, Originalbraunvieh, Hinterwälder) aus dem laufenden Projekt „PeaMaps". Die Daten wurden uns von der Agroscope (Manuel Schneider) zur Verfügung gestellt. Erfasst wurden die Rückwege von der Weide zum Melkstand, dazu wurde alle 20 Sekunden ein Datenpunkt erhoben. Die Daten umfassen 50 GeoPackage-Dateien (.gpkg), jedes Package enthält die Aufzeichnungen eines Individuums, die Packages enthalten je rund 22 Layer, welche je einem Weg entsprechen.
 
 Die Temperatur Daten werden von der Wetterstation Samedan (MeteoSchweiz) bezogen, diese liegt am nächsten bei der Alp Weissenstein. Da sich Samedan etwas tiefer im Tal befindet, wird die Temperatur auf der Alp mittels der @icao1993 Höhenkorrektur (6.5°C/km) ermittelt.
 
