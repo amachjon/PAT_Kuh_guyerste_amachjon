@@ -115,13 +115,13 @@ Die Unterfragen möchten wir wie folgt Visualisieren:
 
 Die Grundlage der Analyse bilden die GPS-Trackingdaten von Milchkühen dreier Rassen (Holstein, Originalbraunvieh, Hinterwälder) aus dem laufenden Projekt „PeaMaps", welche uns von der Agroscope (Manuel Schneider) zur Verfügung gestellt wurden. Erfasst wurden die Rückwege von der Weide zum Melkstand, dazu wurde alle 20 Sekunden ein Datenpunkt erhoben. Die Daten umfassen 50 GeoPackage-Dateien (.gpkg) for, jedes Package enthält die Aufzeichnungen eines Individuums, die Packages enthalten je rund 22 Layer, welche je einem Weg entsprechen.
 
-Die Temperatur Daten werden von der Wetterstation Samedan (MeteoSchweiz) bezogen, diese liegt am nächsten bei der Alp Weissenstein. Da sich Samedan etwas tiefer im Tal befindet, wird die Temperatur auf der Alp mittels der ICAO [@icao1993] Höhenkorrektur (6.5°C/km) ermittelt.
+Die Temperatur Daten werden von der Wetterstation Samedan (MeteoSchweiz) bezogen, diese liegt am nächsten bei der Alp Weissenstein. Da sich Samedan etwas tiefer im Tal befindet, wird die Temperatur auf der Alp mittels der @icao1993 Höhenkorrektur (6.5°C/km) ermittelt.
 
 ## Analytical concepts
 
 #### Pre-processing:
 
-Zuerst wird die Teilmenge der Daten ausgewählt, welche den Weg von der Weide zum Melkstand beschreibt. Dazu werden räumlich ein Start- und ein Endpunkt des Weges definiert, innerhalb derer die Trajektorien ausgeschnitten werden [@laube2014]. Zudem werden die Daten nach Tageszeit (Morgen und Abend) stratifiziert, um allfällige Tageszeit abhängige Effekte in der Analyse separat berücksichtigen zu können. Die Meteorologiedaten werden in Temperaturkategorien unterteilt, wobei die in [@teamtierhaltungmilchwirtschaft2021] definierten Schwellenwerte für den Temperaturhaushalt der Kühe als Orientierung dienen.
+Zuerst wird die Teilmenge der Daten ausgewählt, welche den Weg von der Weide zum Melkstand beschreibt. Dazu werden räumlich ein Start- und ein Endpunkt des Weges definiert, innerhalb derer die Trajektorien ausgeschnitten werden [@laube2014]. Zudem werden die Daten nach Tageszeit (Morgen und Abend) stratifiziert, um allfällige Tageszeit abhängige Effekte in der Analyse separat berücksichtigen zu können. Die Meteorologiedaten werden in Temperaturkategorien unterteilt, wobei die von @teamtierhaltungmilchwirtschaft2021 definierten Schwellenwerte für den Temperaturhaushalt der Kühe als Orientierung dienen.
 
 #### Analyse:
 
@@ -129,7 +129,7 @@ Die Wegdauer sowie die Dauer einzelner Wegabschnitte werden in Abhängigkeit der
 
 ## R concepts
 
-Die Analyse wird in R [@R], Version 4.5.2, durchgeführt. Das Paket sf [@sf] wird für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) werden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben [@tidyverse]. Die Fréchet-Distanz wird mit dem Paket SimilarityMeasures [@SimilarityMeasures] berechnet. Visualisierungen werden mit tmap [@tmap] oder ggplot2 [@ggplot2] erstellt.
+Die Analyse wird in R herausgegeben vom @R, Version 4.5.2, durchgeführt. Das Paket sf von @sf wird für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) werden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben [@tidyverse]. Die Fréchet-Distanz wird mit dem Paket SimilarityMeasures von @SimilarityMeasures berechnet. Visualisierungen werden mit tmap von @tmap oder ggplot2 von @ggplot2 erstellt.
 
 ## Risk analysis
 
