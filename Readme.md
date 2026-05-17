@@ -1,6 +1,9 @@
 ---
 bibliography: references.bib
 lang: de
+format:
+  pdf:
+    babel-lang: ngerman
 ---
 
 # Proposal for Semester Project
