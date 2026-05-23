@@ -1,35 +1,32 @@
 
 library(sf)
 
-# Daten einlesen: 
+library("sf")
+library("dplyr")
+library("purrr")
+library(stringr)
 
-Einl_gpkg <- function(file){
- st_read(paste0("GPS path data/",file)) 
+# Eine liste aller .gpkg Dateien im Ordner erstellen:
+gpkg_files <- list.files("GPS Path data/", pattern = "\\.gpkg$", full.names = TRUE)
+
+
+# Hilfsfunktion: liest einen Layer ein.
+f_layer <- function(file_layer) { #Erstellt eine Funktion mit dem Nahmen f_layer welche eiun filename und ein layername als Imput braucht.
+  split <- str_split(file_layer, " _;_ ",simplify = TRUE)  
+  file <- split [,1]
+  layer <- split [,2]
+  
+  st_read(file, layer = layer, quiet = TRUE) |> # Liest einen Layer ein. 
+    mutate(
+      quelle_file  = basename(file), # Fügt den Dateinamen in einer Spalte hinzu.
+      quelle_layer  = layer # Fügt den Layername in einer Spalte hinzu.
+    )
 }
 
-k<-Einl_gpkg("R1-HO03.gpkg")
-
-Kuh <- st_layers("GPS path data/R1-HO03.gpkg")
-
-
-Einl_gpkg_alle <- function(file){
-  pfad <- paste0("GPS path data/", file)
-  layer_namen <- st_layers(pfad)$name
-  
-  alle_layer <- lapply(layer_namen, function(l){
-    st_read(pfad, layer = l, quiet = TRUE)
-  })
-  
-  names(alle_layer) <- layer_namen
-  return(alle_layer)
+f_files <- function(file) {
+  layer_names <- st_layers(file)$name
+  file_layer <- paste(file,"_;_",layer_names)
+  map_dfr(file_layer, f_layer)
 }
 
-
-#Liste — jeder Layer als eigenes Element:
-daten <- Einl_gpkg_alle("R1-HO03.gpkg")
-  
-# Einzelnen Layer ansprechen:
-daten[["06-25-M"]]
-
-# Alle Layer-Namen anzeigen:
-names(daten)
+alle_daten <- map_dfr(gpkg_files, f_files)

@@ -18,26 +18,38 @@ bibliography: bibliography.bib
 
 library("sf")
 library("dplyr")
-library("readr")
+library("purrr")
+library(stringr)
 
-# Einlesen der Daten: 
-
-list.files("data/GPS Path data")
-
-st_layers("data/GPS Path data/R1-HO01.gpkg")
-
-R1_HO01 <- st_read("data/GPS Path data/R1-HO01.gpkg") # importiert nur ein layer....
-R1_HO01
-
-``` 
+# Eine liste aller .gpkg Dateien im Ordner erstellen:
+gpkg_files <- list.files("GPS Path data/", pattern = "\\.gpkg$", full.names = TRUE)
 
 
+# Hilfsfunktion: liest einen Layer ein.
+f_layer <- function(filename,layer) { #Erstellt eine Funktion mit dem Nahmen f_layer, welche eiun filename und ein layername als Imput braucht.
+    st_read(filename, layer = layer, quiet = TRUE) |> # Liest einen Layer ein. 
+      mutate(
+        quelle_file  = basename(filename), # Fügt den Dateinamen in einer Spalte hinzu.
+        quelle_layer  = layer # Fügt den Layername in einer Spalte hinzu.
+      )
+}
+
+# 2.Hilfsfunktion Liest ein File ein (alle Layer) und erstellt darau ein Datea Frame im long format.
+f_files <- function(filename) { #Erstellt eine Funktion mit dem Nahmen f_file welche eiun filename als Imput braucht.
+    layer_names <- st_layers(filename)$name # Listet alle Layer auf welche im file enthalten sind.
+    map_dfr(layer_names, \(layer) f_layer(filename, layer)) # Nimt die Liste der Layer und führt füe jedes element die Funktion f_layer aus. (\(layer)´weil map_dfr eigendlich eine Funktion mit nur einem Imput erwartet.)
+}
+
+# Alle Date Einlesen in eine grosse Tabelle (long Format)
+Kuh_Daten <- map_dfr(gpkg_files, f_files) #Führt die Einlese Funktion für alle gpkg Files durch und fügt die Daten in eiener einzigen Tabelle zusammen. 
+
+```
 
 ## Abstract
 
 ## Introduction
 
-@laube2011 investigate how temporal scale affects the calculation of movement parameters (speed, sinuosity and turning angle) of animal trajectories. 
+@laube2011 investigate how temporal scale affects the calculation of movement parameters (speed, sinuosity and turning angle) of animal trajectories.
 
 ## Material and Methods
 
@@ -55,5 +67,3 @@ R1_HO01
 #| eval: false
 wordcountaddin::word_count("index.qmd")
 ```
-
-
