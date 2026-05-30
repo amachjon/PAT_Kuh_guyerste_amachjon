@@ -53,6 +53,7 @@ alle_daten <- alle_daten |>
 
 # Daten verstehen: 
 View(alle_daten)
+unique(alle_daten$quelle_file)
 
 # Weg aufzeichnen von einer Kuh am 25.6. am Abend: 
 
@@ -97,6 +98,7 @@ View(Filter_1)
 Filter_1 |> 
   ggplot(aes(Rasse, dist_to_ref)) + 
   geom_boxplot()
+
 
 
 
