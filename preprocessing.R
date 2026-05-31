@@ -55,7 +55,7 @@ alle_daten <- alle_daten |>
 View(alle_daten)
 unique(alle_daten$quelle_file)
 
-# Weg aufzeichnen von einer Kuh am 25.6. am Abend: 
+# Weg aufzeichnen von einer Kuh am 25.6. am Abend als erste Visualisierung: 
 
 R1_HO01_06_25_A <-  alle_daten |>
   filter(quelle_file == "R1-HO01.gpkg",
@@ -98,7 +98,10 @@ View(Filter_1)
 Filter_1 |> 
   ggplot(aes(Rasse, dist_to_ref)) + 
   geom_boxplot()
+#################################################################################
+#################################################################################
+# Einlesen der Messlinien, welche in ArcGISpro erstellt wurden: 
 
-
-
+messlinien <- st_read("Messlinien.shp")
+messlinien
 
