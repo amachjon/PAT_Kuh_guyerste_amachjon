@@ -57,6 +57,13 @@ alle_daten <- alle_daten |>
   mutate(ID = str_extract(quelle_file, "\\d{2}(?=\\.gpkg)")
   )
 
+# Rasse und ID 
+
+alle_daten <- alle_daten |> 
+  mutate(Rasse_ID = str_extract(quelle_file, "(?<=-)\\w+(?=\\.gpkg)")
+  )
+
+
 # Time > HMS = nur hour, minute und seconds
 
 alle_daten <- alle_daten |> 
@@ -167,6 +174,24 @@ View(dist_time_ranked |>
   filter(quelle_layer == "07-17-M" & messlinie == "1")) # nur zur Überprüfung ob es die Reihenfolge korrekt genommen hat 
 
 
+#################################################################################
+#################################################################################
+#################################################################################
+# Visualisierungen 
 
 
+# für PPP: Kühe an einemn Bestimmten Zeitpunkt: 25-08-07, 5:05
 
+zielzeit <- as.POSIXct("2025-08-07 05:10:00", tz = "UTC")
+
+punkte_zeit <- alle_daten %>%
+  mutate(
+    diff_sec = abs(as.numeric(Time - zielzeit))
+  ) %>%
+  group_by(quelle_file) %>%       
+  slice_min(diff_sec, n = 1) %>%   
+  ungroup()
+
+ggplot() +
+  geom_sf(data = messlinien, color = "red", size = 1.2) +
+  geom_sf(data = punkte_zeit, aes(color = Rasse_ID), size = 3) 
