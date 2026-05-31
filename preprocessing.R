@@ -30,7 +30,8 @@ f_files <- function(file) {
 }
 
 alle_daten <- map_dfr(gpkg_files, f_files)
-
+###############################################################################
+###############################################################################
 ###############################################################################
 # Datenstruktur 
 # 
@@ -42,12 +43,26 @@ alle_daten <- alle_daten |>
   )
 
 ###############################################################################
-# Spalten hinzufügen: RASSE 
+# Spalten hinzufügen: 
 
+# RASSE 
 alle_daten <- alle_daten |>
   mutate(
-    Rasse = stringr::str_extract(quelle_file, "(?<=-)[A-Z]{2}")
+    Rasse = str_extract(quelle_file, "(?<=-)[A-Z]{2}")
   )
+
+# ID pro Kuh und Rasse (Bsp.: R1-HO01 = 01)
+
+alle_daten <- alle_daten |> 
+  mutate(ID = str_extract(quelle_file, "\\d{2}(?=\\.gpkg)")
+  )
+
+# Time > HMS = nur hour, minute und seconds
+
+alle_daten <- alle_daten |> 
+  mutate(HMS = str_extract(alle_daten$Time, "\\d{2}:\\d{2}:\\d{2}"))
+
+View(alle_daten)
 
 ###############################################################################
 
@@ -100,8 +115,58 @@ Filter_1 |>
   geom_boxplot()
 #################################################################################
 #################################################################################
+#################################################################################
 # Einlesen der Messlinien, welche in ArcGISpro erstellt wurden: 
 
 messlinien <- st_read("Messlinien.shp")
 messlinien
+
+st_crs(messlinien) <- 2056
+
+#################################################################################
+#################################################################################
+#################################################################################
+# Berechnungen zur Durchgangsreihenfolge (in welcher Reihenfolge passieren die Tiere die beiden Linien auf dem Weg?) > Was ist die Nächste Zeit die die Tiere bei der Linie haben? > Unten die nächste Distanz berechnet der Kühe jeweiligen Linien > Zeitausgabe hilft dann die Reihenfolge aufzustellen
+
+# Berechnung des nächsten Punktes zu den beiden Messlinien pro Kuh und Weg den sie zurücklegen
+
+dist_l1 <- alle_daten %>% 
+  mutate(dist_l1 = st_distance(geom, messlinien[1, ])) %>% 
+  group_by(quelle_file, quelle_layer) %>% 
+  slice_min(dist_l1, n = 1) %>% 
+  ungroup() %>% 
+  mutate(messlinie = 1)
+
+dist_l2 <- alle_daten %>% 
+  mutate(dist_l2 = st_distance(geom, messlinien[2, ])) %>% 
+  group_by(quelle_file, quelle_layer) %>% 
+  slice_min(dist_l2, n = 1) %>% 
+  ungroup() %>% 
+  mutate(messlinie = 2)
+
+dist_time <- bind_rows(dist_l1, dist_l2)
+
+View(dist_time)
+
+View(dist_time)
+
+# Nun RANKEN
+
+dist_time_ranked <- dist_time |> 
+  group_by(quelle_layer, messlinie) |>
+  arrange(HMS) |> 
+  mutate(rank = row_number()) |> 
+  ungroup()
+
+View(dist_time_ranked)
+
+
+# Visualisierung zur Überprüfung ob die Kuh die am die den tiefsten Rank hat (= 1) auch wirklich zur Frühsten Zeit am nächsten bei den Linien war. 
+
+View(dist_time_ranked |> 
+  filter(quelle_layer == "07-17-M" & messlinie == "1")) # nur zur Überprüfung ob es die Reihenfolge korrekt genommen hat 
+
+
+
+
 
