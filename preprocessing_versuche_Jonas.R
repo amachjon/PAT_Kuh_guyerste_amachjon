@@ -299,8 +299,32 @@ daten_clean <- daten |>
 # Mittleren Rang pro Individuum, Messline und Gruppe berechnen
 rang_mean <- dist_time_ranked %>%
   filter(messlinie %in% c(1, 2)) %>%
-  group_by(Grupe, Rasse_ID, messlinie) %>%
+  group_by(Grupe, Rasse,Rasse_ID, messlinie) %>%
   summarise(mean_rank = mean(rank, na.rm = TRUE), .groups = "drop")
+  
+# Hilfsfunktion: Farb-Indices verschachteln
+interleave_idx <- function(n) {
+  half <- ceiling(n / 2)
+  idx <- c(rbind(1:half, (half + 1):n))[1:n]
+  idx
+}
+
+# Farben Definieren:
+rasse_farben <- rang_mean %>%
+  group_by(Rasse_ID, Rasse) %>%
+  summarise(mean_rank_gesamt = mean(mean_rank), .groups = "drop") %>%
+  group_by(Rasse) %>%
+  arrange(mean_rank_gesamt, .by_group = TRUE) %>%         # nach Rang sortieren
+  mutate(
+    idx  = interleave_idx(n()),          # verschachtelte Indices
+    farbe = case_when(
+      Rasse == "HW" ~ colorRampPalette(c("#1a6b1a", "#a8dba8"))(n())[idx],
+      Rasse == "OB" ~ colorRampPalette(c("#1a1a7a", "#a8a8e6"))(n())[idx],
+      Rasse == "HO" ~ colorRampPalette(c("#7a1a1a", "#e6a8a8"))(n())[idx]
+    )) %>%
+  ungroup()
+
+farb_vektor <- setNames(rasse_farben$farbe, rasse_farben$Rasse_ID)
 
 # Ein Plot pro Gruppe
 gruppen <- unique(rang_mean$Grupe)
@@ -315,6 +339,7 @@ plots <- lapply(gruppen, function(g) {
     geom_text(aes(label = Rasse_ID),
               hjust = ifelse(rang_mean$messlinie[rang_mean$Grupe == g] == 1, 1.2, -0.2),
               size = 3) +
+    scale_color_manual(values = farb_vektor) +
     scale_y_reverse() +       # Rang 1 oben
     labs(
       title = paste("Rangveränderung Gruppe:", g),
