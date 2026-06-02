@@ -232,7 +232,7 @@ alle_daten |>
 alle_daten <- alle_daten[alle_daten$quelle_layer != "07-14-M", ]
 
 # Spalte mit Versuchsgruppe hinzufügen:
-alle_daten$Gruppe <- substr(alle_daten$quelle_file, 1, 2)
+alle_daten$Grupe <- substr(alle_daten$quelle_file, 1, 2)
 
 
 # Geografisches Plotten aller daten
@@ -296,4 +296,35 @@ daten_clean <- daten |>
   )
 
 
+# Mittleren Rang pro Individuum, Messline und Gruppe berechnen
+rang_mean <- dist_time_ranked %>%
+  filter(messlinie %in% c(1, 2)) %>%
+  group_by(Grupe, Rasse_ID, messlinie) %>%
+  summarise(mean_rank = mean(rank, na.rm = TRUE), .groups = "drop")
 
+# Ein Plot pro Gruppe
+gruppen <- unique(rang_mean$Grupe)
+
+plots <- lapply(gruppen, function(g) {
+  rang_mean %>%
+    filter(Grupe == g) %>%
+    ggplot(aes(x = factor(messlinie), y = mean_rank,
+               group = Rasse_ID, color = Rasse_ID)) +
+    geom_line(linewidth = 1) +
+    geom_point(size = 3) +
+    geom_text(aes(label = Rasse_ID),
+              hjust = ifelse(rang_mean$messlinie[rang_mean$Grupe == g] == 1, 1.2, -0.2),
+              size = 3) +
+    scale_y_reverse() +       # Rang 1 oben
+    labs(
+      title = paste("Rangveränderung Gruppe:", g),
+      x = "Messlinie",
+      y = "Mittlerer Rang"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "none")
+})
+
+# Alle 3 Plots anzeigen
+library(patchwork)
+plots[[1]] | plots[[2]] | plots[[3]]
