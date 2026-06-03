@@ -80,7 +80,7 @@ unique(alle_daten$quelle_file)
 # Weg aufzeichnen von einer Kuh am 25.6. am Abend als erste Visualisierung: 
 
 R1_HO01_06_25_A <-  alle_daten |>
-  filter(quelle_file == "R1-HO01.gpkg",
+  filter(quelle_file == "R1-HW08.gpkg",
          TimeSlice == "06-25-A")
 
 R1_HO01_06_25_A |> 
@@ -264,7 +264,8 @@ daten <- alle_daten %>%
   )%>%
   filter(is.na(speed_ms) | speed_ms < 10)
 
-
+################### Zeitlich eingränzen #########################
+# Zeitliche Verteilung Plotten:
 
 library(scales)
 library(hms)
@@ -295,6 +296,11 @@ daten_clean <- daten |>
     (endsWith(quelle_layer, "A") & HMS >= start_A & HMS <= end_A)
   )
 
+
+#########################################################
+#########################################################
+#########################################################
+############ RankPlot V1 ################################
 
 # Mittleren Rang pro Individuum, Messline und Gruppe berechnen
 rang_mean <- dist_time_ranked %>%
@@ -353,3 +359,130 @@ plots <- lapply(gruppen, function(g) {
 # Alle 3 Plots anzeigen
 library(patchwork)
 plots[[1]] | plots[[2]] | plots[[3]]
+
+
+alle_daten <- map_dfr(gpkg_files, f_files)
+
+######################################
+######################################
+# Neue Transektlinien ################
+
+# Weg aufzeichnen von einer Kuh am 25.6. am Abend als erste Visualisierung: 
+
+Tag1 <-  alle_daten |>
+  filter(TimeSlice == "06-25-A")
+
+Tag1 |> 
+  ggplot() + 
+  geom_sf()
+
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(Tag1) + 
+  tm_dots()
+
+# Layer lns Anschauen: 
+
+Tag1_1Kuh <-  alle_daten |>
+  filter(quelle_layer == "06-25-A_lns",quelle_file == "R1-HW08.gpkg")
+
+
+Tag1_1Kuh  |> 
+  ggplot() + 
+  geom_sf()
+
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(Tag1) + 
+  tm_dots()
+
+# Farbig aufsteigend visualisieren:
+# Weg aufzeichnen von einer Kuh am 25.6. am Abend als erste Visualisierung: 
+
+R1_HO01_06_25_A <-  alle_daten |>
+  filter(quelle_file == "R1-HW08.gpkg",
+         TimeSlice == "06-25-A")
+
+R1_HO01_06_25_A <- R1_HO01_06_25_A %>%
+  mutate(reihenfolge = row_number())
+
+ggplot(R1_HO01_06_25_A) +
+  geom_sf(aes(color = reihenfolge)) +
+  scale_color_gradient(low = "red", high = "blue") 
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(R1_HO01_06_25_A) +
+  tm_dots(
+    col = "reihenfolge",
+    palette = c("red", "blue"),
+    style = "cont"
+  )
+
+################ Filter2 Ohne Stall 6.25 (Klahr definierter Star und einde. #############
+
+Filter_2 <-  alle_daten |>
+  filter(quelle_layer == "06-25-A") %>% 
+  st_transform(4326) %>%
+  filter(st_coordinates(geom)[, 1] < 9.800, 
+         st_coordinates(geom)[, 1] > 9.7885,) %>%
+  st_transform(2056)
+
+# Schauen wo Erster punkt pro Kuh ist:
+erste_punkte <- Filter_2%>%
+  arrange(Time) %>%
+  group_by(quelle_file) %>%
+  slice(1) %>%
+  ungroup()
+
+# Zeitliche Struktur anschauen: 
+Filter_2$HMS <- as_hms(Filter_2$HMS)
+
+Filter_2|>
+  st_drop_geometry() |>
+  ggplot(aes(x = HMS, y = quelle_layer)) +
+  geom_point() +
+  scale_x_time(breaks = breaks_width("30 min"), labels = label_time("%H:%M")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+Filter_2 <- Filter_2[Filter_2$Hour<17,]
+
+min(Filter_2$HMS)
+max(Filter_2$HMS)
+
+
+R1_HO01_06_25_A <- Filter_2 %>%
+  mutate(reihenfolge = row_number())
+
+ggplot(R1_HO01_06_25_A) +
+  geom_sf(aes(color = reihenfolge)) +
+  scale_color_gradient(low = "red", high = "blue") 
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(R1_HO01_06_25_A) +
+  tm_dots(
+    col = "reihenfolge",
+    palette = c("red", "blue"),
+    style = "cont"
+  )
+
+Filter_2$HMS <- as_hms(Filter_2$HMS)
+
+Filter_2|>
+  st_drop_geometry() |>
+  ggplot(aes(x = HMS, y = quelle_layer)) +
+  geom_point() +
+  scale_x_time(breaks = breaks_width("30 min"), labels = label_time("%H:%M")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+######## Versuch 2
