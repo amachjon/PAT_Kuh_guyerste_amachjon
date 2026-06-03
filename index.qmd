@@ -49,7 +49,9 @@ Kuh_Daten <- map_dfr(gpkg_files, f_files) #Führt die Einlese Funktion für alle
 
 ## Introduction
 
-@laube2011 investigate how temporal scale affects the calculation of movement parameters (speed, sinuosity and turning angle) of animal trajectories.
+Studien zu sozialen Interaktionen und Rangordnungen bei Wildtieren haben gezeigt, dass viele Arten soziale Beziehungen pflegen sowie Hierarchien innerhalb von Gruppen ausbilden und dass diese teilweise massgeblich zur Erhöhung des individuellen oder gruppenbezogenen Fitnesserfolgs beitragen können [@stanton2012; @wittig2008; @silk2003].
+
+Im Gegensatz dazu wurden soziale Strukturen innerhalb von Nutztierherden bislang vergleichsweise wenig berücksichtigt, was auf einen primär produktionsorientierten Forschungsfokus zurückgeführt werden kann. Entsprechend besteht bezüglich sozialen Dynamiken bei Nutztieren erhebliche Wissenslücken [@boyland2016].
 
 ## Material and Methods
 
