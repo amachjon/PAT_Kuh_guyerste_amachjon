@@ -49,9 +49,9 @@ Kuh_Daten <- map_dfr(gpkg_files, f_files) #Führt die Einlese Funktion für alle
 
 ## Introduction
 
-Studien zu sozialen Interaktionen und Rangordnungen bei Wildtieren haben gezeigt, dass viele Arten soziale Beziehungen pflegen sowie Hierarchien innerhalb von Gruppen ausbilden und dass diese teilweise massgeblich zur Erhöhung des individuellen oder gruppenbezogenen Fitnesserfolgs beitragen können [@stanton2012; @wittig2008; @silk2003].
+Studien zu sozialen Beziehungen bei Wildtieren haben gezeigt, dass viele Arten stabile soziale Bindungen und Hierarchien ausbilden und dass diese Beziehungen und Hierarchien teilweise massgeblich zur Erhöhung des individuellen oder gruppenbezogenen Fitnesserfolgs beitragen können [@stanton2012; @wittig2008; @silk2003].
 
-Im Gegensatz dazu wurden soziale Strukturen innerhalb von Nutztierherden bislang vergleichsweise wenig berücksichtigt, was auf einen primär produktionsorientierten Forschungsfokus zurückgeführt werden kann. Entsprechend besteht bezüglich sozialen Dynamiken bei Nutztieren erhebliche Wissenslücken [@boyland2016].
+Demgegenüber wurden soziale Strukturen in Nutztierherden bislang deutlich weniger untersucht, was vor allem dem produktionsbezogenen Forschungsfokus geschuldet ist. Entsprechend besteht bezüglich sozialen Dynamiken bei Nutztieren erhebliche Wissenslücken [@boyland2016].
 
 ## Material and Methods
 
