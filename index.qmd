@@ -57,7 +57,17 @@ Gleichwohl belegen zahlreiche Beobachtungen und Studien, dass Umgruppierungen od
 
 Während zahlreiche Studien die Bedeutung der Herdendynamik anhand physiologischer und verhaltensbezogener Parameter beschreiben, gibt es bislang nur wenige Untersuchungen, welche soziale Strukturen innerhalb von Milchkuhherden anhand von Bewegungsdaten analysieren. Dabei bieten moderne hochauflösende GPS-Daten jedoch die Möglichkeit, soziale Beziehungen und Gruppenstrukturen objektiv zu erfassen, beispielsweise über räumliche Nähe- und Distanzmuster innerhalb der Herde.
 
-## Material and Methods
+Vor diesem Hintergrund untersucht die vorliegende Arbeit die Herdendynamik einer Milchkuhherde anhand von GPS-Daten. Dabei werden zwei zentrale Forschungsfragen adressiert:
+
+-   Lassen sich innerhalb der Herde anhand räumlicher Nähe- und Distanzmuster Subgruppen identifizieren?
+
+-   Zeigen sich innerhalb der Subgruppen bestimmte Hierarchieordnungen oder besonders stabile soziale Bindungen?
+
+## Material und Methoden
+
+### Daten
+
+Zur Beantwortung der Forschungsfragen wurden Daten aus dem laufenden Agroscope-Projekt PeaMaps (2024-2027) verwendet, in dem verschiedene Milchkuhrassen auf der Alp Weissenstein mittels GPS getrackt werden. Ziel des Projekts ist der Vergleich des Bewegungsverhaltens unterschiedlicher Rassen unter alpinen Bedingungen, um Aussagen zur Eignung der jeweiligen Rassen für die Alpbeweidung zu ermöglichen. Dabei stehen sowohl Aspekte der Effizienz im Hinblick auf die Offenhaltung der Landschaft (z. B. Verbuschungskontrolle) als auch Fragen des Tierwohls im Fokus [@kurt2024].
 
 ## Results
 
