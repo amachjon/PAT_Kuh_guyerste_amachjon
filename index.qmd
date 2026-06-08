@@ -69,6 +69,42 @@ Vor diesem Hintergrund untersucht die vorliegende Arbeit die Herdendynamik einer
 
 Zur Beantwortung der Forschungsfragen wurden Daten aus dem laufenden Agroscope-Projekt PeaMaps (2024-2027) verwendet, in dem verschiedene Milchkuhrassen auf der Alp Weissenstein mittels GPS getrackt werden. Ziel des Projekts ist der Vergleich des Bewegungsverhaltens unterschiedlicher Rassen unter alpinen Bedingungen, um Aussagen zur Eignung der jeweiligen Rassen für die Alpbeweidung zu ermöglichen. Dabei stehen sowohl Aspekte der Effizienz im Hinblick auf die Offenhaltung der Landschaft (z. B. Verbuschungskontrolle) als auch Fragen des Tierwohls im Fokus [@kurt2024].
 
+Die vom Projektleiter Manuel Schneider zur Verfügung gestellten Rohdaten umfassen die in Tabelle X dargestellten Variablen.
+
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Variable  | Beschreibung                                                                                          | Einheit                                    |
++===========+=======================================================================================================+============================================+
+| ID        | Eindeutige ganze Zahl zur Identifikation jeder Kuh; innerhalb jeder Rasse fortlaufend ab 1 nummeriert | ganze Zahl (Integer)                       |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Rasse     | Zugehörigkeit der Kuh zu einer Rasse                                                                  | HO = Holstein;                             |
+|           |                                                                                                       |                                            |
+|           |                                                                                                       | HW = Hinterwälder;                         |
+|           |                                                                                                       |                                            |
+|           |                                                                                                       | OB = Original Braunvieh                    |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Time      | Zeitpunkt der GPS-Messung                                                                             | YYYY-MM-DD HH:MM:SS                        |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Day       | Tag der Messung                                                                                       | 0-365 (Tagesindez)                         |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Hour      | Stunde der Messung                                                                                    | 0-23                                       |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| TimeSlice | kombinierte Informationen aus Datum und Zeitabschnitt der Messung                                     | MM-DD-A/M                                  |
+|           |                                                                                                       |                                            |
+|           |                                                                                                       | (M = Morgen, A = Abend)                    |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Altitude  | Höhe über Meer                                                                                        | Meter über Meer                            |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| PDOP      | Genauigkeitsmass der GPS-Positionsbestimmung (Position Dilution of Precision)                         | numerischer Wert (Float)                   |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Valid     | Positionsqualität                                                                                     | kategorial (DGPS höchste Stufe)            |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| NSat      | Anzahl empfangene Satelliten                                                                          | ganze Zahl (Integer)                       |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| geom      | geometische Position                                                                                  | Punktgeometrie in LV95 (EPSG: 2056), Meter |
++-----------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+
+: Datenstruktur
+
 ## Results
 
 ## Discussion
