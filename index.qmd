@@ -3,8 +3,6 @@ title: The title of your Semesterproject
 subtitle: A subtle subtitle
 author: Jonas Amacher, Stefanie Guyer 
 format:
-  pdf: 
-    babel-lang: ngerman
   html:
     code-fold: true
 execute:
