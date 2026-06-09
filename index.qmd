@@ -47,15 +47,87 @@ Kuh_Daten <- map_dfr(gpkg_files, f_files) #Führt die Einlese Funktion für alle
 
 ## Abstract
 
-## Introduction
+## Einleitung
 
 Studien zu sozialen Beziehungen bei Wildtieren haben gezeigt, dass viele Arten stabile soziale Bindungen und Hierarchien ausbilden und dass diese Beziehungen und Hierarchien teilweise massgeblich zur Erhöhung des individuellen oder gruppenbezogenen Fitnesserfolgs beitragen können [@stanton2012; @wittig2008; @silk2003].
 
 Demgegenüber wurden soziale Strukturen in Nutztierherden, beispielsweise bei Milchkühen, bislang deutlich weniger untersucht, was vor allem dem produktionsbezogenen Forschungsfokus geschuldet ist. Entsprechend besteht bezüglich sozialen Dynamiken bei Nutztieren erhebliche Wissenslücken [@boyland2016].
 
-Gleichwohl belegen zahlreiche Beobachtungen und Studien, dass Umgruppierungen oder Störungen sozialer Strukturen bei Milchkühen deutliche Nachteile mit sich bringen. Veränderungen in der Herdenzusammensetzung lösen messbare Stressreaktionen aus, die sich in veränderten Verhaltensparametern (z. B. reduzierte Liegezeiten, verändertes Fress- und Wiederkauverhalten) sowie in physiologischen Stressindikatoren wie erhöhten Cortisolwerten äussern [@raussi2005; @walker2015; @bøe2003].
+Gleichwohl belegen zahlreiche Beobachtungen und Studien, dass Umgruppierungen oder Störungen sozialer Strukturen bei Milchkühen deutliche Nachteile mit sich bringen. Veränderungen in der Herdenzusammensetzung lösen messbare Stressreaktionen aus, die sich in veränderten Verhaltensparametern (z. B. reduzierte Liegezeiten, verändertes Fress- und Wiederkauverhalten) sowie in physiologischen Stressindikatoren wie erhöhten Cortisolwerten äussern [@raussi2005; @walker2015; @bøe2003]. Ebenfalls belegen Studien, dass auch die Milchleistung nach einer Umgruppierung häufig abnimmt [@vonkeyserlingk2008; @bøe2003].
 
-## Material and Methods
+Während zahlreiche Studien die Bedeutung der Herdendynamik anhand physiologischer und verhaltensbezogener Parameter beschreiben, gibt es bislang nur wenige Untersuchungen, welche soziale Strukturen innerhalb von Milchkuhherden anhand von Bewegungsdaten analysieren. Dabei bieten moderne hochauflösende GPS-Daten jedoch die Möglichkeit, soziale Beziehungen und Gruppenstrukturen objektiv zu erfassen, beispielsweise über räumliche Nähe- und Distanzmuster innerhalb der Herde.
+
+Vor diesem Hintergrund untersucht die vorliegende Arbeit die Herdendynamik einer Milchkuhherde anhand von GPS-Daten. Dabei werden zwei zentrale Forschungsfragen adressiert:
+
+-   Lassen sich innerhalb der Herde anhand räumlicher Nähe- und Distanzmuster Subgruppen identifizieren?
+
+-   Zeigen sich innerhalb der Subgruppen bestimmte Hierarchieordnungen oder besonders stabile soziale Bindungen?
+
+## Daten und Methoden
+
+### Daten
+
+Zur Beantwortung der Forschungsfragen wurden Daten aus dem laufenden Agroscope-Projekt PeaMaps (2024-2027) verwendet, in dem verschiedene Milchkuhrassen auf der Alp Weissenstein mittels GPS getrackt werden. Ziel des Projekts ist der Vergleich des Bewegungsverhaltens unterschiedlicher Rassen unter alpinen Bedingungen, um Aussagen zur Eignung der jeweiligen Rassen für die Alpbeweidung zu ermöglichen. Dabei stehen sowohl Aspekte der Effizienz im Hinblick auf die Offenhaltung der Landschaft (z. B. Verbuschungskontrolle) als auch Fragen des Tierwohls im Fokus [@kurt2024].
+
+Die vom Projektleiter Manuel Schneider zur Verfügung gestellten Rohdaten umfassen die in @tbl-Datenstruktur dargestellten Variablen.
+
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Variable   | Beschreibung                                                                                          | Einheit                                    |
++============+=======================================================================================================+============================================+
+| ID         | Eindeutige ganze Zahl zur Identifikation jeder Kuh; innerhalb jeder Rasse fortlaufend ab 1 nummeriert | ganze Zahl (Integer)                       |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Rasse      | Zugehörigkeit der Kuh zu einer Rasse                                                                  | HO = Holstein;                             |
+|            |                                                                                                       |                                            |
+|            |                                                                                                       | HW = Hinterwälder;                         |
+|            |                                                                                                       |                                            |
+|            |                                                                                                       | OB = Original Braunvieh                    |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Time       | Zeitpunkt der GPS-Messung                                                                             | YYYY-MM-DD HH:MM:SS                        |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Day        | Tag der Messung                                                                                       | 0-365 (Tagesindex)                         |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Hour       | Stunde der Messung                                                                                    | 0-23                                       |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| TimeSlice  | kombinierte Informationen aus Datum und Zeitabschnitt der Messung                                     | MM-DD-A/M                                  |
+|            |                                                                                                       |                                            |
+|            |                                                                                                       | (M = Morgen, A = Abend)                    |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Altitude   | Höhe über Meer                                                                                        | Meter über Meer                            |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| PDOP       | Genauigkeitsmass der GPS-Positionsbestimmung (Position Dilution of Precision)                         | numerischer Wert (Float)                   |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| Valid      | Positionsqualität                                                                                     | kategorial (DGPS höchste Stufe)            |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| NSat       | Anzahl empfangene Satelliten                                                                          | ganze Zahl (Integer)                       |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+| geom       | geometische Position                                                                                  | Punktgeometrie in LV95 (EPSG: 2056), Meter |
++------------+-------------------------------------------------------------------------------------------------------+--------------------------------------------+
+
+: Datenstruktur der Rohdaten mit Übersicht der enthaltenen Variablen sowie deren Beschreibung und Einheiten {#tbl-Datenstruktur}
+
+Insgesamt umfasst der Datensatz GPS-Positionsdaten von 44 Tieren (15 Holstein, 14 Hinterwälder, 15 Original Braunvieh) während ihrem Gang zwischen Weide und Melkstand (Hin- und Rückweg). Da täglich zwei Melkungen stattfanden, beinhaltet jeder Tag zwei Aufzeichnungsintervalle, die jeweils den Weg von der Weide zum Melkstand, den Melkvorgang sowie den Rückweg zur Weide abdecken. Ein Aufzeichnungsintervall, welches somit den gesamten Ablauf von der Weide zum Melkstand, die Melkung sowie den Rückweg zur Weide umfasst, dauert im Durchschnitt etwa vier Stunden. Das Messintervall betrug 20 Sekunden. Der Datensatz umfasst insgesamt 18 Tage und somit 36 Aufzeichnungsintervalle.
+
+Die im Datensatz enthaltenen 44 Tiere wurden dabei nicht alle zusammen von der Weide zum Melkstand und wieder zurück getrieben, sondern in kleineren Gruppen von 16-17 Tieren. Die Kombination der Tiere blieb dabei jeweils für eine Woche lang dieselbe. Folglich wurden in der Woche 1 (25.06.-30.06.2025), der Woche 2 (14.07-19.06.2025) und der Woche 3 (02.08.-07.08.2025) folgende Tiere zusammen zum Melkstand und wieder zurück getrieben @tbl-Subgruppen:
+
++--------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| Zeitperiode              | Subgruppen (gemeinsam zwischen Melkstand und Weide bewegte Tiere)                                                     |
++==========================+=======================================================================================================================+
+| Wo. 1: 25.06.-30.06.2025 | HO 01, HO 02, HO 03, HO 04, HO 05, HW 08, HW 09, HW 10, HW 11, HW 12, HW 13, HW 14, OB 01, OB 03, OB 04, OB 05, OB 06 |
++--------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| Wo. 2: 14.07-19.07.2025  | HO 06, HO 07, HO 08, HO 09, HO 10, HW 01, HW 02, HW 03, HW 04, HW 09, HW 10, HW 11, OB 07, OB 09, OB 10, OB 11        |
++--------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| Wo. 3: 02.08.-07.08.2025 | HO 11, HO 12, HO 13, HO 14, HO 15, HW 05, HW 06, HW 07, HW 08, HW 13, HW 14, OB 02, OB 08, OB 12, OB 13, OB 14, OB 15 |
++--------------------------+-----------------------------------------------------------------------------------------------------------------------+
+
+: Zusammensetzung der Subgruppen während der drei Untersuchungsperioden. Aufgeführt sind die Tiere, die innerhalb derselben Zeitperiode gemeinsam den Weg von der Weide zum Melkstand sowie zurück zur Weide zurücklegten. Die Tierkennungen setzen sich aus der Rasse (HO = Holstein, HW = Hinterwälder, OB = Original Braunvieh) und einer individuellen ID zusammen. {#tbl-Subgruppen}
+
+Die Tiere nutzten für die Wege zwischen Weide und Melkstand sowie für den Rückweg zur Weide stets dieselben Routen. Dabei konnten zwei Hauptwege identifiziert werden, die in allen Zeitperioden (@tbl-Subgruppen) von den Tieren genutzt wurden. Die beiden Hauptwege wieden dabei ähnliche Längen auf, wobei die insgesamt zurückgelegte Strecke für Hin- und Rückweg etwa zwei Kilometer beträgt.
+
+![Darstellung der beiden genutzten Wege auf dem Hin- und Rückweg vom Melkstand (ArcGIS Pro)](images/clipboard-117029847.jpeg){#fig-wege}
+
+
+### Methoden
+Methoden beschreiben, Messlinien etc.  
 
 ## Results
 
