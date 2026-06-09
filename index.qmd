@@ -1,14 +1,14 @@
 ---
 title: The title of your Semesterproject
 subtitle: A subtle subtitle
-author: Firstname1 Lastname1 and Firstname2 Lastname2
+author: Jonas Amacher, Stefanie Guyer 
 format:
   html:
     code-fold: true
 execute:
   warning: false
   message: false
-lang: de  
+lang: german 
 bibliography: bibliography.bib
 ---
 
@@ -51,9 +51,9 @@ Kuh_Daten <- map_dfr(gpkg_files, f_files) #Führt die Einlese Funktion für alle
 
 Studien zu sozialen Beziehungen bei Wildtieren haben gezeigt, dass viele Arten stabile soziale Bindungen und Hierarchien ausbilden und dass diese Beziehungen und Hierarchien teilweise massgeblich zur Erhöhung des individuellen oder gruppenbezogenen Fitnesserfolgs beitragen können [@stanton2012; @wittig2008; @silk2003].
 
-Demgegenüber wurden soziale Strukturen in Nutztierherden, beispielsweise bei Milchkühen, bislang deutlich weniger untersucht, was vor allem dem produktionsbezogenen Forschungsfokus geschuldet ist. Entsprechend besteht bezüglich sozialen Dynamiken bei Nutztieren erhebliche Wissenslücken [@boyland2016].
+Demgegenüber wurden soziale Strukturen in Nutztierherden, beispielsweise bei Milchkühen, bislang deutlich weniger untersucht, was vor allem dem produktionsbezogenen Forschungsfokus geschuldet ist. Entsprechend besteht bezüglich sozialen Dynamiken bei Nutztieren erhebliche Wissenslücken [@boyland2016].
 
-Gleichwohl belegen zahlreiche Beobachtungen und Studien, dass Umgruppierungen oder Störungen sozialer Strukturen bei Milchkühen deutliche Nachteile mit sich bringen. Veränderungen in der Herdenzusammensetzung lösen messbare Stressreaktionen aus, die sich in veränderten Verhaltensparametern (z. B. reduzierte Liegezeiten, verändertes Fress- und Wiederkauverhalten) sowie in physiologischen Stressindikatoren wie erhöhten Cortisolwerten äussern [@raussi2005; @walker2015; @bøe2003]. Ebenfalls belegen Studien, dass auch die Milchleistung nach einer Umgruppierung häufig abnimmt [@vonkeyserlingk2008; @bøe2003].
+Gleichwohl belegen zahlreiche Beobachtungen und Studien, dass Umgruppierungen oder Störungen sozialer Strukturen bei Milchkühen deutliche Nachteile mit sich bringen. Veränderungen in der Herdenzusammensetzung lösen messbare Stressreaktionen aus, die sich in veränderten Verhaltensparametern (z.B. reduzierte Liegezeiten, verändertes Fress- und Wiederkauverhalten) sowie in physiologischen Stressindikatoren wie erhöhten Cortisolwerten äussern [@raussi2005; @walker2015; @bøe2003]. Ebenfalls belegen Studien, dass auch die Milchleistung nach einer Umgruppierung häufig abnimmt [@vonkeyserlingk2008; @bøe2003].
 
 Während zahlreiche Studien die Bedeutung der Herdendynamik anhand physiologischer und verhaltensbezogener Parameter beschreiben, gibt es bislang nur wenige Untersuchungen, welche soziale Strukturen innerhalb von Milchkuhherden anhand von Bewegungsdaten analysieren. Dabei bieten moderne hochauflösende GPS-Daten jedoch die Möglichkeit, soziale Beziehungen und Gruppenstrukturen objektiv zu erfassen, beispielsweise über räumliche Nähe- und Distanzmuster innerhalb der Herde.
 
@@ -123,11 +123,18 @@ Die im Datensatz enthaltenen 44 Tiere wurden dabei nicht alle zusammen von der W
 
 Die Tiere nutzten für die Wege zwischen Weide und Melkstand sowie für den Rückweg zur Weide stets dieselben Routen. Dabei konnten zwei Hauptwege identifiziert werden, die in allen Zeitperioden (@tbl-Subgruppen) von den Tieren genutzt wurden. Die beiden Hauptwege wieden dabei ähnliche Längen auf, wobei die insgesamt zurückgelegte Strecke für Hin- und Rückweg etwa zwei Kilometer beträgt.
 
-![Darstellung der beiden genutzten Wege auf dem Hin- und Rückweg vom Melkstand (ArcGIS Pro)](images/clipboard-117029847.jpeg){#fig-wege}
+![Darstellung der beiden genutzten Wege auf dem Hin- und Rückweg vom Melkstand (eigene Darstellung, erstellt in ArcGIS Pro).](images/clipboard-117029847.jpeg){#fig-wege}
 
 
 ### Methoden
-Methoden beschreiben, Messlinien etc.  
+
+Für die Analyse zur Identifikation möglicher Subgruppen innerhalb der übergeordneten Gruppe sowie möglicher gruppeninterner Rangorndungen wurden verschiedene Methoden verwendet. 
+
+Die Ermittlung der Rangordnung erfolgte über fünf eigens konstruierte Messlinien entlang des Weges, die die Passierreihenfolge der Tiere erfasste und damit eine Rang-Zuordnung durchgeführt wurde. 
+
+> erklären wie die Messlinien gezeichnet wurden 
+
+### Datenvorverarbeitung
 
 ## Results
 
@@ -143,3 +150,7 @@ Methoden beschreiben, Messlinien etc.
 #| eval: false
 wordcountaddin::word_count("index.qmd")
 ```
+
+
+
+
