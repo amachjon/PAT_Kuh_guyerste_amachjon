@@ -30,6 +30,7 @@ f_files <- function(file) {
 }
 
 alle_daten <- map_dfr(gpkg_files, f_files)
+
 ###############################################################################
 ###############################################################################
 ###############################################################################
@@ -52,27 +53,27 @@ alle_daten <- alle_daten |>
   )
 
 # ID pro Kuh und Rasse (Bsp.: R1-HO01 = 01)
-
 alle_daten <- alle_daten |> 
   mutate(ID = str_extract(quelle_file, "\\d{2}(?=\\.gpkg)")
   )
 
 # Rasse und ID 
-
 alle_daten <- alle_daten |> 
   mutate(Rasse_ID = str_extract(quelle_file, "(?<=-)\\w+(?=\\.gpkg)")
   )
 
 
 # Time > HMS = nur hour, minute und seconds
-
 alle_daten <- alle_daten |> 
   mutate(HMS = str_extract(alle_daten$Time, "\\d{2}:\\d{2}:\\d{2}"))
 
-View(alle_daten)
 
-###############################################################################
+# Spalte mit Versuchsgruppe hinzufügen:
+alle_daten$Grupe <- substr(alle_daten$quelle_file, 1, 2)
 
+
+################################################################################
+################################################################################
 # Daten verstehen: 
 View(alle_daten)
 unique(alle_daten$quelle_file)
@@ -231,8 +232,7 @@ alle_daten |>
 
 alle_daten <- alle_daten[alle_daten$quelle_layer != "07-14-M", ]
 
-# Spalte mit Versuchsgruppe hinzufügen:
-alle_daten$Grupe <- substr(alle_daten$quelle_file, 1, 2)
+
 
 
 # Geografisches Plotten aller daten
@@ -485,4 +485,333 @@ Filter_2|>
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-######## Versuch 2
+######## Versuch 2 ##########################################
+######################################################
+
+Tag1 <-  alle_daten |>
+  filter(TimeSlice == "06-25-A")
+
+Tag1 |> 
+  ggplot() + 
+  geom_sf()
+
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(Tag1) + 
+  tm_dots()
+
+# Layer lns Anschauen: 
+
+Tag1_1Kuh <-  alle_daten |>
+  filter(quelle_layer == "06-25-A_lns",quelle_file == "R1-HW08.gpkg")
+
+
+Tag1_1Kuh  |> 
+  ggplot() + 
+  geom_sf()
+
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(Tag1) + 
+  tm_dots()
+
+# Farbig aufsteigend visualisieren:
+# Weg aufzeichnen von einer Kuh am 25.6. am Abend als erste Visualisierung: 
+
+R1_HO01_06_25_A <-  alle_daten |>
+  filter(quelle_file == "R1-HW08.gpkg",
+         TimeSlice == "06-25-A")
+
+R1_HO01_06_25_A <- R1_HO01_06_25_A %>%
+  mutate(reihenfolge = row_number())
+
+ggplot(R1_HO01_06_25_A) +
+  geom_sf(aes(color = reihenfolge)) +
+  scale_color_gradient(low = "red", high = "blue") 
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(R1_HO01_06_25_A) +
+  tm_dots(
+    col = "reihenfolge",
+    palette = c("red", "blue"),
+    style = "cont"
+  )
+
+################ Filter2 Ohne Stall 6.25 (Klahr definierter Star und einde. #############
+
+Filter_2 <-  alle_daten |>
+  filter(quelle_layer == "06-25-A") %>% 
+  st_transform(4326) %>%
+  filter(st_coordinates(geom)[, 1] < 9.800, 
+         st_coordinates(geom)[, 1] > 9.7885,) %>%
+  st_transform(2056)
+
+# Schauen wo Erster punkt pro Kuh ist:
+erste_punkte <- Filter_2%>%
+  arrange(Time) %>%
+  group_by(quelle_file) %>%
+  slice(1) %>%
+  ungroup()
+
+# Zeitliche Struktur anschauen: 
+Filter_2$HMS <- as_hms(Filter_2$HMS)
+
+Filter_2|>
+  st_drop_geometry() |>
+  ggplot(aes(x = HMS, y = quelle_layer)) +
+  geom_point() +
+  scale_x_time(breaks = breaks_width("30 min"), labels = label_time("%H:%M")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+Filter_2 <- Filter_2[Filter_2$Hour<17,]
+
+min(Filter_2$HMS)
+max(Filter_2$HMS)
+
+
+R1_HO01_06_25_A <- Filter_2 %>%
+  mutate(reihenfolge = row_number())
+
+ggplot(R1_HO01_06_25_A) +
+  geom_sf(aes(color = reihenfolge)) +
+  scale_color_gradient(low = "red", high = "blue") 
+# mit tmap 
+
+tmap_mode("view")
+
+tm_shape(R1_HO01_06_25_A) +
+  tm_dots(
+    col = "reihenfolge",
+    palette = c("red", "blue"),
+    style = "cont"
+  )
+
+Filter_2$HMS <- as_hms(Filter_2$HMS)
+
+Filter_2|>
+  st_drop_geometry() |>
+  ggplot(aes(x = HMS, y = quelle_layer)) +
+  geom_point() +
+  scale_x_time(breaks = breaks_width("30 min"), labels = label_time("%H:%M")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+######## Versuch 2 Messlineen einfügen #
+
+
+library(sf)
+library(dplyr)
+library(ggplot2)
+
+
+
+gemeinsamer_weg <- Filter_2 %>%
+  filter(Rasse_ID == "HO01") %>%
+  arrange(Time) %>%
+  summarise(geometry = st_cast(st_combine(geom), "LINESTRING"))
+
+plot(gemeinsamer_weg$geometry)
+
+
+weg_coords <- st_coordinates(gemeinsamer_weg$geometry[[1]])
+
+# Kumulative Distanz entlang des Weges
+kum_dist <- c(0, cumsum(sqrt(diff(weg_coords[,1])^2 + diff(weg_coords[,2])^2)))
+gesamt_dist <- max(kum_dist)
+
+# 5 Punkte gleichmässig nach Distanz (ohne Start/Ende)
+ziel_dist <- seq(gesamt_dist / 6, gesamt_dist * 5/6, length.out = 5)
+mess_idx  <- sapply(ziel_dist, function(d) which.min(abs(kum_dist - d)))
+
+# Senkrechte Linie mit grösserem Fenster (fenster = Anzahl Punkte links/rechts)
+senkrechte_linie <- function(weg_coords, idx, laenge = 100, fenster = 15) {
+  idx1 <- max(1, idx - fenster)
+  idx2 <- min(nrow(weg_coords), idx + fenster)
+  dx <- weg_coords[idx2, 1] - weg_coords[idx1, 1]
+  dy <- weg_coords[idx2, 2] - weg_coords[idx1, 2]
+  len <- sqrt(dx^2 + dy^2)
+  perp_x <- -dy / len
+  perp_y <-  dx / len
+  mx <- weg_coords[idx, 1]
+  my <- weg_coords[idx, 2]
+  st_linestring(rbind(
+    c(mx - perp_x * laenge/2, my - perp_y * laenge/2),
+    c(mx + perp_x * laenge/2, my + perp_y * laenge/2)
+  ))
+}
+
+mess_linien <- lapply(seq_along(mess_idx), function(i) {
+  senkrechte_linie(weg_coords, mess_idx[i], laenge = 100, fenster = 15)
+}) %>%
+  st_sfc(crs = st_crs(Filter_2)) %>%
+  st_sf(messline = 1:5, geometry = .)
+
+tmap_mode("view")
+
+tm_shape(gemeinsamer_weg) + tm_lines(col = "grey40", lwd = 2) +
+  tm_shape(mess_linien)     + tm_lines(col = "red", lwd = 2) +
+  tm_shape(Filter_2)        + tm_dots(col = "Rasse_ID", alpha = 0.4, size = 0.05)
+
+# Kreuzungszeit pro Tier und Messlinie 
+kreuzungen <- Filter_2 %>%
+  group_by(Rasse_ID) %>%
+  group_split() %>%
+  lapply(function(tier) {
+    ziel_crs <- st_crs(Filter_2)
+    
+    track <- tier %>%
+      arrange(Time) %>%
+      summarise(geometry = st_cast(st_combine(geom), "LINESTRING")) %>%
+      st_sf() %>%
+      st_set_crs(ziel_crs)
+    
+    lapply(1:5, function(ml) {
+      schnitt <- suppressWarnings(st_intersection(track, mess_linien[ml, ]))
+      if (nrow(schnitt) > 0 && !st_is_empty(schnitt$geometry[[1]])) {
+        coords <- st_coordinates(schnitt)[1, 1:2]       # Koordinaten extrahieren
+        sp <- st_sfc(st_point(coords), crs = ziel_crs)  # sauber neu erstellen
+        naechster <- which.min(st_distance(tier, sp))
+        tibble(Rasse_ID = tier$Rasse_ID[1], messline = ml,
+               kreuzung_time = tier$Time[naechster])
+      } else {
+        tibble(Rasse_ID = tier$Rasse_ID[1], messline = ml, kreuzung_time = NA)
+      }
+    }) %>% bind_rows()
+  }) %>%
+  bind_rows()
+
+# Rang pro Messlinie 
+kreuzungen_rang <- kreuzungen %>%
+  filter(!is.na(kreuzung_time)) %>%
+  group_by(messline) %>%
+  mutate(rang = rank(kreuzung_time)) %>%
+  ungroup()
+
+# SCHRITT 5: Bump Chart
+ggplot(kreuzungen_rang, aes(x = messline, y = rang,
+                            group = Rasse_ID, color = Rasse_ID)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzungen_rang, messline == 1),
+            hjust = 1.2, size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzungen_rang, messline == 5),
+            hjust = -0.2, size = 3) +
+  scale_y_reverse(breaks = 1:16) +
+  scale_x_continuous(breaks = 1:5, labels = paste("ML", 1:5)) +
+  labs(title = "Rangveränderung entlang des Weges",
+       x = "Messlinie", y = "Rang (1 = Erster)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+#Und zur Kontrolle die Messlinien auf der Karte:
+tmap_mode("view")
+tm_shape(gemeinsamer_weg) + tm_lines(col = "grey40") +
+  tm_shape(mess_linien) + tm_lines(col = "red", lwd = 2) +
+  tm_shape(Filter_2) + tm_dots(alpha = 0.3)
+
+rasse_lookup <- Filter_2 %>%
+  st_drop_geometry() %>%
+  distinct(Rasse_ID, Rasse)
+
+start_ziel <- Filter_2 %>%
+  st_drop_geometry() %>%
+  group_by(Rasse_ID) %>%
+  summarise(start_time = min(Time, na.rm = TRUE),
+            ziel_time  = max(Time, na.rm = TRUE), .groups = "drop")
+
+start_rang <- start_ziel %>%
+  mutate(messline = 0, kreuzung_time = start_time,
+         rang = rank(start_time)) %>%
+  select(Rasse_ID, messline, kreuzung_time, rang)
+
+ziel_rang <- start_ziel %>%
+  mutate(messline = 6, kreuzung_time = ziel_time,
+         rang = rank(ziel_time)) %>%
+  select(Rasse_ID, messline, kreuzung_time, rang)
+
+# Alles zusammenführen
+kreuzungen_rang_komplett <- kreuzungen_rang %>%
+  bind_rows(start_rang, ziel_rang) %>%
+  left_join(rasse_lookup, by = "Rasse_ID") %>%
+  arrange(messline)
+
+# Farbvektor (interleaved, nach mittlerem Rang)
+interleave_idx <- function(n) {
+  half <- ceiling(n / 2)
+  c(rbind(1:half, (half + 1):n))[1:n]
+}
+
+rasse_farben <- kreuzungen_rang_komplett %>%
+  group_by(Rasse_ID, Rasse) %>%
+  summarise(mean_rang = mean(rang, na.rm = TRUE), .groups = "drop") %>%
+  group_by(Rasse) %>%
+  arrange(mean_rang) %>%
+  mutate(
+    idx   = interleave_idx(n()),
+    farbe = case_when(
+      Rasse == "HO" ~ colorRampPalette(c("#7a1a1a", "#e6a8a8"))(n())[idx],
+      Rasse == "OB" ~ colorRampPalette(c("#1a1a7a", "#a8a8e6"))(n())[idx],
+      Rasse == "HW" ~ colorRampPalette(c("#1a6b1a", "#a8dba8"))(n())[idx]
+    )
+  ) %>%
+  ungroup()
+
+farb_vektor <- setNames(rasse_farben$farbe, rasse_farben$Rasse_ID)
+
+# Bump Chart
+ggplot(kreuzungen_rang_komplett,
+       aes(x = messline, y = rang, group = Rasse_ID, color = Rasse_ID)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzungen_rang_komplett, messline == 0),
+            hjust = 1.2, size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzungen_rang_komplett, messline == 6),
+            hjust = -0.2, size = 3) +
+  scale_color_manual(values = farb_vektor) +
+  scale_y_reverse(breaks = 1:16) +
+  scale_x_continuous(
+    breaks = 0:6,
+    labels = c("Start", paste("ML", 1:5), "Ziel")
+  ) +
+  labs(title = "Rangveränderung entlang des Weges",
+       x = NULL, y = "Rang (1 = Erster)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+################# Plot Erste Kuh beimessline 4
+
+# Zielzeit: Kreuzungszeit des ersten Tieres an Messlinie 4
+zielzeit <- kreuzungen %>%
+  filter(messline == 4, !is.na(kreuzung_time)) %>%
+  slice_min(kreuzung_time, n = 1) %>%
+  pull(kreuzung_time)
+
+# Nächster Punkt pro Tier zu diesem Zeitpunkt
+punkte_zeit <- Filter_2 %>%
+  mutate(diff_sec = abs(as.numeric(Time - zielzeit))) %>%
+  group_by(Rasse_ID) %>%
+  slice_min(diff_sec, n = 1) %>%
+  ungroup()
+
+ggplot() +
+  geom_sf(data = gemeinsamer_weg, color = "grey90", linewidth = 1) +
+  geom_sf(data = mess_linien, color = "red", linewidth = 1.2) +
+  geom_sf(data = punkte_zeit, aes(color = Rasse_ID), size = 3) +
+  scale_color_manual(values = farb_vektor) +
+  labs(title = paste("Positionen um", format(zielzeit, "%H:%M:%S")),
+       subtitle = "Vorderste Kuh bei Messlinie 4") +
+  theme_minimal()
+
+
