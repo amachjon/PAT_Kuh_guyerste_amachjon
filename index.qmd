@@ -3,12 +3,14 @@ title: The title of your Semesterproject
 subtitle: A subtle subtitle
 author: Jonas Amacher, Stefanie Guyer 
 format:
+  pdf: 
+    babel-lang: ngerman
   html:
     code-fold: true
 execute:
   warning: false
   message: false
-lang: german 
+lang: de
 bibliography: bibliography.bib
 ---
 
