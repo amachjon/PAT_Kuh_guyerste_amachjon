@@ -71,11 +71,41 @@ alle_daten <- alle_daten |>
 
 View(alle_daten)
 
+# R1, R2, R3 extrahieren
+
+alle_daten <- alle_daten |> 
+  mutate(Zeitperiode = str_extract(quelle_file, "R1|R2|R3"))
+
 ###############################################################################
 
 # Daten verstehen: 
 View(alle_daten)
 unique(alle_daten$quelle_file)
+length(unique(alle_daten$quelle_file))
+unique(alle_daten$Rasse_ID)
+
+alle_daten |> 
+  filter(str_detect(alle_daten$quelle_file, "R2")) |> 
+  pull(TimeSlice) |> 
+  unique()
+
+alle_daten |> 
+  filter(str_detect(alle_daten$quelle_file, "R1")) |> 
+  pull(TimeSlice) |> 
+  unique()
+
+alle_daten |> 
+  filter(str_detect(alle_daten$quelle_file, "R3")) |> 
+  pull(TimeSlice) |> 
+  unique()
+
+# Berechnung Dauer Weg: 
+Dauer_Weg <- alle_daten %>%
+  group_by(quelle_file, TimeSlice) %>%
+  summarise(duration_min = as.numeric(difftime(max(Time), min(Time), units = "mins")))
+
+View(Dauer_Weg)
+mean(Dauer_Weg$duration_min, na.rm = TRUE)
 
 # Weg aufzeichnen von einer Kuh am 25.6. am Abend als erste Visualisierung: 
 
@@ -195,3 +225,4 @@ punkte_zeit <- alle_daten %>%
 ggplot() +
   geom_sf(data = messlinien, color = "red", size = 1.2) +
   geom_sf(data = punkte_zeit, aes(color = Rasse_ID), size = 3) 
+

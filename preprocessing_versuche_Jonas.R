@@ -30,6 +30,7 @@ f_files <- function(file) {
 }
 
 alle_daten <- map_dfr(gpkg_files, f_files)
+
 ###############################################################################
 ###############################################################################
 ###############################################################################
@@ -274,7 +275,7 @@ daten$HMS <- as_hms(daten$HMS)
 
 daten |>
   st_drop_geometry() |>
-  ggplot(aes(x = HMS, y = quelle_layer, color = Gruppe)) +
+  ggplot(aes(x = HMS, y = quelle_layer, color = Grupe)) +
   geom_point() +
   facet_wrap(~ endsWith(quelle_layer, "M"),
         labeller = labeller(`TRUE` = "Morgen", `FALSE` = "Abend"),
@@ -486,3 +487,4 @@ Filter_2|>
 
 
 ######## Versuch 2
+
