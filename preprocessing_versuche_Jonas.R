@@ -274,7 +274,7 @@ daten$HMS <- as_hms(daten$HMS)
 
 daten |>
   st_drop_geometry() |>
-  ggplot(aes(x = HMS, y = quelle_layer, color = Gruppe)) +
+  ggplot(aes(x = HMS, y = quelle_layer, color = Grupe)) +
   geom_point() +
   facet_wrap(~ endsWith(quelle_layer, "M"),
         labeller = labeller(`TRUE` = "Morgen", `FALSE` = "Abend"),
@@ -485,6 +485,7 @@ Filter_2|>
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
+<<<<<<< HEAD
 ######## Versuch 2 ##########################################
 ######################################################
 
@@ -813,5 +814,6 @@ ggplot() +
   labs(title = paste("Positionen um", format(zielzeit, "%H:%M:%S")),
        subtitle = "Vorderste Kuh bei Messlinie 4") +
   theme_minimal()
+
 
 
