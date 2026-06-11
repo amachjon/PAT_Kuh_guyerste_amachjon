@@ -110,7 +110,7 @@ distance_by_element <- function(later, now){
   )
 }
 
-# Unrelistische ditanzen ZwischenPunkten entfernen (20s für 200m, mehr als 30Kmh im alpinengelände, )
+# Unrelistische ditanzen ZwischenPunkten entfernen (20s für 200m, mehr als 30Kmh im alpinengelände / oder zulange keine Messung das es aussagekräftig ist)
 repeat {
   n <- nrow(daten_ber)
   cat("Punkte:", n, "\n")  # zeigt Fortschritt
@@ -140,45 +140,96 @@ Wander_Weg <-  daten_ber |>
          ) %>% 
   ungroup() %>% 
   arrange(Time) %>%
+  filter(is.na(steplength) | steplength > 5) %>%   # mind. 5m Bewegung / Weg glätten
   summarise(geometry = st_cast(st_combine(geom), "LINESTRING"))
 
 plot(Wander_Weg)
 
-# Wanderweg definieren: 
+# Strasse definieren: 
 Strasse <-  daten_ber |>
   filter(quelle_layer == "06-27-M" & #Erste Kuh die diesen Weg genommen hat dient als grundlage
            Hour < 7&
            Rasse_ID == "HO01"
-  ) %>% 
+           ) %>% 
   ungroup() %>% 
   arrange(Time) %>%
+  filter(is.na(steplength) | steplength > 5) %>% 
   summarise(geometry = st_cast(st_combine(geom), "LINESTRING"))
 
+# Hilfsfunktion für Senkrechte Linien: 
+senkrechte_linie <- function(weg_coords, idx, laenge = 100, fenster = 15) {
+  idx1 <- idx - fenster # Punkte am anfuang und ende das Fensters ermitteln.
+  idx2 <- idx + fenster
+  dx <- weg_coords[idx2, 1] - weg_coords[idx1, 1] #Veränderung in x und y richtung feststellen.
+  dy <- weg_coords[idx2, 2] - weg_coords[idx1, 2]
+  len <- sqrt(dx^2 + dy^2) # Länge des Vektors ermitteln.
+  perp_x <- -dy / len # Vektor drehung und normierung auf Länge 1. 
+  perp_y <-  dx / len
+  mx <- weg_coords[idx, 1] #Position der Line in der mitte des Fensters festlegen. 
+  my <- weg_coords[idx, 2]
+  st_linestring(rbind( # Linie einfügen
+    c(mx - perp_x * laenge/2, my - perp_y * laenge/2),
+    c(mx + perp_x * laenge/2, my + perp_y * laenge/2)
+  ))
+}
+
+# Koordinaten System transformieren: 
+str_coords      <- st_coordinates(Strasse$geometry[[1]])
+str_coords_4326 <- st_coordinates(st_transform(Strasse, 4326))
+
+# Koordinaten für Start und Ende des Weges ab Karte festgelegt:
+S_E <- c(9.7885,9.8000)
+#Nächster Punkt zu dieser Koordinate finden: 
+S_E_idx  <- sapply(S_E, function(d) which.min(abs(str_coords_4326[, 1] - d)))
+
+# Start und Endline genirieren: 
+Start_Ende <- lapply(seq_along(S_E_idx), function(i) {
+  senkrechte_linie(str_coords, S_E_idx[i], laenge = 500, fenster = 15)
+}) %>%
+  st_sfc(crs = st_crs(2056)) %>%
+  st_sf(S_E = 1:2, geometry = .)
+
+# Hilfs Funktion zum Messlinien erstellen:
+mess_linien_erstellen <- function(weg, lon_min = 9.7885, lon_max = 9.8000, n = 5, laenge = 100, fenster = 5) {
+  # Wählt nur den weg aus:
+  weg_gefiltert <- weg |>
+    st_transform(4326) |>
+    st_cast("POINT") |>
+    filter(st_coordinates(geometry)[, 1] < lon_max,
+           st_coordinates(geometry)[, 1] > lon_min) |>
+    st_transform(2056)
+  #Liest die Kordinaten aus
+  weg_coords  <- st_coordinates(weg_gefiltert$geometry)
+  # Berechenet die Kummulierte distanz:
+  kum_dist    <- c(0, cumsum(sqrt(diff(weg_coords[,1])^2 + diff(weg_coords[,2])^2)))
+  gesamt_dist <- max(kum_dist)
+  #Rechnet die Abschnittlängen aus: 
+  ziel_dist <- seq(gesamt_dist / (n+1), gesamt_dist * n/(n+1), length.out = n)
+  mess_idx  <- sapply(ziel_dist, function(d) which.min(abs(kum_dist - d)))
+  #Erstellt die Linien: 
+  lapply(seq_along(mess_idx), function(i) {
+    senkrechte_linie(weg_coords, mess_idx[i], laenge = laenge, fenster = fenster)
+  }) %>%
+    st_sfc(crs = st_crs(weg)) %>% # Setzt das richtige koordinatensystem
+    st_sf(messline = 1:n, geometry = .) #Erstellt eine Liste von geometrie Objekten. 
+}
+
+# Messlinien erstellen: 
+ww_messline <- mess_linien_erstellen(Wander_Weg)
+
+str_messline <- mess_linien_erstellen(Strasse)
+
+# Weg + Start und Ende und Messlinein Plotten. 
+tmap_mode("view")
+
+tm_shape(Wander_Weg)    + tm_lines(col = "black") +
+  tm_shape(Strasse)       + tm_lines(col = "blue")  +
+  tm_shape(Start_Ende)    + tm_lines(col = "green") +
+  tm_shape(ww_messline)   + tm_lines(col = "red")   +
+  tm_shape(str_messline)  + tm_lines(col = "darkgreen")
 
 
-plot(Strasse$geometry)
-plot(Wander_Weg$geometry, col = "red", add = TRUE)
 
-plot(st_union(Strasse$geometry, Wander_Weg$geometry))  # setzt Extent auf beide zusammen
-plot(Strasse$geometry, add = TRUE)
-plot(Wander_Weg$geometry, col = "red", add = TRUE)
-
-
-daten_ber |>
-  ggplot() +
-  geom_sf(aes(color = quelle_layer))
-
-
-st_transform(4326) %>%
-  filter(st_coordinates(geom)[, 1] < 9.800,  # Start und Ende aus Karte raus gelesen.
-         st_coordinates(geom)[, 1] > 9.7885,) %>%
-  st_transform(2056) #%>% 
-
-
-
-
-
-
-
+##############################################################################################
 
 
