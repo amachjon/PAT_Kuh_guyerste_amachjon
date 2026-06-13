@@ -68,23 +68,19 @@ alle_daten <- alle_daten |>
 # Spalte mit Versuchsgruppe hinzufügen:
 alle_daten$Grupe <- substr(alle_daten$quelle_file, 1, 2)
 
-# Hilofsfunktion um ein segment aus 2 Punkten als Linestring zu definieren: (Um das auf den Punkt folgende segment zu bestimmen) 
-segment <- function(p1, p2) {
-  tryCatch(
-    st_linestring(rbind(st_coordinates(p1), st_coordinates(p2))),
-    error = function(e) st_linestring()  # falls Fehler → leere Linie zurückgeben
+# Hilfsfunktionen Definieren:
+distance_by_element <- function(later, now){
+  as.numeric(
+    st_distance(later, now, by_element = TRUE)
   )
 }
 
-# Nach Punkt folgendes Segment generieeren und Länge davon berechnen. 
+# Distanz zum Nächsten Punkt berechenen
 alle_daten <- alle_daten |>
   group_by(quelle_layer, Rasse_ID) |>
   arrange(Time, .by_group = TRUE) |>
   mutate(
-    # Segment zwischen aktuellem und nächstem Punkt
-    segment = st_sfc(mapply( segment, geom, lead(geom), SIMPLIFY = FALSE), 
-                     crs = st_crs(daten_ber)),
-    steplength = as.numeric(st_length(segment))
+    steplength = mapply(distance_by_element, geom, lead(geom))
   )
 
 #####################################################
@@ -200,6 +196,11 @@ daten_ber <- alle_daten[!endsWith(alle_daten$quelle_layer, "lns"), ]
 # Der datensatz enthält am 14.7 Morgens nur eine Kuh, weglassen: 
 daten_ber <- daten_ber[daten_ber$quelle_layer != "07-14-M", ]
 
+# Daten Gruppe 3 für die weitera Analyse auswählen: 
+# daten_ber <- daten_ber [daten_ber$Grupe == "R1",]
+# daten_ber <- daten_ber [daten_ber$Grupe == "R2",]
+daten_ber <- daten_ber [daten_ber$Grupe == "R3",]
+
 # Alle Daten die mit weniger alls 4 Sateliten bestimmt wurden Entfernen. (min 4 Sateliten sind für eine genaue position notwendig.) 
 daten_ber  <- daten_ber [daten_ber $NSat >"3",]
 # NA daten entfernen: 
@@ -208,6 +209,14 @@ daten_ber <- daten_ber[!is.na(daten_ber$NSat),]
 # Hilfsfunktion definieren: 
 difftime_secs <- function(later, now) {
   as.numeric(difftime(later, now, units = "secs"))
+}
+
+# Hilofsfunktion um ein segment aus 2 Punkten als Linestring zu definieren: (Um das auf den Punkt folgende segment zu bestimmen) 
+segment <- function(p1, p2) {
+  tryCatch(
+    st_linestring(rbind(st_coordinates(p1), st_coordinates(p2))),
+    error = function(e) st_linestring()  # falls Fehler → leere Linie zurückgeben
+  )
 }
 
 # Zu hohe Geschwindikeiten raus filtern (Kuh nicht schneller als 25 Kmh im Alpinen gelände): 
@@ -219,7 +228,7 @@ repeat { #Repetiert das ganze fals ausreisser zu nahe aneinander liegen um erfas
     group_by(quelle_layer, Rasse_ID) |>
     mutate(
       timelag    = difftime_secs(lead(Time), Time),
-      segment = st_sfc(mapply( segment, geom, lead(geom), SIMPLIFY = FALSE), 
+      segment = st_sfc(mapply( segment, geom, lead(geom), SIMPLIFY = FALSE), #Nach Punkt folgendes Segment generieeren und Länge davon berechnen. 
                        crs = st_crs(daten_ber)),
       steplength = as.numeric(st_length(segment)),
       speed      = steplength / timelag
@@ -297,6 +306,45 @@ tmap_mode("view")
 
 tm_shape(daten_weg) +
   tm_dots(col = "richtung", palette = c("Hinweg" = "blue", "Rückweg" = "red"))
+
+
+
+#############################################################################
+#############################################################################
+# Herausfinden Wann welcher weg genommen wurde:
+
+# Pro Layer und Richtung: Route mit geringerer mittlerer Distanz zuweisen:
+route_pro_layer <- daten_weg |>
+  filter( # Daten punkte auswählen welche auf dem Weg liegen: (zwoschen start unde ende)
+    st_coordinates(st_transform(geom, 4326))[, 1] > S_E[1],
+    st_coordinates(st_transform(geom, 4326))[, 1] < S_E[2]
+  ) |>
+  mutate( # Distanz jedes Punktes zu beiden Routen berechnen:
+    dist_wanderweg = as.numeric(st_distance(geom, st_union(Wander_Weg))),
+    dist_strasse   = as.numeric(st_distance(geom, st_union(Strasse)))
+  ) |>
+  st_drop_geometry() |>
+  group_by(quelle_layer, richtung) |>
+  summarise(
+    mean_dist_ww  = mean(dist_wanderweg, na.rm = TRUE),
+    mean_dist_str = mean(dist_strasse,   na.rm = TRUE),
+    route         = if_else(mean_dist_ww < mean_dist_str, "Wanderweg", "Strasse"),
+    .groups = "drop"
+  )
+
+# Route zurück in Hauptdatensatz joinen:
+daten_weg <- daten_weg |>
+  left_join(
+    route_pro_layer |> select(quelle_layer, richtung, route),
+    by = c("quelle_layer", "richtung")
+  )
+
+# Visualisieren:
+tmap_mode("view")
+tm_shape(daten_weg) +
+  tm_dots(col = "route", palette = c("Wanderweg" = "green", "Strasse" = "blue"))
+
+plot(daten_weg |> filter(quelle_layer == "06-30-M", richtung == "Rückweg"))
 
 
 
@@ -382,7 +430,12 @@ daten_ber <- daten_ber |>
       (is.na(lag(steplength)) | lag(steplength) < 200) 
   )
 
-
+# Hilfsfunktionen Definieren:
+distance_by_element <- function(later, now){
+  as.numeric(
+    st_distance(later, now, by_element = TRUE)
+  )
+}
 
 # Hilofsfunktion um ein segment aus 2 Punkten als Linestring zu definieren. 
 segment <- function(p1, p2) {
@@ -408,77 +461,7 @@ head(daten_route)
 
 ##############################################################################################
 
-1. Nähe zu Start/Ziellinie berechnen
-daten_route <- daten_ber |>
-  mutate(
-    dist_start = as.numeric(st_distance(geom, Start_Ende[1, ])),
-    dist_end   = as.numeric(st_distance(geom, Start_Ende[2, ])),
-    near_start = dist_start < 30,  # Puffer in Metern anpassen
-    near_end   = dist_end   < 30
-  )
 
-2. Pro Tier + Layer: gültige Trips (Start UND Ziel überquert)
-trip_times <- daten_route |>
-  group_by(quelle_layer, Rasse_ID) |>
-  arrange(Time) |>
-  summarise(
-    start_crossing = {
-      t_s   <- Time[near_start]
-      t_e   <- Time[near_end]
-      valid <- sapply(t_s, function(t) any(t_e > t))
-      if (any(valid)) min(t_s[valid]) else as.POSIXct(NA)
-    },
-    end_crossing = {
-      t_s   <- Time[near_start]
-      t_e   <- Time[near_end]
-      valid <- sapply(t_s, function(t) any(t_e > t))
-      if (any(valid)) min(t_e[t_e > min(t_s[valid])]) else as.POSIXct(NA)
-    },
-    .groups = "drop"
-  ) |>
-  filter(!is.na(start_crossing))
-
-3. Pro Layer: erste Abfahrt + letzte Ankunft
-layer_summary <- trip_times |>
-  group_by(quelle_layer) |>
-  summarise(
-    erste_abfahrt  = min(start_crossing),
-    letzte_ankunft = max(end_crossing)
-  )
-
-Rückweg — gleicher Code, nur near_start und near_end tauschen:
-  trip_times_rueck <- daten_route |>
-  group_by(quelle_layer, Rasse_ID) |>
-  arrange(Time) |>
-  summarise(
-    start_crossing = {
-      t_s   <- Time[near_end]    # Ziel = neuer Start
-      t_e   <- Time[near_start]  # Start = neues Ziel
-      valid <- sapply(t_s, function(t) any(t_e > t))
-      if (any(valid)) min(t_s[valid]) else as.POSIXct(NA)
-    },
-    end_crossing = {
-      t_s   <- Time[near_end]
-      t_e   <- Time[near_start]
-      valid <- sapply(t_s, function(t) any(t_e > t))
-      if (any(valid)) min(t_e[t_e > min(t_s[valid])]) else as.POSIXct(NA)
-    },
-    .groups = "drop"
-  ) |>
-  filter(!is.na(start_crossing))
-
-daten_route <- daten_ber |>
-  group_by(quelle_layer, Rasse_ID) |>
-  arrange(Time) |>
-  mutate(
-    # Segment zwischen aktuellem und nächstem Punkt
-    segment = st_sfc(mapply(function(p1, p2) {
-      st_linestring(rbind(st_coordinates(p1), st_coordinates(p2)))
-    }, geom, lead(geom), SIMPLIFY = FALSE), crs = st_crs(daten_ber)),
-    
-    crosses_start = lengths(st_intersects(segment, Start_Ende[1, ])) > 0,
-    crosses_end   = lengths(st_intersects(segment, Start_Ende[2, ])) > 0
-  )
 
 
 ##################################################################################
