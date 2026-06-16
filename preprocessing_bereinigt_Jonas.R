@@ -344,6 +344,376 @@ tmap_mode("view")
 tm_shape(daten_weg) +
   tm_dots(col = "route", palette = c("Wanderweg" = "green", "Strasse" = "blue"))
 
+
+##############################################################################
+##############################################################################
+# Zitpunkte wann Linien überquert wurden Ermittlen: 
+
+#Hilfsfunktion zum berechnen des wahrscheindlichsten ¨berschreitungs zeitpunkts erstellen. 
+kreuzungszeiten_berechnen <- function(df, linien_liste) {
+  crs_df <- st_crs(df)  
+  
+  imap(linien_liste, \(linie, name) {#üergibt der funktion den linien Nahmen mit, damit der später noch bekant ist / zur vwerfügung steht. 
+       linie_sfc <- st_sfc(linie, crs = crs_df)
+       
+       df |>
+         filter(lengths(st_intersects(segment, linie_sfc)) > 0) |>
+         mutate(
+           schnittpunkt = st_intersection(segment, linie_sfc),
+           dist_zum_sp  = as.numeric(st_distance(geom, schnittpunkt, by_element = TRUE)),
+           anteil       = dist_zum_sp / steplength, # Vergleicht distanz zum Schnitpunkt mit der gasamt dixtanz des segments. 
+           Time_kreuzung     = round(Time + anteil * timelag), # fügt den entsprechenden zeitanteil zur Segmentstartzeit dazu. 
+           linie_typ    = name
+         ) |>
+         st_drop_geometry() |>
+         select(quelle_layer, Rasse_ID, richtung, route, linie_typ, Time_kreuzung, Rasse) |>
+         group_by(quelle_layer, Rasse_ID, richtung) #|>
+         #slice_min(Time_kreuzung, n = 1, with_ties = FALSE) #nimt inm falle mehrerer überschreitungen die erste. 
+  }) |>
+    bind_rows()
+}
+
+# Linien Namen hinzufügen: 
+linien_ww <- setNames(
+  c(st_geometry(Start_Ende[1, ]), st_geometry(ww_messline), st_geometry(Start_Ende[2, ])),
+  seq(0,6,1)
+)
+
+# Wanderwegdaten auswählen und Kreuzungszeiten berechnen:
+kreuzungs_zeiten_ww<- daten_weg |>
+  filter(route == "Wanderweg") |>
+  kreuzungszeiten_berechnen(linien_ww)
+
+# Linien Namen hinzufügen: 
+linien_str <- setNames(
+  c(st_geometry(Start_Ende[1, ]), st_geometry(str_messline), st_geometry(Start_Ende[2, ])),
+  seq(0,6,1)
+)
+
+# Strassen-Daten auswählen und Kreuzungszeiten berechnen:
+kreuzungs_zeiten_str <- daten_weg |>
+  filter(route == "Strasse") |>
+  kreuzungszeiten_berechnen(linien_str)
+
+# Zusammenführen:
+kreuzungs_zeiten <- bind_rows(kreuzungs_zeiten_ww, kreuzungs_zeiten_str)
+
+
+########################################################################################
+########################################################################################
+# Rank Plot erstellen für einen Layer: 
+kreuzung <- kreuzungs_zeiten %>%
+  group_by(route, quelle_layer, richtung, linie_typ) %>%
+  mutate(
+    rang      = rank(Time_kreuzung),
+    rückstand = Time_kreuzung - min(Time_kreuzung)) %>% 
+  ungroup() %>% 
+  filter(quelle_layer == "08-05-A", richtung == "Hinweg")
+
+# interleave Funktion definieren (Hilfsfunktion, Geleiche hellikeit nicht nahe bei einander)
+interleave_idx <- function(n) {
+  c(seq(1, n, by = 2), seq(2, n, by = 2))
+}
+
+# Farbvektor (interleaved, nach mittlerem Rang) (jade Rasse bekommt Ihre Farbe)
+rasse_farben <- kreuzung %>%
+  group_by(Rasse_ID, Rasse) %>%
+  summarise(mean_rang = mean(rang, na.rm = TRUE), .groups = "drop") %>%
+  group_by(Rasse) %>%
+  arrange(mean_rang) %>%
+  mutate(
+    idx   = interleave_idx(n()),
+    farbe = case_when(
+      Rasse == "HO" ~ colorRampPalette(c("#7a1a1a", "#e6a8a8"))(n())[idx],
+      Rasse == "OB" ~ colorRampPalette(c("#1a1a7a", "#a8a8e6"))(n())[idx],
+      Rasse == "HW" ~ colorRampPalette(c("#1a6b1a", "#a8dba8"))(n())[idx]
+    )
+  ) %>%
+  ungroup()
+
+farb_vektor <- setNames(rasse_farben$farbe, rasse_farben$Rasse_ID)
+
+
+# Umwandeln des linienNamens in Numeric
+kreuzung <- kreuzung |>
+  mutate(
+    linie_typ = as.numeric(linie_typ)
+  )
+
+# Raknplot erstellen: 
+ggplot(kreuzung,
+       aes(x = linie_typ, y = rang, group = Rasse_ID, color = Rasse_ID)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzung, linie_typ == 0),
+            hjust = 1.2, size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzung, linie_typ == 6),
+            hjust = -0.2, size = 3) +
+  scale_color_manual(values = farb_vektor) +
+  scale_y_reverse(breaks = 1:16) +
+  scale_x_continuous(
+    breaks = 0:6,
+    labels = c("Start", paste("ML", 1:5), "Ziel")
+  ) +
+  labs(title = "Rangveränderung entlang des Weges",
+       x = NULL, y = "Rang (1 = Erster)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+
+
+###############################################################################
+# Rank Plot mit mittelwerten über den ganzen versuch: 
+
+# Rang pro Messlinie 
+kreuzung_sum <- kreuzungs_zeiten %>%
+  group_by(route, quelle_layer, richtung, linie_typ) %>%
+  mutate(
+    rang      = rank(Time_kreuzung),
+    rückstand = Time_kreuzung - min(Time_kreuzung)
+  ) %>%
+  group_by(route, Rasse_ID, linie_typ ) %>%
+  summarise(
+    mean_rang      = mean(rang),
+    mean_rückstand = mean(rückstand),
+    .groups = "drop"
+  )
+
+# Höhenprofil aus Wanderweg-Punkten aufbereiten:
+hoehen_profil <- daten_weg |>
+  filter(route == "Wanderweg", richtung == "Hinweg") |>
+  mutate(
+    linie_typ = (st_coordinates(st_transform(geom, 4326))[, 1] - S_E[1]) / diff(S_E) * 6
+  ) |>
+  st_drop_geometry() |>
+  filter(between(linie_typ, 0, 6)) |>
+  mutate(linie_typ = round(linie_typ, 1)) |>
+  group_by(linie_typ) |>
+  summarise(Altitude = mean(Altitude, na.rm = TRUE)) |>
+  arrange(linie_typ) |>
+  mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
+  
+
+hoehen_profil <- Wander_Weg |>
+    st_transform(4326) |>
+    st_coordinates() |>
+    as_tibble() |>
+    mutate(linie_typ = (X - S_E[1]) / diff(S_E) * 6) |>
+    filter(between(linie_typ, 0, 6)) |>
+    mutate(linie_typ = round(linie_typ, 1)) |>
+    group_by(linie_typ) |>
+    summarise(Altitude = mean(Z, na.rm = TRUE)) |>
+    arrange(linie_typ) |>
+    mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
+
+hoehen_profil <- alle_daten |>
+  filter(quelle_layer == "06-25-A", Hour < 17, Rasse_ID == "HO01") |>
+  filter(is.na(steplength) | steplength > 5) |>
+  mutate(
+    linie_typ = (st_coordinates(st_transform(geom, 4326))[, 1] - S_E[1]) / diff(S_E) * 6
+  ) |>
+  st_drop_geometry() |>
+  filter(between(linie_typ, 0, 6)) |>
+  mutate(linie_typ = round(linie_typ, 1)) |>
+  group_by(linie_typ) |>
+  summarise(Altitude = mean(Altitude, na.rm = TRUE)) |>
+  arrange(linie_typ) |>
+  mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
+
+# Rankplot mit Höhenprofil (Wanderweg, Mittelwerte):
+kreuzung_ww <- kreuzung_sum |>
+  filter(route == "Wanderweg") |>
+  mutate(linie_typ = as.numeric(linie_typ))
+
+ggplot(kreuzung_ww, aes(x = linie_typ, y = mean_rang, group = Rasse_ID, color = Rasse_ID)) +
+  geom_ribbon(data = hoehen_profil,
+              aes(x = linie_typ, ymin = hoehe_skaliert, ymax = 16, group = 1),
+              fill = "grey85", color = "grey60",
+              inherit.aes = FALSE) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzung_ww, linie_typ == 0),
+            hjust = 1.2, size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzung_ww, linie_typ == 6),
+            hjust = -0.2, size = 3) +
+  scale_color_manual(values = farb_vektor) +
+  scale_y_reverse(breaks = 1:16) +
+  scale_x_continuous(breaks = 0:6, labels = c("Start", paste("ML", 1:5), "Ziel")) +
+  labs(title = "Rangveränderung entlang des Wanderwegs", x = NULL, y = "Mittlerer Rang (1 = Erster)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+plot_rankprofil <- function(daten, y_var, hoehen_dat = hoehen_profil) {
+  y_name  <- rlang::as_label(enquo(y_var))
+  y_label <- if (y_name == "mean_rang") "Mittlerer Rang (1 = Erster)" else "Mittlerer Rückstand [s]"
+  route   <- unique(daten$route)
+  y_ceil  <- max(dplyr::pull(daten, {{ y_var }}), na.rm = TRUE) * 1.1
+  
+  ggplot(daten, aes(x = linie_typ, y = {{ y_var }}, group = Rasse_ID, color = Rasse_ID)) +
+    geom_ribbon(data = hoehen_dat,
+                aes(x = linie_typ, ymin = hoehe_skaliert, ymax = y_ceil, group = 1),
+                fill = "grey85", color = "grey60",
+                inherit.aes = FALSE) +
+    geom_line(linewidth = 1) +
+    geom_point(size = 3) +
+    geom_text(aes(label = Rasse_ID),
+              data = filter(daten, linie_typ == min(linie_typ)),
+              hjust = 1.2, size = 3) +
+    geom_text(aes(label = Rasse_ID),
+              data = filter(daten, linie_typ == max(linie_typ)),
+              hjust = -0.2, size = 3) +
+    scale_color_manual(values = farb_vektor) +
+    scale_y_reverse() +
+    scale_x_continuous(breaks = 0:6, labels = c("Start", paste("ML", 1:5), "Ziel")) +
+    labs(title = paste("Entwicklung entlang:", route), x = NULL, y = y_label) +
+    theme_minimal() +
+    theme(legend.position = "none")
+}
+
+# Aufruf:
+plot_rankprofil(kreuzung_ww,  mean_rang)
+plot_rankprofil(kreuzung_str, mean_rang)
+plot_rankprofil(kreuzung_ww,  mean_rückstand)
+
+
+
+
+
+
+#####################################################################################
+tm_shape(Wander_Weg)    + tm_lines(col = "black") +
+  tm_shape(Strasse)       + tm_lines(col = "blue")  +
+  tm_shape(Start_Ende[1, ]) + tm_lines(col = "green") +
+  tm_shape(Start_Ende[2, ]) + tm_lines(col = "red")+
+  tm_shape(ww_messline)   + tm_lines(col = "blue")   +
+  tm_shape(str_messline)  + tm_lines(col = "grey10")
+
+# Anwendung:
+kreuzungs_zeiten <- kreuzungszeiten_berechnen(daten_weg, linien_liste)
+
+# Hilfsfunktion kreuzungs zeitpunkte: 
+kreuzungen_SE1 <- daten_weg |>
+  filter(lengths(st_intersects(segment, linie)) > 0) |>
+  mutate(
+    schnittpunkt = st_intersection(segment, linie),
+    dist_zum_sp  = as.numeric(st_distance(st_startpoint(segment), schnittpunkt, by_element = TRUE)),
+    anteil       = pmin(1, pmax(0, dist_zum_sp / steplength)),
+    kreuzung     = round(Time + anteil * timelag)
+  ) |>
+  select(quelle_layer, Rasse_ID, richtung, route, kreuzung)
+
+linie <- st_geometry(Start_Ende[1, ])[[1]]
+
+# Vereinfachte Hilfsfunktion (nutzt vorhandene Spalten segment, steplength, timelag)
+kreuzungs_zeitpunkt <- function(df, linie) {
+  linie_sfc <- st_geometry(linie)
+  crs_data  <- st_crs(df$geom)
+  n         <- nrow(df)
+  
+  for (i in seq_len(n - 1)) {
+    seg_sfc <- st_sfc(df$segment[[i]], crs = crs_data)
+    
+    if (!st_intersects(seg_sfc, linie_sfc, sparse = FALSE)[1, 1]) next
+    
+    schnittpunkt <- st_intersection(seg_sfc, linie_sfc)
+    if (st_is_empty(schnittpunkt)) next
+    
+    seg_len <- df$steplength[i]
+    if (is.na(seg_len) || seg_len == 0) next
+    
+    c1     <- st_coordinates(df$segment[[i]])[1, 1:2]   # Startpunkt des Segments
+    sp     <- st_coordinates(schnittpunkt)[1, 1:2]
+    anteil <- max(0, min(1, sqrt(sum((sp - c1)^2)) / seg_len))
+    
+    return(round(df$Time[i] + anteil * df$timelag[i]))
+  }
+  
+  as.POSIXct(NA_real_, origin = "1970-01-01", tz = attr(df$Time[1], "tzone"))
+}
+
+kreuzungs_zeitpunkt <- function(df, linie) {
+  linie_sfc <- st_geometry(linie)
+  crs_data  <- st_crs(df$geom)
+  n         <- nrow(df)
+  
+  for (i in seq_len(n - 1)) {
+    seg_sfc <- st_sfc(df$segment[[i]], crs = crs_data)
+    
+    if (!st_intersects(seg_sfc, linie_sfc, sparse = FALSE)[1, 1]) next
+    
+    schnittpunkt <- st_intersection(seg_sfc, linie_sfc)
+    if (st_is_empty(schnittpunkt)) next
+    
+    seg_len <- df$steplength[i]
+    if (is.na(seg_len) || seg_len == 0) next
+    
+    c1     <- st_coordinates(df$segment[[i]])[1, 1:2]   # Startpunkt des Segments
+    sp     <- st_coordinates(schnittpunkt)[1, 1:2]
+    anteil <- max(0, min(1, sqrt(sum((sp - c1)^2)) / seg_len))
+    
+    return(round(df$Time[i] + anteil * df$timelag[i]))
+  }
+  
+  as.POSIXct(NA_real_, origin = "1970-01-01", tz = attr(df$Time[1], "tzone"))
+}
+
+
+
+# Start und End der Wanderung pro Tier feststellen:  
+S_E_Zeit_pro_Kuh <- daten_ber |>
+  mutate(
+    crosses_start = lengths(st_intersects(segment, Start_Ende[1, ])) > 0,
+    crosses_end   = lengths(st_intersects(segment, Start_Ende[2, ])) > 0
+  ) %>% 
+  filter(crosses_start | crosses_end) %>% # Nur einträge behalten die mindestens 1 = True haben
+  st_drop_geometry() %>% 
+  group_by(quelle_layer, Rasse_ID) |>
+  arrange(Time, .by_group = TRUE) |>
+  mutate(
+    start_hin_Weg = crosses_start & lead(crosses_end, default = FALSE),
+    start_rück_Weg = crosses_end & lead(crosses_start, default = FALSE),
+    end_hin_Weg  = lag(start_hin_Weg,  default = FALSE),
+    end_rück_Weg = lag(start_rück_Weg, default = FALSE)
+  )  
+
+# Linien beschriften:
+se_labeled  <- Start_Ende   |> mutate(linie_typ = paste0("SE_",     S_E))
+ww_labeled  <- ww_messline  |> mutate(linie_typ = paste0("WW_ML_",  messline))
+str_labeled <- str_messline |> mutate(linie_typ = paste0("STR_ML_", messline))
+
+# Kreuzungszeiten berechnen – gruppiert nach Layer, Kuh, Richtung:
+kreuzungs_zeiten <- daten_weg |>
+  arrange(Time) |>
+  group_by(quelle_layer, Rasse_ID, richtung, route) |>
+  group_modify(function(df, keys) {
+    
+    mess_labeled <- if (keys$route == "Wanderweg") ww_labeled else str_labeled
+    alle_linien  <- bind_rows(se_labeled, mess_labeled)
+    
+    tz    <- attr(df$Time[1], "tzone")
+    t_raw <- sapply(seq_len(nrow(alle_linien)), function(j) {
+      as.numeric(kreuzungs_zeitpunkt(df, alle_linien[j, ]))
+    })
+    
+    tibble(
+      linie_typ = alle_linien$linie_typ,
+      kreuzung  = as.POSIXct(t_raw, origin = "1970-01-01", tz = tz)
+    )
+  })
+
+
+
+
+
+
+############################################################################
+
 plot(daten_weg |> filter(quelle_layer == "06-30-M", richtung == "Rückweg"))
 
 
