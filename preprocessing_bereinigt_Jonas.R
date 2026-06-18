@@ -68,6 +68,9 @@ alle_daten <- alle_daten |>
 # Spalte mit Versuchsgruppe hinzufügen:
 alle_daten$Grupe <- substr(alle_daten$quelle_file, 1, 2)
 
+# Spalte mit Tageszeit: 
+alle_daten$Tageszeit <- substr(alle_daten$quelle_layer,7,7)
+
 # Hilfsfunktionen Definieren:
 distance_by_element <- function(later, now){
   as.numeric(
@@ -161,7 +164,7 @@ mess_linien_erstellen <- function(weg, lon_min = S_E[1], lon_max = S_E[2], n = 5
   gesamt_dist <- max(kum_dist)
   #Rechnet die Abschnittlängen aus: 
   ziel_dist <- seq(gesamt_dist / (n+1), gesamt_dist * n/(n+1), length.out = n)
-  mess_idx  <- sapply(ziel_dist, function(d) which.min(abs(kum_dist - d)))
+  mess_idx  <- sapply(ziel_dist, function(d) which.min(abs(kum_dist - d))) # Wählt das nächste Element aus. 
   #Erstellt die Linien: 
   lapply(seq_along(mess_idx), function(i) {
     senkrechte_linie(weg_coords, mess_idx[i], laenge = laenge, fenster = fenster)
@@ -366,7 +369,7 @@ kreuzungszeiten_berechnen <- function(df, linien_liste) {
            linie_typ    = name
          ) |>
          st_drop_geometry() |>
-         select(quelle_layer, Rasse_ID, richtung, route, linie_typ, Time_kreuzung, Rasse) |>
+         select(quelle_layer, Rasse_ID, richtung, route, linie_typ, Time_kreuzung, Rasse, Tageszeit) |>
          group_by(quelle_layer, Rasse_ID, richtung) #|>
          #slice_min(Time_kreuzung, n = 1, with_ties = FALSE) #nimt inm falle mehrerer überschreitungen die erste. 
   }) |>
@@ -462,7 +465,7 @@ ggplot(kreuzung,
   theme_minimal() +
   theme(legend.position = "none")
 
-
+mean
 
 
 ###############################################################################
@@ -470,17 +473,197 @@ ggplot(kreuzung,
 
 # Rang pro Messlinie 
 kreuzung_sum <- kreuzungs_zeiten %>%
-  group_by(route, quelle_layer, richtung, linie_typ) %>%
+  group_by(route, quelle_layer, richtung, linie_typ, Tageszeit) %>%
   mutate(
     rang      = rank(Time_kreuzung),
-    rückstand = Time_kreuzung - min(Time_kreuzung)
+    rückstand = Time_kreuzung - min(Time_kreuzung),
+    linie_typ = as.numeric(linie_typ)
   ) %>%
-  group_by(route, Rasse_ID, linie_typ ) %>%
+  group_by(route, Rasse_ID, linie_typ, Tageszeit, richtung ) %>%
   summarise(
     mean_rang      = mean(rang),
-    mean_rückstand = mean(rückstand),
+    mean_rückstand = as.numeric(mean(rückstand)),
     .groups = "drop"
   )
+
+# Library für höhenlagen lagen laden: 
+library(elevatr)
+
+# Funktion für Höhen Profile erstellen: 
+
+hoehenprofil <- function(rute){
+# Punkte extrahieren und auf Bereich zwischen Start und Ende filtern
+weg_pts <- rute |>
+  st_cast("POINT") |>
+  st_transform(4326)
+
+weg_pts <- weg_pts[
+  st_coordinates(weg_pts)[, 1] > S_E[1] &
+    st_coordinates(weg_pts)[, 1] < S_E[2],]
+
+# Höhe pro Punkt abrufen
+weg_pts <- get_elev_point(weg_pts, src = "aws", z = 12)
+
+# Kumulative Distanz berechnen, auf 0–6 skalieren
+hoehen_profil <- weg_pts |>
+  mutate(
+    dist           = as.numeric(st_distance(geometry, lag(geometry), by_element = TRUE)),
+    dist           = replace_na(dist, 0),
+    kum_dist       = cumsum(dist)
+  ) |>
+  st_drop_geometry() |>
+  transmute(
+    hoehe_m        = elevation,
+    linie_typ      = scales::rescale(kum_dist, to = c(0, 6)), #skalieren nach den Messlinen
+  )
+}
+
+hoehen_profil_ww <- hoehenprofil(Wander_Weg)
+hoehen_profil_str <- hoehenprofil(Strasse)
+
+#Funktion zum erstellen der Rankplots: 
+rank_plot <- function(daten, y_var, hoehen_dat) {
+  y_name     <- rlang::as_label(enquo(y_var)) #macht aus Variabelnnamen ein Teext 
+  y_label    <- if (y_name == "mean_rang") "Mittlerer Rang (1 = Erster)" else "Mittlerer Rückstand [s]"
+  route      <- unique(daten$route)
+  y_spal     <- max(dplyr::pull(daten, {{ y_var }}), na.rm = TRUE) # die als y Variable definierte Spalte aus dem Datensatz ziehen. 
+  y_max_plot <- y_spal * 1.4   # Platz für Höhenprofil unterhalb der Ränge
+  elev_min   <- min(hoehen_dat$hoehe_m, na.rm = TRUE)
+  elev_max   <- max(hoehen_dat$hoehe_m, na.rm = TRUE)
+  
+  #Höhendaten angepast an die Restlichen daten Skalieren 
+  hoehen_dat <- hoehen_dat |>
+      mutate(hoehe_skaliert = scales::rescale(hoehe_m, to = c(y_max_plot, y_spal )))
+  
+  # Plot drehen drehen fals Rückweg: 
+  richtung   <- unique(daten$richtung)
+  x_scale <- if (richtung == "Rückweg") {
+    scale_x_reverse(breaks = 0:6, labels = c("Wiese", paste("ML", 1:5), "Melkstand"))
+  } else {
+    scale_x_continuous(breaks = 0:6, labels = c("Wiese", paste("ML", 1:5), "Melkstand"))
+  }
+  
+  #Eigentlicher Plot ersten: 
+  ggplot(daten, aes(x = linie_typ, y = {{ y_var }}, group = Rasse_ID, color = Rasse_ID))+
+    geom_ribbon(
+        data        = hoehen_dat,
+        aes(x = linie_typ, ymin = hoehe_skaliert, ymax = y_max_plot, group = 1),
+        fill        = "grey85", color = "grey60",
+        inherit.aes = FALSE
+    )+
+    geom_line(linewidth = 1) +
+    geom_point(size = 3) +
+    geom_text(aes(label = Rasse_ID),
+              data = filter(daten, linie_typ == min(linie_typ)),
+              hjust = 1.2, size = 3) +
+    geom_text(aes(label = Rasse_ID),
+              data = filter(daten, linie_typ == max(linie_typ)),
+              hjust = -0.2, size = 3) +
+    scale_color_manual(values = farb_vektor) +
+    x_scale +
+    labs(title = paste("Entwicklung entlang:", route), x = NULL, y = y_label) +
+    theme_minimal() +
+    theme(legend.position = "none")+
+    scale_y_reverse(
+      limits   = c(y_max_plot, 0),
+      sec.axis = sec_axis(
+        transform = ~ scales::rescale(., from = c(y_spal, y_max_plot), to = c(elev_max, elev_min)),
+        name      = "Höhe (m ü. M.)",
+        breaks    = seq(ceiling(elev_min / 20) * 20, floor(elev_max / 20) * 20, by = 20)
+      )
+    )
+}
+
+
+# nach Rang:
+kreuzung_sum |>
+  filter(route == "Wanderweg", Tageszeit == "A", richtung == "Rückweg") |>
+  rank_plot( mean_rang, hoehen_profil_ww)
+
+kreuzung_sum |>
+  filter(route == "Wanderweg", Tageszeit == "A", richtung == "Hinweg") |>
+  rank_plot( mean_rang, hoehen_profil_ww)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "M", richtung == "Hinweg") |>
+  rank_plot( mean_rang, hoehen_profil_str)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "M", richtung == "Rückweg") |>
+  rank_plot( mean_rang, hoehen_profil_str)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "A", richtung == "Hinweg") |>
+  rank_plot( mean_rang, hoehen_profil_str)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "A", richtung == "Rückweg") |>
+  rank_plot( mean_rang, hoehen_profil_str)
+
+
+# Nach Zeit rückstand auf 1. Kuh
+kreuzung_sum |>
+  filter(route == "Wanderweg", Tageszeit == "A", richtung == "Rückweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_ww)
+
+kreuzung_sum |>
+  filter(route == "Wanderweg", Tageszeit == "A", richtung == "Hinweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_ww)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "M", richtung == "Hinweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_str)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "M", richtung == "Rückweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_str)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "A", richtung == "Hinweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_str)
+
+kreuzung_sum |>
+  filter(route == "Strasse", Tageszeit == "A", richtung == "Rückweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_str)
+
+# HW meist forne mit dabei 
+# HW06 und ev. HW13 Scheint das Leittier zu sein. 
+# Gruppe ist generell beim Melkstand näher bei einander als bei der Weide. 
+
+#################################################################################
+
+
+
+
+
+
+
+#################################################################################
+
+# Rankplot mit Höhenprofil (Wanderweg, Mittelwerte):
+kreuzung_ww <- kreuzung_sum |>
+  filter(route == "Wanderweg") |>
+  mutate(linie_typ = as.numeric(linie_typ))
+
+ggplot(kreuzung_ww, aes(x = linie_typ, y = mean_rang, group = Rasse_ID, color = Rasse_ID)) +
+  # #geom_ribbon(data = hoehen_profil_ww,
+  #             aes(x = linie_typ, ymin = hoehe_skaliert, ymax = 20, group = 1),
+  #             fill = "grey85", color = "grey60",
+  #             inherit.aes = FALSE) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzung_ww, linie_typ == 0),
+            hjust = 1.2, size = 3) +
+  geom_text(aes(label = Rasse_ID),
+            data = filter(kreuzung_ww, linie_typ == 6),
+            hjust = -0.2, size = 3) +
+  scale_color_manual(values = farb_vektor) +
+  scale_y_reverse(breaks = 1:20) +
+  scale_x_continuous(breaks = 0:6, labels = c("Weide", paste("ML", 1:5), "Melkstand")) +
+  labs(title = "Rangveränderung entlang des Wanderwegs", x = NULL, y = "Mittlerer Rang (1 = Erster)") +
+  theme_minimal() +
+  theme(legend.position = "none")
 
 # Höhenprofil aus Wanderweg-Punkten aufbereiten:
 hoehen_profil <- daten_weg |>
@@ -495,19 +678,19 @@ hoehen_profil <- daten_weg |>
   summarise(Altitude = mean(Altitude, na.rm = TRUE)) |>
   arrange(linie_typ) |>
   mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
-  
+
 
 hoehen_profil <- Wander_Weg |>
-    st_transform(4326) |>
-    st_coordinates() |>
-    as_tibble() |>
-    mutate(linie_typ = (X - S_E[1]) / diff(S_E) * 6) |>
-    filter(between(linie_typ, 0, 6)) |>
-    mutate(linie_typ = round(linie_typ, 1)) |>
-    group_by(linie_typ) |>
-    summarise(Altitude = mean(Z, na.rm = TRUE)) |>
-    arrange(linie_typ) |>
-    mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
+  st_transform(4326) |>
+  st_coordinates() |>
+  as_tibble() |>
+  mutate(linie_typ = (X - S_E[1]) / diff(S_E) * 6) |>
+  filter(between(linie_typ, 0, 6)) |>
+  mutate(linie_typ = round(linie_typ, 1)) |>
+  group_by(linie_typ) |>
+  summarise(Altitude = mean(Z, na.rm = TRUE)) |>
+  arrange(linie_typ) |>
+  mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
 
 hoehen_profil <- alle_daten |>
   filter(quelle_layer == "06-25-A", Hour < 17, Rasse_ID == "HO01") |>
@@ -523,33 +706,7 @@ hoehen_profil <- alle_daten |>
   arrange(linie_typ) |>
   mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
 
-# Rankplot mit Höhenprofil (Wanderweg, Mittelwerte):
-kreuzung_ww <- kreuzung_sum |>
-  filter(route == "Wanderweg") |>
-  mutate(linie_typ = as.numeric(linie_typ))
-
-ggplot(kreuzung_ww, aes(x = linie_typ, y = mean_rang, group = Rasse_ID, color = Rasse_ID)) +
-  geom_ribbon(data = hoehen_profil,
-              aes(x = linie_typ, ymin = hoehe_skaliert, ymax = 16, group = 1),
-              fill = "grey85", color = "grey60",
-              inherit.aes = FALSE) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 3) +
-  geom_text(aes(label = Rasse_ID),
-            data = filter(kreuzung_ww, linie_typ == 0),
-            hjust = 1.2, size = 3) +
-  geom_text(aes(label = Rasse_ID),
-            data = filter(kreuzung_ww, linie_typ == 6),
-            hjust = -0.2, size = 3) +
-  scale_color_manual(values = farb_vektor) +
-  scale_y_reverse(breaks = 1:16) +
-  scale_x_continuous(breaks = 0:6, labels = c("Start", paste("ML", 1:5), "Ziel")) +
-  labs(title = "Rangveränderung entlang des Wanderwegs", x = NULL, y = "Mittlerer Rang (1 = Erster)") +
-  theme_minimal() +
-  theme(legend.position = "none")
-
-
-plot_rankprofil <- function(daten, y_var, hoehen_dat = hoehen_profil) {
+rank_plot <- function(daten, y_var, hoehen_dat) {
   y_name  <- rlang::as_label(enquo(y_var))
   y_label <- if (y_name == "mean_rang") "Mittlerer Rang (1 = Erster)" else "Mittlerer Rückstand [s]"
   route   <- unique(daten$route)
@@ -570,534 +727,16 @@ plot_rankprofil <- function(daten, y_var, hoehen_dat = hoehen_profil) {
               hjust = -0.2, size = 3) +
     scale_color_manual(values = farb_vektor) +
     scale_y_reverse() +
-    scale_x_continuous(breaks = 0:6, labels = c("Start", paste("ML", 1:5), "Ziel")) +
+    scale_x_continuous(breaks = 0:6, labels = c("Wiese", paste("ML", 1:5), "Melkstand")) +
     labs(title = paste("Entwicklung entlang:", route), x = NULL, y = y_label) +
     theme_minimal() +
     theme(legend.position = "none")
 }
 
 # Aufruf:
-plot_rankprofil(kreuzung_ww,  mean_rang)
+plot_rankprofil(kreuzung_ww,  mean_rang, hoehen_profil_ww)
 plot_rankprofil(kreuzung_str, mean_rang)
 plot_rankprofil(kreuzung_ww,  mean_rückstand)
 
 
-
-
-
-
-#####################################################################################
-tm_shape(Wander_Weg)    + tm_lines(col = "black") +
-  tm_shape(Strasse)       + tm_lines(col = "blue")  +
-  tm_shape(Start_Ende[1, ]) + tm_lines(col = "green") +
-  tm_shape(Start_Ende[2, ]) + tm_lines(col = "red")+
-  tm_shape(ww_messline)   + tm_lines(col = "blue")   +
-  tm_shape(str_messline)  + tm_lines(col = "grey10")
-
-# Anwendung:
-kreuzungs_zeiten <- kreuzungszeiten_berechnen(daten_weg, linien_liste)
-
-# Hilfsfunktion kreuzungs zeitpunkte: 
-kreuzungen_SE1 <- daten_weg |>
-  filter(lengths(st_intersects(segment, linie)) > 0) |>
-  mutate(
-    schnittpunkt = st_intersection(segment, linie),
-    dist_zum_sp  = as.numeric(st_distance(st_startpoint(segment), schnittpunkt, by_element = TRUE)),
-    anteil       = pmin(1, pmax(0, dist_zum_sp / steplength)),
-    kreuzung     = round(Time + anteil * timelag)
-  ) |>
-  select(quelle_layer, Rasse_ID, richtung, route, kreuzung)
-
-linie <- st_geometry(Start_Ende[1, ])[[1]]
-
-# Vereinfachte Hilfsfunktion (nutzt vorhandene Spalten segment, steplength, timelag)
-kreuzungs_zeitpunkt <- function(df, linie) {
-  linie_sfc <- st_geometry(linie)
-  crs_data  <- st_crs(df$geom)
-  n         <- nrow(df)
-  
-  for (i in seq_len(n - 1)) {
-    seg_sfc <- st_sfc(df$segment[[i]], crs = crs_data)
-    
-    if (!st_intersects(seg_sfc, linie_sfc, sparse = FALSE)[1, 1]) next
-    
-    schnittpunkt <- st_intersection(seg_sfc, linie_sfc)
-    if (st_is_empty(schnittpunkt)) next
-    
-    seg_len <- df$steplength[i]
-    if (is.na(seg_len) || seg_len == 0) next
-    
-    c1     <- st_coordinates(df$segment[[i]])[1, 1:2]   # Startpunkt des Segments
-    sp     <- st_coordinates(schnittpunkt)[1, 1:2]
-    anteil <- max(0, min(1, sqrt(sum((sp - c1)^2)) / seg_len))
-    
-    return(round(df$Time[i] + anteil * df$timelag[i]))
-  }
-  
-  as.POSIXct(NA_real_, origin = "1970-01-01", tz = attr(df$Time[1], "tzone"))
-}
-
-kreuzungs_zeitpunkt <- function(df, linie) {
-  linie_sfc <- st_geometry(linie)
-  crs_data  <- st_crs(df$geom)
-  n         <- nrow(df)
-  
-  for (i in seq_len(n - 1)) {
-    seg_sfc <- st_sfc(df$segment[[i]], crs = crs_data)
-    
-    if (!st_intersects(seg_sfc, linie_sfc, sparse = FALSE)[1, 1]) next
-    
-    schnittpunkt <- st_intersection(seg_sfc, linie_sfc)
-    if (st_is_empty(schnittpunkt)) next
-    
-    seg_len <- df$steplength[i]
-    if (is.na(seg_len) || seg_len == 0) next
-    
-    c1     <- st_coordinates(df$segment[[i]])[1, 1:2]   # Startpunkt des Segments
-    sp     <- st_coordinates(schnittpunkt)[1, 1:2]
-    anteil <- max(0, min(1, sqrt(sum((sp - c1)^2)) / seg_len))
-    
-    return(round(df$Time[i] + anteil * df$timelag[i]))
-  }
-  
-  as.POSIXct(NA_real_, origin = "1970-01-01", tz = attr(df$Time[1], "tzone"))
-}
-
-
-
-# Start und End der Wanderung pro Tier feststellen:  
-S_E_Zeit_pro_Kuh <- daten_ber |>
-  mutate(
-    crosses_start = lengths(st_intersects(segment, Start_Ende[1, ])) > 0,
-    crosses_end   = lengths(st_intersects(segment, Start_Ende[2, ])) > 0
-  ) %>% 
-  filter(crosses_start | crosses_end) %>% # Nur einträge behalten die mindestens 1 = True haben
-  st_drop_geometry() %>% 
-  group_by(quelle_layer, Rasse_ID) |>
-  arrange(Time, .by_group = TRUE) |>
-  mutate(
-    start_hin_Weg = crosses_start & lead(crosses_end, default = FALSE),
-    start_rück_Weg = crosses_end & lead(crosses_start, default = FALSE),
-    end_hin_Weg  = lag(start_hin_Weg,  default = FALSE),
-    end_rück_Weg = lag(start_rück_Weg, default = FALSE)
-  )  
-
-# Linien beschriften:
-se_labeled  <- Start_Ende   |> mutate(linie_typ = paste0("SE_",     S_E))
-ww_labeled  <- ww_messline  |> mutate(linie_typ = paste0("WW_ML_",  messline))
-str_labeled <- str_messline |> mutate(linie_typ = paste0("STR_ML_", messline))
-
-# Kreuzungszeiten berechnen – gruppiert nach Layer, Kuh, Richtung:
-kreuzungs_zeiten <- daten_weg |>
-  arrange(Time) |>
-  group_by(quelle_layer, Rasse_ID, richtung, route) |>
-  group_modify(function(df, keys) {
-    
-    mess_labeled <- if (keys$route == "Wanderweg") ww_labeled else str_labeled
-    alle_linien  <- bind_rows(se_labeled, mess_labeled)
-    
-    tz    <- attr(df$Time[1], "tzone")
-    t_raw <- sapply(seq_len(nrow(alle_linien)), function(j) {
-      as.numeric(kreuzungs_zeitpunkt(df, alle_linien[j, ]))
-    })
-    
-    tibble(
-      linie_typ = alle_linien$linie_typ,
-      kreuzung  = as.POSIXct(t_raw, origin = "1970-01-01", tz = tz)
-    )
-  })
-
-
-
-
-
-
-############################################################################
-
-plot(daten_weg |> filter(quelle_layer == "06-30-M", richtung == "Rückweg"))
-
-
-
-# S_E_Zeit_pro_Kuh |>
-#   group_by(quelle_layer, Rasse_ID) |>
-#   summarise(
-#     hin_weg  = any(start_hin_Weg),
-#     rück_weg = any(start_rück_Weg),
-#     .groups = "drop"
-#   ) |>
-#   pivot_longer(cols = c(hin_weg, rück_weg), names_to = "richtung", values_to = "erfolgt") |>
-#   ggplot(aes(x = Rasse_ID, y = quelle_layer, fill = erfolgt)) +
-#   geom_tile(color = "white") +
-#   facet_wrap(~ richtung) +
-#   scale_fill_manual(values = c("TRUE" = "green", "FALSE" = "red")) +
-#   theme_minimal() +
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-# 
-# daten_ber |>
-#   filter(Rasse_ID == "HW12", quelle_layer == "06-29-M") |>
-#   ggplot() +
-#   geom_sf(aes(color = Time)) +
-#   geom_sf(data = Start_Ende[1, ], color = "green", linewidth = 1) +
-#   geom_sf(data = Start_Ende[2, ], color = "red",   linewidth = 1) +
-#   theme_minimal()
-
-# Auf annähernd realistische Zeiten kürzen
-start_M <- as_hms("04:00:00")
-end_M   <- as_hms("10:00:00")
-start_A <- as_hms("14:00:00")
-end_A   <- as_hms("20:00:00")
-
-daten_ber  <- daten_ber  |>
-  mutate(HMS = as_hms(HMS)) %>% 
-  filter(
-    (endsWith(quelle_layer, "M") & HMS >= start_M & HMS <= end_M) |
-      (endsWith(quelle_layer, "A") & HMS >= start_A & HMS <= end_A)
-  )
-
-# Alle Daten die mit weniger alls 4 Sateliten bestimmt wurden Entfernen. (min 4 Sateliten sind für eine genaue position notwendig.) 
-daten_ber  <- daten_ber [daten_ber $NSat >"3",]
-# NA daten entfernen: 
-daten_ber <- daten_ber[!is.na(daten_ber$NSat),]
-
-# Daten Gruppe 1 für die weitera Analyse auswählen: 
-daten_ber <- daten_ber [daten_ber$Grupe == "R1",]
-# daten_ber <- daten_ber [daten_ber$Grupe == "R2",]
-# daten_ber <- daten_ber [daten_ber$Grupe == "R3",]
-
-# Daten entfernen mit unrelistischen geshwindikeiten: 
-# Hilfsfunktionen Definieren:
-distance_by_element <- function(later, now){
-  as.numeric(
-    st_distance(later, now, by_element = TRUE)
-  )
-}
-
-# Unrelistische ditanzen ZwischenPunkten entfernen (20s für 200m, mehr als 30Kmh im alpinengelände / oder zulange keine Messung das es aussagekräftig ist)
-repeat {
-  n <- nrow(daten_ber)
-  cat("Punkte:", n, "\n")  # zeigt Fortschritt
-  
-  daten_ber <- daten_ber |>
-    group_by(quelle_layer, Rasse_ID) |>
-    mutate(
-      steplength = distance_by_element(lead(geom), geom)
-    ) |>
-    filter(
-      (is.na(steplength)      | steplength      < 200) &
-      (is.na(lag(steplength)) | lag(steplength) < 200) 
-    )
-  if (nrow(daten_ber) == n) break
-}
-
-
-daten_ber <- daten_ber |>
-  group_by(quelle_layer, Rasse_ID) |>
-  mutate(
-    steplength = distance_by_element(lead(geom), geom)
-  ) |>
-  filter(
-    (is.na(steplength)      | steplength      < 200) &
-      (is.na(lag(steplength)) | lag(steplength) < 200) 
-  )
-
-# Hilfsfunktionen Definieren:
-distance_by_element <- function(later, now){
-  as.numeric(
-    st_distance(later, now, by_element = TRUE)
-  )
-}
-
-# Hilofsfunktion um ein segment aus 2 Punkten als Linestring zu definieren. 
-segment <- function(p1, p2) {
-  tryCatch(
-    st_linestring(rbind(st_coordinates(p1), st_coordinates(p2))),
-    error = function(e) st_linestring()  # falls Fehler → leere Linie zurückgeben
-  )
-}
-
-daten_route <- daten_ber |>
-  group_by(quelle_layer, Rasse_ID) |>
-  arrange(Time, .by_group = TRUE) |>
-  mutate(
-    # Segment zwischen aktuellem und nächstem Punkt
-    segment = st_sfc(mapply( segment, geom, lead(geom), SIMPLIFY = FALSE), 
-                     crs = st_crs(daten_ber)),
-    
-    crosses_start = lengths(st_intersects(segment, Start_Ende[1, ])) > 0,
-    crosses_end   = lengths(st_intersects(segment, Start_Ende[2, ])) > 0
-  )
-
-head(daten_route)
-
-##############################################################################################
-
-
-
-
-##################################################################################
-
-
-library("sf")
-library("tidyverse")
-library("dplyr")
-library("purrr")
-library("stringr")
-library("tmap")
-library("lubridate")
-
-################################################################################
-# Daten Einlesen:
-
-# Eine liste aller .gpkg Dateien im Ordner erstellen:
-gpkg_files <- list.files("GPS Path data/", pattern = "\\.gpkg$", full.names = TRUE)
-
-
-# Hilfsfunktion: liest einen Layer ein.
-f_layer <- function(filename,layer) { #Erstellt eine Funktion mit dem Nahmen f_layer, welche eiun filename und ein layername als Imput braucht.
-  st_read(filename, layer = layer, quiet = TRUE) |> # Liest einen Layer ein. 
-    mutate(
-      quelle_file  = basename(filename), # Fügt den Dateinamen in einer Spalte hinzu.
-      quelle_layer  = layer # Fügt den Layername in einer Spalte hinzu.
-    )
-}
-
-# 2.Hilfsfunktion Liest ein File ein (alle Layer) und erstellt darau ein Datea Frame im long format.
-f_files <- function(filename) { #Erstellt eine Funktion mit dem Nahmen f_file welche eiun filename als Imput braucht.
-  layer_names <- st_layers(filename)$name # Listet alle Layer auf welche im file enthalten sind.
-  map_dfr(layer_names, \(layer) f_layer(filename, layer)) # Nimt die Liste der Layer und führt füe jedes element die Funktion f_layer aus. (\(layer)´weil map_dfr eigendlich eine Funktion mit nur einem Imput erwartet.)
-}
-
-# Alle Date Einlesen in eine grosse Tabelle (long Format)
-Kuh_Daten <- map_dfr(gpkg_files, f_files) #Führt die Einlese Funktion für alle gpkg Files durch und fügt die Daten in eiener einzigen Tabelle zusammen. 
-
-###############################################################################
-###############################################################################
-# Datenstruktur 
-
-alle_daten <- Kuh_Daten |>
-  mutate(
-    Time = as.POSIXct(Time, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
-  )
-
-###############################################################################
-# Konvinience Spalten hinzufügen: 
-
-# RASSE 
-alle_daten <- alle_daten |>
-  mutate(
-    Rasse = str_extract(quelle_file, "(?<=-)[A-Z]{2}")
-  )
-
-# ID pro Kuh und Rasse (Bsp.: R1-HO01 = 01)
-alle_daten <- alle_daten |> 
-  mutate(ID = str_extract(quelle_file, "\\d{2}(?=\\.gpkg)")
-  )
-
-# Rasse und ID 
-alle_daten <- alle_daten |> 
-  mutate(Rasse_ID = str_extract(quelle_file, "(?<=-)\\w+(?=\\.gpkg)")
-  )
-
-# Time > HMS = nur hour, minute und seconds
-alle_daten <- alle_daten |> 
-  mutate(HMS = str_extract(alle_daten$Time, "\\d{2}:\\d{2}:\\d{2}"))
-
-
-# Spalte mit Versuchsgruppe hinzufügen:
-alle_daten$Grupe <- substr(alle_daten$quelle_file, 1, 2)
-
-
-####################################################################################
-####################################################################################
-# Datenbereinigung Teil 1
-
-# Unnötige Layer entfernen:
-daten_ber <- alle_daten[!endsWith(alle_daten$quelle_layer, "lns"), ]
-
-# Der datensatz enthält am 14.7 Morgens nur eine Kuh, weglassen: 
-daten_ber <- daten_ber[daten_ber$quelle_layer != "07-14-M", ]
-
-
-
-
-# Auf annähernd realistische Zeiten kürzen
-start_M <- as_hms("04:00:00")
-end_M   <- as_hms("10:00:00")
-start_A <- as_hms("14:00:00")
-end_A   <- as_hms("20:00:00")
-
-daten_ber  <- daten_ber  |>
-  mutate(HMS = as_hms(HMS)) %>% 
-  filter(
-    (endsWith(quelle_layer, "M") & HMS >= start_M & HMS <= end_M) |
-      (endsWith(quelle_layer, "A") & HMS >= start_A & HMS <= end_A)
-  )
-
-# Alle Daten die mit weniger alls 4 Sateliten bestimmt wurden Entfernen. (min 4 Sateliten sind für eine genaue position notwendig.) 
-daten_ber  <- daten_ber [daten_ber $NSat >"3",]
-# NA daten entfernen: 
-daten_ber <- daten_ber[!is.na(daten_ber$NSat),]
-
-# Daten Gruppe 1 für die weitera Analyse auswählen: 
-daten_ber <- daten_ber [daten_ber$Grupe == "R1",]
-# daten_ber <- daten_ber [daten_ber$Grupe == "R2",]
-# daten_ber <- daten_ber [daten_ber$Grupe == "R3",]
-
-# Daten entfernen mit unrelistischen geshwindikeiten: 
-# Hilfsfunktionen Definieren:
-distance_by_element <- function(later, now){
-  as.numeric(
-    st_distance(later, now, by_element = TRUE)
-  )
-}
-
-# Unrelistische ditanzen ZwischenPunkten entfernen (20s für 200m, mehr als 30Kmh im alpinengelände / oder zulange keine Messung das es aussagekräftig ist)
-repeat {
-  n <- nrow(daten_ber)
-  cat("Punkte:", n, "\n")  # zeigt Fortschritt
-  
-  daten_ber <- daten_ber |>
-    group_by(quelle_layer, Rasse_ID) |>
-    mutate(
-      steplength = distance_by_element(lead(geom), geom)
-    ) |>
-    filter(
-      (is.na(steplength)      | steplength      < 200) &
-        (is.na(lag(steplength)) | lag(steplength) < 200) 
-    )
-  if (nrow(daten_ber) == n) break
-}
-
-
-daten_ber <- daten_ber |>
-  group_by(quelle_layer, Rasse_ID) |>
-  mutate(
-    steplength = distance_by_element(lead(geom), geom)
-  ) |>
-  filter(
-    (is.na(steplength)      | steplength      < 200) &
-      (is.na(lag(steplength)) | lag(steplength) < 200) 
-  )
-
-#####################################################
-#####################################################
-###### Weg definieren: ############################
-
-# Wanderweg definieren: 
-Wander_Weg <-  daten_ber |>
-  filter(quelle_layer == "06-25-A" & #Erste Kuh die diesen Weg genommen hat dient als grundlage
-           Hour < 17 &
-           Rasse_ID == "HO01"
-  ) %>% 
-  ungroup() %>% 
-  arrange(Time) %>%
-  filter(is.na(steplength) | steplength > 5) %>%   # mind. 5m Bewegung / Weg glätten
-  summarise(geometry = st_cast(st_combine(geom), "LINESTRING"))
-
-plot(Wander_Weg)
-
-# Strasse definieren: 
-Strasse <-  daten_ber |>
-  filter(quelle_layer == "06-27-M" & #Erste Kuh die diesen Weg genommen hat dient als grundlage
-           Hour < 7&
-           Rasse_ID == "HO01"
-  ) %>% 
-  ungroup() %>% 
-  arrange(Time) %>%
-  filter(is.na(steplength) | steplength > 5) %>% 
-  summarise(geometry = st_cast(st_combine(geom), "LINESTRING"))
-
-# Hilfsfunktion für Senkrechte Linien: 
-senkrechte_linie <- function(weg_coords, idx, laenge = 100, fenster = 3) {
-  idx1 <- idx - fenster # Punkte am anfuang und ende das Fensters ermitteln.
-  idx2 <- idx + fenster
-  dx <- weg_coords[idx2, 1] - weg_coords[idx1, 1] #Veränderung in x und y richtung feststellen.
-  dy <- weg_coords[idx2, 2] - weg_coords[idx1, 2]
-  len <- sqrt(dx^2 + dy^2) # Länge des Vektors ermitteln.
-  perp_x <- -dy / len # Vektor drehung und normierung auf Länge 1. 
-  perp_y <-  dx / len
-  mx <- weg_coords[idx, 1] #Position der Line in der mitte des Fensters festlegen. 
-  my <- weg_coords[idx, 2]
-  st_linestring(rbind( # Linie einfügen
-    c(mx - perp_x * laenge/2, my - perp_y * laenge/2),
-    c(mx + perp_x * laenge/2, my + perp_y * laenge/2)
-  ))
-}
-
-# Koordinaten System transformieren: 
-str_coords      <- st_coordinates(Strasse$geometry[[1]])
-str_coords_4326 <- st_coordinates(st_transform(Strasse, 4326))
-
-# Koordinaten für Start und Ende des Weges ab Karte festgelegt:
-S_E <- c(9.7885,9.8000)
-#Nächster Punkt zu dieser Koordinate finden: 
-S_E_idx  <- sapply(S_E, function(d) which.min(abs(str_coords_4326[, 1] - d)))
-
-# Start und Endline genirieren: 
-Start_Ende <- lapply(seq_along(S_E_idx), function(i) {
-  senkrechte_linie(str_coords, S_E_idx[i], laenge = 500, fenster = 3)
-}) %>%
-  st_sfc(crs = st_crs(2056)) %>%
-  st_sf(S_E = 1:2, geometry = .)
-
-# Hilfs Funktion zum Messlinien erstellen:
-mess_linien_erstellen <- function(weg, lon_min = 9.7885, lon_max = 9.8000, n = 5, laenge = 100, fenster = 3) {
-  # Wählt nur den weg aus:
-  weg_gefiltert <- weg |>
-    st_transform(4326) |>
-    st_cast("POINT") |>
-    filter(st_coordinates(geometry)[, 1] < lon_max,
-           st_coordinates(geometry)[, 1] > lon_min) |>
-    st_transform(2056)
-  #Liest die Kordinaten aus
-  weg_coords  <- st_coordinates(weg_gefiltert$geometry)
-  # Berechenet die Kummulierte distanz:
-  kum_dist    <- c(0, cumsum(sqrt(diff(weg_coords[,1])^2 + diff(weg_coords[,2])^2)))
-  gesamt_dist <- max(kum_dist)
-  #Rechnet die Abschnittlängen aus: 
-  ziel_dist <- seq(gesamt_dist / (n+1), gesamt_dist * n/(n+1), length.out = n)
-  mess_idx  <- sapply(ziel_dist, function(d) which.min(abs(kum_dist - d)))
-  #Erstellt die Linien: 
-  lapply(seq_along(mess_idx), function(i) {
-    senkrechte_linie(weg_coords, mess_idx[i], laenge = laenge, fenster = fenster)
-  }) %>%
-    st_sfc(crs = st_crs(weg)) %>% # Setzt das richtige koordinatensystem
-    st_sf(messline = 1:n, geometry = .) #Erstellt eine Liste von geometrie Objekten. 
-}
-
-# Messlinien erstellen: 
-ww_messline <- mess_linien_erstellen(Wander_Weg)
-
-str_messline <- mess_linien_erstellen(Strasse)
-
-# Weg + Start und Ende und Messlinein Plotten. 
-tmap_mode("view")
-
-tm_shape(Wander_Weg)    + tm_lines(col = "black") +
-  tm_shape(Strasse)       + tm_lines(col = "blue")  +
-  tm_shape(Start_Ende[1, ]) + tm_lines(col = "green") +
-  tm_shape(Start_Ende[2, ]) + tm_lines(col = "red")+
-  tm_shape(ww_messline)   + tm_lines(col = "blue")   +
-  tm_shape(str_messline)  + tm_lines(col = "grey10")
-
-# Hilofsfunktion um ein segment aus 2 Punkten als Linestring zu definieren. 
-segment <- function(p1, p2) {
-  tryCatch(
-    st_linestring(rbind(st_coordinates(p1), st_coordinates(p2))),
-    error = function(e) st_linestring()  # falls Fehler → leere Linie zurückgeben
-  )
-}
-
-daten_route <- daten_ber |>
-  group_by(quelle_layer, Rasse_ID) |>
-  arrange(Time, .by_group = TRUE) |>
-  mutate(
-    # Segment zwischen aktuellem und nächstem Punkt
-    segment = st_sfc(mapply( segment, geom, lead(geom), SIMPLIFY = FALSE), 
-                     crs = st_crs(daten_ber)),
-    
-    crosses_start = lengths(st_intersects(segment, Start_Ende[1, ])) > 0,
-    crosses_end   = lengths(st_intersects(segment, Start_Ende[2, ])) > 0
-  )
-
-head(daten_route)
+daten_weg$Tageszeit <- substr(daten_weg$quelle_layer,7,7)
