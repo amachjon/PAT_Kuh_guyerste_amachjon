@@ -722,7 +722,7 @@ set.seed(123)
 # Kluster Berechenen:
 cluster_results <- liste_positionen |>
   st_drop_geometry() |>
-  group_by(quelle_layer, richtung, ref_linie, ref_time) |>
+  group_by(ref_time) |>
   group_modify(~ { # pro gruppe folgendes ausführen:
     coords   <- st_coordinates(st_sfc(.x$pos_ref_time)) 
     
@@ -737,49 +737,98 @@ cluster_results <- liste_positionen |>
   ungroup()
 
 
+# Matrix welche kühe oft zusammen sind erstellen 
+alle_kuehe <- sort(unique(cluster_results$Rasse_ID)) # Anzahl unterschidliche Kühe feststellen
+clu_matrix  <- matrix(0L, nrow = length(alle_kuehe), ncol = length(alle_kuehe), # Lehre (gefüllt mit 0en) Matrix erstellen 
+              dimnames = list(alle_kuehe, alle_kuehe))
+
+
+cluster_results |>
+  group_by(ref_time) |>
+  group_walk(~ { #wendet folgendes auf alle oben definierten gruppen an 
+    idx <- .x$Rasse_ID  # gibt die RassenID zurück
+    mat <- (outer(.x$cluster, .x$cluster, "==") + 0L) # Schaut welche matchen und wandelt True/Fals in 1 und 0 um
+    dimnames(mat) <- list(idx, idx) # Beschriften der Zeilen und spalten mit den RassenIDs
+    clu_matrix[idx, idx] <<- clu_matrix[idx, idx] + mat #Aktualisiert die matrix (in dem es die resultate der neusten Gruppe dazu adiert)
+  })
+
+# Kuh mit sich selbst entfernen
+diag(clu_matrix) <- 0   
+
+# Library laden
 library(igraph)
 
-  # 1. Co-occurrence Matrix
-  alle_kuehe <- sort(unique(cluster_results$Rasse_ID))
-  co_matrix  <- matrix(0L,
-                       nrow = length(alle_kuehe), ncol = length(alle_kuehe),
-                       dimnames = list(alle_kuehe, alle_kuehe))
+# Daten für den Graphen extrahieren: 
+g <- graph_from_adjacency_matrix(clu_matrix, mode     = "upper", # nur die obere hälfte der Matrix verwenden
+    weighted = TRUE, diag     = FALSE)
 
-  cluster_results |>
-    filter(!is.na(cluster)) |>
-    group_by(quelle_layer, richtung, ref_linie, ref_time) |>
-    group_walk(~ {
-      idx <- .x$Rasse_ID
-      mat <- (outer(.x$cluster, .x$cluster, "==") + 0L)
-      dimnames(mat) <- list(idx, idx)
-      co_matrix[idx, idx] <<- co_matrix[idx, idx] + mat
-    })
+# Knotenfarben nach Rasse
+V(g)$color <- case_when(
+  str_detect(V(g)$name, "^HO") ~ "#e6a8a8",
+  str_detect(V(g)$name, "^OB") ~ "#a8a8e6",
+  str_detect(V(g)$name, "^HW") ~ "#a8dba8",
+  TRUE ~ "grey"
+)
 
-  diag(co_matrix) <- 0   # Kuh mit sich selbst entfernen
+# Seed Setzen (für wiederholbarkeit)
+set.seed(123)
 
-  # 2. Graph erstellen
-  g <- graph_from_adjacency_matrix(co_matrix,
-                                   mode     = "undirected",
-                                   weighted = TRUE,
-                                   diag     = FALSE)
+# Graph erstellen: 
+plot(g,
+     layout       = layout_with_fr(g),
+     edge.width   = E(g)$weight / max(E(g)$weight) * 10,
+     vertex.color = V(g)$color,
+     vertex.label = V(g)$name,
+     vertex.size  = 25,
+     vertex.label.cex = 0.8,
+     main = "Wie oft waren Kühe zusammen in derselben Gruppe")
 
-  # Knotenfarben nach Rasse
-  V(g)$color <- case_when(
-    str_detect(V(g)$name, "^HO") ~ "#e6a8a8",
-    str_detect(V(g)$name, "^OB") ~ "#a8a8e6",
-    str_detect(V(g)$name, "^HW") ~ "#a8dba8",
-    TRUE ~ "grey"
-  )
+#######################################################################################
+######################################################################################
+# Mit Distanzen: 
 
-  # 3. Visualisierung
-  plot(g,
-       layout       = layout_with_fr(g),
-       edge.width   = E(g)$weight / max(E(g)$weight) * 8,
-       vertex.color = V(g)$color,
-       vertex.label = V(g)$name,
-       vertex.size  = 25,
-       vertex.label.cex = 0.8,
-       main = "Wie oft waren Kühe zusammen in derselben Gruppe")
+# Matrix mit st_is_within_distance
+dist_matrix  <- matrix(0L, nrow = length(alle_kuehe), ncol = length(alle_kuehe), # Lehre (gefüllt mit 0en) Matrix erstellen 
+                     dimnames = list(alle_kuehe, alle_kuehe))
+
+
+liste_positionen |>
+  st_drop_geometry() |>
+  group_by(ref_time) |>
+  group_walk(~ {
+    idx    <- .x$Rasse_ID
+    pos_sf <- st_sf(geometry = st_sfc(.x$pos_ref_time, crs = 2056))
+    
+    # Welche Kühe sind innerhalb 5m?
+    nah <- st_is_within_distance(pos_sf, dist = 5, sparse = FALSE) + 0L
+    dimnames(nah)  <- list(idx, idx)
+    
+    dist_matrix [idx, idx] <<- dist_matrix [idx, idx] + nah
+  })
+
+diag(dist_matrix ) <- 0
+
+# Graph erstellen und plotten
+g_dist <- graph_from_adjacency_matrix(dist_matrix,
+                                      mode     = "upper",
+                                      weighted = TRUE,
+                                      diag     = FALSE)
+
+V(g_dist)$color <- case_when(
+  str_detect(V(g_dist)$name, "^HO") ~ "#e6a8a8",
+  str_detect(V(g_dist)$name, "^OB") ~ "#a8a8e6",
+  str_detect(V(g_dist)$name, "^HW") ~ "#a8dba8"
+)
+
+set.seed(123)
+plot(g_dist,
+     layout       = layout_with_fr(g_dist),
+     edge.width   = E(g_dist)$weight / max(E(g_dist)$weight) * 8,
+     vertex.color = V(g_dist)$color,
+     vertex.label = V(g_dist)$name,
+     vertex.size  = 25,
+     vertex.label.cex = 0.8,
+     main = "Wie oft waren Kühe innerhalb 5m beieinander")
   
   
   
