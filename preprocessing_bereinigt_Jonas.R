@@ -90,29 +90,43 @@ alle_daten <- alle_daten |>
 #####################################################
 ###### Weg definieren: ############################
 
-# Wanderweg definieren: 
-Wander_Weg <-  alle_daten |>
+Wander_Weg <- alle_daten |>
   filter(quelle_layer == "06-25-A" & #Erste Kuh die diesen Weg genommen hat dient als grundlage
            Hour < 17 &
            Rasse_ID == "HO01"
-  ) %>% 
-  ungroup() %>% 
-  arrange(Time) %>%
-  filter(is.na(steplength) | steplength > 5) %>%   # mind. 5m Bewegung / Weg glätten
-  summarise(geometry = st_cast(st_combine(geom), "LINESTRING"))
+  ) |>
+  ungroup() |>
+  arrange(Time) |>
+  filter(is.na(steplength) | steplength > 5) |> # mind. 5m Bewegung
+  mutate(
+    x = st_coordinates(geom)[, 1],
+    y = st_coordinates(geom)[, 2],
+    x = rollmean(x, k = 3, fill = "extend"),  # Weg glätten
+    y = rollmean(y, k = 3, fill = "extend")
+  ) |>
+  st_drop_geometry() |>
+  st_as_sf(coords = c("x", "y"), crs = 2056) |>
+  summarise(geometry = st_cast(st_combine(geometry), "LINESTRING"))
 
 plot(Wander_Weg)
 
-# Strasse definieren: 
-Strasse <-  alle_daten |>
+Strasse <- alle_daten |>
   filter(quelle_layer == "06-27-M" & #Erste Kuh die diesen Weg genommen hat dient als grundlage
            Hour < 7&
            Rasse_ID == "HO01"
-  ) %>% 
-  ungroup() %>% 
-  arrange(Time) %>%
-  filter(is.na(steplength) | steplength > 5) %>% 
-  summarise(geometry = st_cast(st_combine(geom), "LINESTRING"))
+  ) |>
+  ungroup() |>
+  arrange(Time) |>
+  filter(is.na(steplength) | steplength > 5) |> # mind. 5m Bewegung
+  mutate(
+    x = st_coordinates(geom)[, 1],
+    y = st_coordinates(geom)[, 2],
+    x = rollmean(x, k = 3, fill = "extend"),   # Weg glätten
+    y = rollmean(y, k = 3, fill = "extend")
+  ) |>
+  st_drop_geometry() |>
+  st_as_sf(coords = c("x", "y"), crs = 2056) |>
+  summarise(geometry = st_cast(st_combine(geometry), "LINESTRING"))
 
 # Hilfsfunktion für Senkrechte Linien: 
 senkrechte_linie <- function(weg_coords, idx, laenge = 100, fenster = 3) {
@@ -632,8 +646,223 @@ kreuzung_sum |>
 
 #################################################################################
 
+library("vegan") 
+library("cclust")
+
+# Zeitpunkt der ersten Kreuzung pro Layer + Richtung + Linie
+erste_kreuzung <- kreuzungs_zeiten |>
+  group_by(quelle_layer, richtung, linie_typ) |>
+  slice_min(Time_kreuzung, n = 1, with_ties = FALSE) |>
+  ungroup()
+
+# 2. Nächster GPS-Punkt jeder Kuh zu diesem Zeitpunkt
+positionen <- erste_kreuzung |>
+  rowwise() |>
+  mutate(pos = list({
+    ql <- quelle_layer; ri <- richtung; tc <- Time_kreuzung
+    daten_weg |>
+      filter(quelle_layer == ql, richtung == ri) |>
+      group_by(Rasse_ID) |>
+      slice_min(abs(as.numeric(difftime(Time, tc, units = "secs"))),
+                n = 1, with_ties = FALSE) |>
+      ungroup() |>
+      mutate(x = st_coordinates(geom)[, 1],
+             y = st_coordinates(geom)[, 2]) |>
+      st_drop_geometry() |>
+      select(Rasse_ID, x, y)
+  })) |>
+  ungroup()
+
+# Hifs-Funktion welche Pro Kuh die position vor der Kreuzungszeit (Referenzzeit) berechent: 
+positionen <- function(x){
+  daten_weg |>
+    filter(quelle_layer == erste_kreuzung$quelle_layer[x],
+           richtung     == erste_kreuzung$richtung[x],
+           Time         <= erste_kreuzung$Time_kreuzung[x]) |>  
+    group_by(Rasse_ID) |>
+    slice_max(Time, n = 1, with_ties = FALSE) |>                 
+    ungroup() |>
+    mutate(ref_linie = erste_kreuzung$linie_typ[x],
+           ref_time  = erste_kreuzung$Time_kreuzung[x])
+}
+
+# Anzahl Zeilen zählen 
+n_row = nrow(erste_kreuzung)
+
+# funktion pro Zeile ausführen und alles zusammen fügen: 
+liste_positionen <- map(1:n_row, positionen) |> 
+  bind_rows()
+
+str(liste_positionen)
+
+# Hilfsfunktion um aus aus dem Segment und dem anteil die wahrschindlichste position der Kuh zu berechen: 
+punkt_auf_segment <- function(seg, ant) {
+  coords <- st_coordinates(seg)
+  st_point(c(
+    coords[1, 1] + ant * (coords[2, 1] - coords[1, 1]),
+    coords[1, 2] + ant * (coords[2, 2] - coords[1, 2])
+  ))
+}
+
+# Positionen der Kühe zur referenzzeit berechen: 
+liste_positionen <- liste_positionen |>
+  mutate(
+    # Anteil des Segments der bis ref_time zurückgelegt wurde
+    anteil = as.numeric(difftime(ref_time, Time, units = "secs")) / timelag,
+    # Interpolierter Punkt entlang des Segments
+    pos_ref_time = st_sfc(
+      mapply(punkt_auf_segment, segment, anteil, SIMPLIFY = FALSE),
+      crs = st_crs(liste_positionen)
+    )
+  )
+  
+# Seed Setzen (für wiederholbarkeit)
+set.seed(123)
+
+# Kluster Berechenen:
+cluster_results <- liste_positionen |>
+  st_drop_geometry() |>
+  group_by(quelle_layer, richtung, ref_linie, ref_time) |>
+  group_modify(~ { # pro gruppe folgendes ausführen:
+    coords   <- st_coordinates(st_sfc(.x$pos_ref_time)) 
+    
+    km_cascade  <- cascadeKM(coords, inf.gr = 2, # Bestimmen wie vile Gruppen zwischen 2 und 6
+                          sup.gr    = min(nrow(coords) - 1, 6),
+                          criterion = "calinski")
+    
+    k_idx    <- which.max(km_cascade$results[nrow(km_cascade$results), ]) # Sinvollste aufteilung wählen
+    
+    mutate(.x, cluster = km_cascade$partition[, k_idx]) #Die Gruppen als zahl in die liste hin zu fügen. 
+  }) |>
+  ungroup()
 
 
+library(igraph)
+
+  # 1. Co-occurrence Matrix
+  alle_kuehe <- sort(unique(cluster_results$Rasse_ID))
+  co_matrix  <- matrix(0L,
+                       nrow = length(alle_kuehe), ncol = length(alle_kuehe),
+                       dimnames = list(alle_kuehe, alle_kuehe))
+
+  cluster_results |>
+    filter(!is.na(cluster)) |>
+    group_by(quelle_layer, richtung, ref_linie, ref_time) |>
+    group_walk(~ {
+      idx <- .x$Rasse_ID
+      mat <- (outer(.x$cluster, .x$cluster, "==") + 0L)
+      dimnames(mat) <- list(idx, idx)
+      co_matrix[idx, idx] <<- co_matrix[idx, idx] + mat
+    })
+
+  diag(co_matrix) <- 0   # Kuh mit sich selbst entfernen
+
+  # 2. Graph erstellen
+  g <- graph_from_adjacency_matrix(co_matrix,
+                                   mode     = "undirected",
+                                   weighted = TRUE,
+                                   diag     = FALSE)
+
+  # Knotenfarben nach Rasse
+  V(g)$color <- case_when(
+    str_detect(V(g)$name, "^HO") ~ "#e6a8a8",
+    str_detect(V(g)$name, "^OB") ~ "#a8a8e6",
+    str_detect(V(g)$name, "^HW") ~ "#a8dba8",
+    TRUE ~ "grey"
+  )
+
+  # 3. Visualisierung
+  plot(g,
+       layout       = layout_with_fr(g),
+       edge.width   = E(g)$weight / max(E(g)$weight) * 8,
+       vertex.color = V(g)$color,
+       vertex.label = V(g)$name,
+       vertex.size  = 25,
+       vertex.label.cex = 0.8,
+       main = "Wie oft waren Kühe zusammen in derselben Gruppe")
+  
+  
+  
+  
+  
+##################################################################################
+
+# 2. Co-occurrence Matrix
+alle_kuehe <- sort(unique(liste_positionen$Rasse_ID))
+co_matrix  <- matrix(0L, nrow = length(alle_kuehe), ncol = length(alle_kuehe),
+                     dimnames = list(alle_kuehe, alle_kuehe))
+
+events <- cluster_results |>
+  filter(!is.na(cluster)) |>
+  group_by(quelle_layer, richtung, ref_linie, ref_time) |>
+  group_split()
+
+for (ev in events) {
+  idx <- ev$Rasse_ID
+  mat <- outer(ev$cluster, ev$cluster, "==") + 0L
+  dimnames(mat) <- list(idx, idx)
+  co_matrix[idx, idx] <- co_matrix[idx, idx] + mat
+}
+
+
+events[1]
+
+|>
+  rowwise() |>
+  mutate(pos = list({
+    ql <- quelle_layer; ri <- richtung; tc <- Time_kreuzung
+    
+      mutate(x = st_coordinates(geom)[, 1],
+             y = st_coordinates(geom)[, 2]) |>
+      st_drop_geometry() |>
+      select(Rasse_ID, x, y)
+  })) |>
+  ungroup()
+
+cluster_zuweisung <- function(pos_df) {
+  if (nrow(pos_df) < 3) return(NULL)
+  coords <- as.matrix(pos_df[, c("x", "y")])
+  
+  ckm      <- cascadeKM(coords,
+                        inf.gr    = 2,
+                        sup.gr    = min(nrow(pos_df) - 1, 6),
+                        criterion = "ssi")
+  
+  ssi_vals <- ckm$results[nrow(ckm$results), ]
+  k_idx    <- which.max(ssi_vals)
+  
+  if (length(k_idx) == 0) return(NULL)   # alle SSI-Werte NA
+  
+  k <- as.integer(colnames(ckm$results)[k_idx])
+  
+  if (is.na(k) || k < 2) return(NULL)    # k ungültig
+  
+  km <- cclust(coords, centers = k, method = "kmeans")
+  pos_df |> mutate(cluster = km$cluster)
+}
+ 
+
+  
+
+
+cluster_results <- positionen |>
+  mutate(cluster_df = map(pos, cluster_zuweisung))
+
+# 4. Co-occurrence Matrix aufbauen (Summe über alle Zeitpunkte)
+alle_kuehe <- sort(unique(daten_weg$Rasse_ID))
+
+co_matrix <- matrix(0L,
+                    nrow = length(alle_kuehe),
+                    ncol = length(alle_kuehe),
+                    dimnames = list(alle_kuehe, alle_kuehe))
+
+for (cd in cluster_results$cluster_df) {
+  if (is.null(cd)) next
+  mat        <- outer(cd$cluster, cd$cluster, "==") + 0L
+  dimnames(mat) <- list(cd$Rasse_ID, cd$Rasse_ID)
+  idx        <- cd$Rasse_ID
+  co_matrix[idx, idx] <- co_matrix[idx, idx] + mat
+}
 
 
 
@@ -740,3 +969,72 @@ plot_rankprofil(kreuzung_ww,  mean_rückstand)
 
 
 daten_weg$Tageszeit <- substr(daten_weg$quelle_layer,7,7)
+
+
+positionen$pos[[1]]   # Daten anschauen — evtl. alle Punkte identisch?
+
+
+ckm_test <- cascadeKM(as.matrix(positionen$pos[[1]][, c("x","y")]),
+                      inf.gr = 2, sup.gr = 3, criterion = "ssi")
+rownames(ckm_test$results)
+
+
+cluster_zuweisung <- function(pos_df) {
+  if (nrow(pos_df) < 3) return(NULL)
+  coords <- as.matrix(pos_df[, c("x", "y")])
+  
+  ckm <- cascadeKM(coords,
+                   inf.gr    = 2,
+                   sup.gr    = min(nrow(pos_df) - 1, 6),
+                   criterion = "ssi")
+  
+  # Letzte Zeile = SSI-Kriterium (unabhängig vom exakten Zeilennamen)
+  k <- as.integer(colnames(ckm$results)[which.max(ckm$results[nrow(ckm$results), ])])
+  
+  km <- cclust(coords, centers = k, method = "kmeans")
+  pos_df |> mutate(cluster = km$cluster)
+}
+
+cluster_zuweisung <- function(pos_df) {
+  if (nrow(pos_df) < 3) return(NULL)
+  coords <- as.matrix(pos_df[, c("x", "y")])
+  
+  # Optimale Clusteranzahl mit SSI (vegan)
+  ckm <- cascadeKM(coords,
+                   inf.gr   = 2,
+                   sup.gr   = min(nrow(pos_df) - 1, 6),
+                   criterion = "ssi")
+  k   <- as.integer(colnames(ckm$results)[which.max(ckm$results["SSI", ])])
+  
+  # Clustering mit cclust
+  km  <- cclust(coords, centers = k, method = "kmeans")
+  pos_df |> mutate(cluster = km$cluster)
+}
+
+cluster_results <- positionen |>
+  mutate(cluster_df = map(pos, cluster_zuweisung))
+
+
+# 3. Hilfsfunktion: optimale Cluster-Anzahl (SSI) → k-means
+cluster_zuweisung <- function(pos_df) {
+  if (nrow(pos_df) < 3) return(NULL)
+  coords <- as.matrix(pos_df[, c("x", "y")])
+  k <- suppressMessages(
+    NbClust(coords, min.nc = 2, max.nc = min(nrow(pos_df) - 1, 6),
+            method = "kmeans", index = "ssi")$Best.nc["Number_clusters"]
+  )
+  pos_df |> mutate(cluster = kmeans(coords, centers = k, nstart = 10)$cluster)
+}
+
+# Funktion welche Pro Kuh die position vor der Kreuzungszeit berechent: 
+positionen <- function(x){
+  daten_weg |>
+    filter(quelle_layer == erste_kreuzung$quelle_layer[x],
+           richtung == erste_kreuzung$richtung[x]) |>
+    group_by(Rasse_ID) |>
+    slice_min(abs(as.numeric(difftime(Time, erste_kreuzung$Time_kreuzung [x], 
+                                      units = "secs"))), n = 1, with_ties = FALSE) |>
+    ungroup() %>% 
+    mutate(ref_linie = erste_kreuzung$linie_typ[x],
+           ref_time = erste_kreuzung$Time_kreuzung[x])
+} 
