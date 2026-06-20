@@ -330,7 +330,7 @@ tm_shape(daten_weg) +
 #############################################################################
 # Herausfinden Wann welcher weg genommen wurde:
 
-# Pro Layer und Richtung: Route mit geringerer mittlerer Distanz zuweisen:
+# Pro Layer und Richtung die Route mit der geringeren mittlerer Distanz zum Routentrajektoer herausfinden und zuweisen:
 route_pro_layer <- daten_weg |>
   filter( # Daten punkte auswählen welche auf dem Weg liegen: (zwoschen start unde ende)
     st_coordinates(st_transform(geom, 4326))[, 1] > S_E[1],
