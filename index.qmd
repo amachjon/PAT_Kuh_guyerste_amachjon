@@ -742,7 +742,7 @@ ggplot(analyse_daten, aes(x = Rasse_ID, y = rang, fill = Rasse)) +
 Die Tiere unterscheiden sich hinsichtlich ihres durchschnittlichen Ranges in der Gruppe höchst signifikant (Kruskal-Wallis-Test, H = 866,8, df = 15, p \< 0,001) und der Effekt ist groß (ε² = 0,35). Die Buchstaben zeigen die Gruppen an, die sich signifikant unterscheiden.
 :::
 
-Die Kluster
+Die Netzwerke aus der Clusteranalyse (@fig-Klust) und der 5m‑Distanzanalyse (@fig-Dist5) zeigen, dass bestimmte Tiere sich deutlich häufiger in räumlicher Nähe zu bestimmten anderen Tieren befinden. Sichtbar ist, dass Tiere innerhalb derselben Rasse häufiger näher zusammenlaufen als Tiere unterschiedlicher Rassen (@fig-Mante). Zudem lässt sich erkennen, dass die Hinterwälder‑Tiere insgesamt in grösseren Distanzen zueinander laufen als Tiere der anderen Rassen, was in der 5m‑Distanzgrafik durch die dünneren Verbindungslinien sichtbar wird.
 
 ::: {#fig-Klust}
 ```{r}
@@ -978,6 +978,8 @@ ggplot(co_long, aes(x = paar_typ, y = co_occur, fill = paar_typ)) +
   theme(legend.position = "none")
   
 ```
+
+Tiere derselben Rasse befinden sich signifikant häufiger gemeinsam innerhalb einer 5m‑Distanz als Tiere unterschiedlicher Rassen (Mantel-Test, r = 0.478, p = 0.001, 999 Permutationen) was als Co‑Occurrence bezeichnet wird.
 :::
 
 ## Diskussion
