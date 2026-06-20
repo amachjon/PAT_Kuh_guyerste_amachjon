@@ -414,17 +414,15 @@ Die im Datensatz enthaltenen 44 Tiere wurden dabei nicht alle zusammen von der W
 : Zusammensetzung der Subgruppen während der drei Untersuchungsperioden. Aufgeführt sind die Tiere, die innerhalb derselben Zeitperiode gemeinsam den Weg von der Weide zum Melkstand sowie zurück zur Weide zurücklegten. Die Tierkennungen setzen sich aus der Rasse (HO = Holstein, HW = Hinterwälder, OB = Original Braunvieh) und einer individuellen ID zusammen. {#tbl-Subgruppen}
 
 ### Datenvorverarbeitung
-Die Analyse wird in R herausgegeben vom @R, Version 4.5.2, durchgeführt. Das Paket sf von @sf wird für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) werden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben [@tidyverse]. Visualisierungen werden mit tmap von @tmap oder ggplot2 von @ggplot2 erstellt.
+Die Analyse wurde in R herausgegeben vom @R, Version 4.5.2, durchgeführt. Das Paket sf von @sf wurde für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) wurden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben [@tidyverse]. Visualisierungen wurden mit tmap von @tmap oder ggplot2 von @ggplot2 erstellt.
 
 Um den Rahmen dieser Semesterarbeit einzuhalten, beschränkt sich die Analyse auf die untersuchung der Daten der dritten Erhebungswoche (@tbl-Subgruppen). Rohsdaten aus GPS-Aufzeichnungen enthalten systematische Messungenauigkeiten, die auf atmosphärische Störungen, Abschattung oder Reflexion durch Gelände und Vegetation zurückzuführen sind  [@FrairEtal2010; @LaubePurves2011]. Zur Positionsbestimmung benötigt ein GPS-Empfänger das Signal von mindestens vier Satelliten [@HofmannWellenhofEtal2008]. Da die Rohdaten offensichtliche Ungenauigkeiten aufwiesen, wurden alle Fixes mit ungenügender Satellitenabdeckung entfernt. Anschliessend wuden für Milchkühe unrelistisch hohe geschwindikeiten aussortiert. Dazu wuden die folgenden Konvinience variabeln berechnet, das Segment, Strecke zum nächsten Fix und die Zeit welche gebraucht wurde um diese Strecke zurück zu legen (timelag), daraus ergibt sich die Schritgeschwindikeit. Fixes am Anfang und Ende eines Segments mit Schrittgeschwindigkeit von mehr als 25 Kmh wurden entfernt. Zuletzt wurden die Trajektorien zeitlich auf die Wegphasen beschränkt, dazu wurde für den Hin- und Rückweg jeweils den Zeitraum zwischen der ersten übercshreitung der Startline und der letzten überschreitung der Zielline ermittelt (@fig-Wege_Messlinen). Ein 2 min. Buffer dient dazu sicher zustellen, dass auch das Segment der Start und Ziellinienüberschreitung sicher noch im Datensatz enthalten ist. 
 
+
+
 ### Methoden
 
-Die Tiere nutzten für die Wege zwischen Weide und Melkstand sowie für den Rückweg zur Weide stets dieselben zwei Routen. Nördlich über den Wanderweg oder südlich über die Passstrasse (@fig-Wege_Messlinen). In allen Zeitperioden (@tbl-Subgruppen) wurden beide Routen von den Tieren genutzt, zu einem gegebenen Zeitpunkt haben jedoch alle Kühe die selbe Rute benutzt. Die beiden Routen wiesen dabei ähnliche Längen auf, wobei die insgesamt zurückgelegte Strecke für Hin- und Rückweg etwa zwei Kilometer beträgt (@fig-wege). Die beiden Routentrajektorien wurden auf Grundlage der Aufzeichnungen der Kuh HO01 konstruiert. Punkte, an welchen die Kuh sich nicht oder kaum bewegt hat, wurden durch Entfernung von Segmenten mit einer Länge unter 5 m herausgefiltert, da quasi-statische Trajektorienabschnitte die abgeleiteten Bewegungsparameter verzerren [@LaubePurves2011, S. 407]. Zusätzlich wurden die Routentrajektorien mit einem gleitenden Mittelwert über drei aufeinanderfolgende Punkte geglättet. Die Start- und Ziellinie wurden nach Betrachtung der örtlichen Gegebenheiten festgelegt, die fünf Messlinien pro Route wurden so berechnet, dass sie den Weg in sechs gleich lange Teile teilen (@fig-Wege_Messlinen). Die Linien wurden als Senkrechte auf dem Wegeverlauf konstruiert. Dazu wurde an den entsprechenden Messpunkt der lokale Richtungsvektor über ein Fenster von fünf Punkten approximiert und anschliessend durch Rotation um 90° eine orthogonale Line erzeugt. 
-
-> Auch hier kann ich die Fotos nicht Sehen... Ich habe auch eine Abbildung der Wege mit denen gerchnet wurde. Bitte entscheiden ob es beide abbildungen der wege braucht. Und gegebenen fals eine raus löschen.
-
-![Darstellung der beiden genutzten Wege auf dem Hin- und Rückweg vom Melkstand (eigene Darstellung, erstellt in ArcGIS Pro).](images/clipboard-117029847.jpeg){#fig-wege}
+Um die Sozialstrukturen der Tiere besser zu verstehen, wurden verschiedene Analysen zur Identifikation möglicher Subgruppen innerhalb der Versuchsgruppe durchgeführt. Einerseits wurde die Passierreihenfolge und der zeitliche Rückstand auf das erste Tier beim Überqueren von fünf über den Weg verteilten Messlinien berechnet, um die Rangordnung der Gruppe analysieren zu können. Zum anderen wurden mittels Clusteranalyse und euklidischer Distanz von Tier zu Tier Subgruppen in der Herde identifiziert.
 
 ::: {#fig-Wege_Messlinen}
 
@@ -443,7 +441,7 @@ tm_shape(Wander_Weg)    + tm_lines(col = "black") +
 Darstellung der beiden genutzten Wege und den definerten Start-, Ziel- und Messlinen. Wanderweg nördlich in schwarz, Strasse südlich in balu, Startlinie bei der Weide in grün, Messlinen in dunkelgrün und Zielline beim Melkstand in rot. 
 :::
 
-Die Routenzuordnung der einzelnen Melkgänge erfolgte anhand der minimalen mittleren Distanz der GPS-Punkte zu den jeweiligen Routentrajektorien (@fig-Hin_Rückweg). 
+Die Tiere nutzten für die Wege zwischen Weide und Melkstand sowie für den Rückweg zur Weide stets dieselben zwei Routen. Nördlich über den Wanderweg oder südlich über die Passstrasse (@fig-Wege_Messlinen). In allen Zeitperioden (@tbl-Subgruppen) wurden beide Routen von den Tieren genutzt, zu einem gegebenen Zeitpunkt haben jedoch alle Kühe die selbe Rute benutzt. Die beiden Routen wiesen dabei ähnliche Längen auf, wobei die insgesamt zurückgelegte Strecke für Hin- und Rückweg etwa zwei Kilometer beträgt (@fig-wege). Die beiden Routentrajektorien wurden auf Grundlage der Aufzeichnungen der Kuh HO01 konstruiert. Punkte, an welchen die Kuh sich nicht oder kaum bewegt hat, wurden durch Entfernung von Segmenten mit einer Länge unter 5 m herausgefiltert, da quasi-statische Trajektorienabschnitte die abgeleiteten Bewegungsparameter verzerren [@LaubePurves2011, S. 407]. Zusätzlich wurden die Routentrajektorien mit einem gleitenden Mittelwert über drei aufeinanderfolgende Punkte geglättet. Die Start- und Ziellinie wurden nach Betrachtung der örtlichen Gegebenheiten festgelegt, die fünf Messlinien pro Route wurden so berechnet, dass sie den Weg in sechs gleich lange Teile teilen (@fig-Wege_Messlinen). Die Linien wurden als Senkrechte auf dem Wegeverlauf konstruiert. Dazu wurde an den entsprechenden Messpunkt der lokale Richtungsvektor über ein Fenster von fünf Punkten approximiert und anschliessend durch Rotation um 90° eine orthogonale Line erzeugt. Die Routenzuordnung der einzelnen Melkgänge erfolgte anhand der minimalen mittleren Distanz der GPS-Punkte zu den jeweiligen Routentrajektorien (@fig-Hin_Rückweg). 
 
 ::: {#fig-Hin_Rückweg}
 
@@ -484,6 +482,18 @@ tm_shape(daten_weg) +
 
 Abbildung aller GPS Trajektorien und der zugeteilten Route. Grün: Punkte von Kühen, die auf dem Wanderweg unterwegs waren. Blau: Punke, die dem Weg über die Passstraße zugeordnet werden.
 :::
+
+Der Zeitpunkt der Messlinienüberschreitung wurde mittels geometrischer Verschneidung (st_intersects) zwischen den Segmenten und den Messlinien ermittelt. Zur Präzisierung des Überquerungszeitpunkts wurde der Anteil des Jeweiligen Segments, welcher bis zur Schnittpunktposition zurückzulegen war, berechnet und proportional auf die Zeitspanne zum nachfolgenen GPS-Fixes übertragen. Bei mehrfachen Überschreitungen derselben Messlinie innerhalb eines Melkgangs wurde nur die erste Überquerung berücksichtigt. Anschliessend wurde die Rangfolge inerhalb der Versuchsgruppe und den Rückstand auf das vorderste Tier berechnet. Der durshschnittliche  Rückstand auf das Erste Tier wurde mitels Rankplot visualisiert. Unterschide zwischen zwischen den Tieren 
+
+> Auch hier kann ich die Fotos nicht Sehen... Ich habe auch eine Abbildung der Wege mit denen gerchnet wurde. Bitte entscheiden ob es beide abbildungen der wege braucht. Und gegebenen fals eine raus löschen.
+
+![Darstellung der beiden genutzten Wege auf dem Hin- und Rückweg vom Melkstand (eigene Darstellung, erstellt in ArcGIS Pro).](images/clipboard-117029847.jpeg){#fig-wege}
+
+
+
+
+
+
 
 Für die Analyse zur Identifikation möglicher Subgruppen innerhalb der übergeordneten Gruppe sowie möglicher gruppeninterner Rangorndungen wurden verschiedene Methoden verwendet.
 
