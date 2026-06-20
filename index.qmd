@@ -301,7 +301,7 @@ daten_weg <- daten_ber |>
       auf_hinweg  & !auf_rückweg ~ "Hinweg",
       auf_rückweg & !auf_hinweg  ~ "Rückweg")
   )%>% 
-  select(-auf_hinweg,-auf_rückweg,-start_hin,-start_rück,-ankunft_hin,-ankunft_rück)
+  dplyr::select(-auf_hinweg,-auf_rückweg,-start_hin,-start_rück,-ankunft_hin,-ankunft_rück)
 
 # Sauen welche Kuh wann den weg Vollständig absolviert hat: 
 vollstaendige_wege <- S_E_Zeit_pro_Kuh |>
@@ -319,7 +319,7 @@ daten_weg <- daten_weg |>
     (richtung == "Hinweg"  & hin_komplett) |
     (richtung == "Rückweg" & rück_komplett)
   ) |>
-  select(-hin_komplett, -rück_komplett)
+  dplyr::select(-hin_komplett, -rück_komplett)
 
 ```
 
@@ -464,7 +464,7 @@ route_pro_layer <- daten_weg |>
 # Route zurück in Hauptdatensatz joinen:
 daten_weg <- daten_weg |>
   left_join(
-    route_pro_layer |> select(quelle_layer, richtung, route),
+    route_pro_layer |> dplyr::select(quelle_layer, richtung, route),
     by = c("quelle_layer", "richtung")
   )
 
@@ -547,13 +547,13 @@ kreuzungs_zeiten <- bind_rows(kreuzungs_zeiten_ww, kreuzungs_zeiten_str)
 
 # Rang pro Messlinie 
 kreuzung_sum <- kreuzungs_zeiten %>%
-  group_by(route, quelle_layer, richtung, linie_typ, Tageszeit) %>%
+  group_by(route, quelle_layer, richtung, linie_typ) %>%
   mutate(
     rang      = rank(Time_kreuzung),
     rückstand = Time_kreuzung - min(Time_kreuzung),
     linie_typ = as.numeric(linie_typ)
   ) %>%
-  group_by(route, Rasse_ID, linie_typ, Tageszeit, richtung ) %>%
+  group_by(route, Rasse_ID, linie_typ, richtung ) %>%
   summarise(
     mean_rang      = mean(rang),
     mean_rückstand = as.numeric(mean(rückstand)),
@@ -595,6 +595,32 @@ hoehen_profil <- weg_pts |>
 hoehen_profil_ww <- hoehenprofil(Wander_Weg)
 hoehen_profil_str <- hoehenprofil(Strasse)
 
+# interleave Funktion definieren (Hilfsfunktion, Geleiche hellikeit nicht nahe bei einander)
+interleave_idx <- function(n) {
+  c(seq(1, n, by = 2), seq(2, n, by = 2))
+}
+
+# Farbvektor (Hell Dunkel interleaved, nach mittlerem Rang) (jade Rasse bekommt Ihre Farbe)
+rasse_farben <-kreuzungs_zeiten %>%
+  group_by(route, quelle_layer, richtung, linie_typ) %>%
+  mutate( rang = rank(Time_kreuzung)) %>% 
+  ungroup() %>% 
+  group_by(Rasse_ID, Rasse) %>%
+  summarise(mean_rang = mean(rang, na.rm = TRUE), .groups = "drop") %>%
+  group_by(Rasse) %>%
+  arrange(mean_rang) %>%
+  mutate(
+    idx   = interleave_idx(n()),
+    farbe = case_when(
+      Rasse == "HO" ~ colorRampPalette(c("#7a1a1a", "#e6a8a8"))(n())[idx],
+      Rasse == "OB" ~ colorRampPalette(c("#1a1a7a", "#a8a8e6"))(n())[idx],
+      Rasse == "HW" ~ colorRampPalette(c("#1a6b1a", "#a8dba8"))(n())[idx]
+    )
+  ) %>%
+  ungroup()
+
+farb_vektor <- setNames(rasse_farben$farbe, rasse_farben$Rasse_ID)
+
 #Funktion zum erstellen der Rankplots: 
 rank_plot <- function(daten, y_var, hoehen_dat) {
   y_name     <- rlang::as_label(enquo(y_var)) #macht aus Variabelnnamen ein Teext 
@@ -616,24 +642,6 @@ rank_plot <- function(daten, y_var, hoehen_dat) {
   } else {
     scale_x_continuous(breaks = 0:6, labels = c("Wiese", paste("ML", 1:5), "Melkstand"))
   }
-
-  # Farbvektor (interleaved, nach mittlerem Rang) (jade Rasse bekommt Ihre Farbe)
-rasse_farben <- kreuzungs_zeiten %>%
-  group_by(Rasse_ID, Rasse) %>%
-  summarise(mean_rang = mean(rang, na.rm = TRUE), .groups = "drop") %>%
-  group_by(Rasse) %>%
-  arrange(mean_rang) %>%
-  mutate(
-    idx   = interleave_idx(n()),
-    farbe = case_when(
-      Rasse == "HO" ~ colorRampPalette(c("#7a1a1a", "#e6a8a8"))(n())[idx],
-      Rasse == "OB" ~ colorRampPalette(c("#1a1a7a", "#a8a8e6"))(n())[idx],
-      Rasse == "HW" ~ colorRampPalette(c("#1a6b1a", "#a8dba8"))(n())[idx]
-    )
-  ) %>%
-  ungroup()
-
-farb_vektor <- setNames(rasse_farben$farbe, rasse_farben$Rasse_ID)
   
   #Eigentlicher Plot ersten: 
   ggplot(daten, aes(x = linie_typ, y = {{ y_var }}, group = Rasse_ID, color = Rasse_ID))+
@@ -668,20 +676,37 @@ farb_vektor <- setNames(rasse_farben$farbe, rasse_farben$Rasse_ID)
 
 # Ploten 
 kreuzung_sum |>
-  filter(route == "Strasse", Tageszeit == "M", richtung == "Hinweg") |>
-  rank_plot( mean_rückstand, hoehen_profil_str)
+  filter(route == "Wanderweg", richtung == "Hinweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_ww)
 
 ```
 
 ```{r}
 # Ploten 
 kreuzung_sum |>
-  filter(route == "Strasse", Tageszeit == "M", richtung == "Rückweg") |>
+  filter(route == "Wanderweg", richtung == "Rückweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_ww)
+
+kreuzung_sum |>
+  filter(route == "Strasse", richtung == "Hinweg") |>
   rank_plot( mean_rückstand, hoehen_profil_str)
+
+kreuzung_sum |>
+  filter(route == "Strasse", richtung == "Rückweg") |>
+  rank_plot( mean_rückstand, hoehen_profil_str)
+
 
 ```
 
 ```{r}
+# Rangfolge für Kruskalwallis Test berechen.
+analyse_daten <- kreuzungs_zeiten |>
+  group_by(quelle_layer, richtung, linie_typ) |>
+  mutate(
+    rang = rank(Time_kreuzung)
+  ) %>% 
+  ungroup()
+
 # Kurskalwallis Test auf Rängen: 
 kruskal_result <- kruskal(max(analyse_daten$rang) + 1 - analyse_daten$rang, # dreht reienfolge so das Tiere in der vordersten Gruppe a bekommen. 
                           analyse_daten$Rasse_ID,
@@ -737,7 +762,7 @@ positionen <- erste_kreuzung |>
       mutate(x = st_coordinates(geom)[, 1],
              y = st_coordinates(geom)[, 2]) |>
       st_drop_geometry() |>
-      select(Rasse_ID, x, y)
+      dplyr::select (Rasse_ID, x, y)
   })) |>
   ungroup()
 
@@ -785,7 +810,7 @@ liste_positionen <- liste_positionen |>
   )
   
 # Seed Setzen (für wiederholbarkeit)
-set.seed(123)
+set.seed(73)
 
 # Kluster Berechenen:
 cluster_results <- liste_positionen |>
@@ -839,7 +864,7 @@ V(g)$color <- case_when(
 )
 
 # Seed Setzen (für wiederholbarkeit)
-set.seed(123)
+set.seed(73)
 
 # Graph erstellen: 
 plot(g,
@@ -887,7 +912,7 @@ V(g_dist)$color <- case_when(
   str_detect(V(g_dist)$name, "^HW") ~ "#a8dba8"
 )
 
-set.seed(123)
+set.seed(73)
 plot(g_dist,
      layout       = layout_with_fr(g_dist),
      edge.width   = E(g_dist)$weight / max(E(g_dist)$weight) * 8,
