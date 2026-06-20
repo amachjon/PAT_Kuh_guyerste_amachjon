@@ -341,7 +341,6 @@ Vor diesem Hintergrund untersucht die vorliegende Arbeit die Herdendynamik einer
 
 -   Lassen sich innerhalb der Herde anhand räumlicher Nähe- und Distanzmuster Subgruppen identifizieren?
 
-
 ## Daten und Methoden
 
 ### Daten
@@ -386,12 +385,10 @@ Die vom Projektleiter Manuel Schneider zur Verfügung gestellten Rohdaten umfass
 
 Insgesamt umfasst der Datensatz GPS-Positionsdaten von 44 Tieren (15 Holstein, 14 Hinterwälder, 15 Original Braunvieh) während ihrem Gang zwischen Weide und Melkstand (Hin- und Rückweg) (@fig-Rassen, @fig-Melkstand). Da täglich zwei Melkungen stattfanden, beinhaltet jeder Tag zwei Aufzeichnungsintervalle, die jeweils den Weg von der Weide zum Melkstand, den Melkvorgang sowie den Rückweg zur Weide abdecken. Ein Aufzeichnungsintervall, welches somit den gesamten Ablauf von der Weide zum Melkstand, die Melkung sowie den Rückweg zur Weide umfasst, dauert im Durchschnitt etwa vier Stunden. Das Messintervall betrug 20 Sekunden. Der Datensatz umfasst insgesamt 18 Tage und somit 36 Aufzeichnungsintervalle.
 
-> Ich kann die Fotos nicht Sehen... Habe die Datei nicht.
-
 ::: {#fig-Weissenstein layout-ncol="2"}
-![Die Rassen Hinterwälder (links), Holstein (Mitte) und Original Braunvieh (rechts) vereint auf einer Weide der Alp Weissenstein.](images/clipboard-3687077910.png){#fig-Rassen}
+![Die Rassen Hinterwälder (links), Holstein (Mitte) und Original Braunvieh (rechts) vereint auf einer Weide der Alp Weissenstein.](images/Alp_Weissenstein_2025_(1).png){#fig-Rassen}
 
-![Die Kühe werden zweimal täglich im mobilen Weidemelkstand gemolken.](images/clipboard-3651173996.png){#fig-Melkstand}
+![Die Kühe werden zweimal täglich im mobilen Weidemelkstand gemolken.](images/Alp_Weissenstein_2025.png){#fig-Melkstand}
 
 Fotos von den verschiedenen Rassen und dem Melkstand auf der Alp Weissenstein [@strickhof.ch2025].
 :::
@@ -477,23 +474,13 @@ tm_shape(daten_weg) +
 Abbildung aller GPS Trajektorien und der zugeteilten Route. Grün: Punkte von Kühen, die auf dem Wanderweg unterwegs waren. Blau: Punke, die dem Weg über die Passstraße zugeordnet werden.
 :::
 
-Der Zeitpunkt der Messlinienüberschreitung wurde mittels geometrischer Verschneidung (st_intersects) zwischen den Segmenten und den Messlinien ermittelt. Zur Präzisierung des Überquerungszeitpunkts wurde der Anteil des Jeweiligen Segments, welcher bis zur Schnittpunktposition zurückzulegen war, berechnet und proportional auf die Zeitspanne zum nachfolgenen GPS-Fixes übertragen. Bei mehrfachen Überschreitungen derselben Messlinie innerhalb eines Melkgangs wurde nur die erste Überquerung berücksichtigt. Anschliessend wurde die Rangfolge inerhalb der Versuchsgruppe und den Rückstand auf das vorderste Tier berechnet. Der durshschnittliche Rückstand auf das Erste Tier wurde mitels Rankplot visualisiert. Paarweise Unterschide zwischen zwischen den Tieren hinsichtlich dem Rang in der Grupp wurde mittels Dunn-Test (BH-Korrektur) identifiziert [@agricolae]. 
-Um festzustellen, welche Tiere häufig gemeinsam unterwegs sind, wurde beim Erreichen einer Messlinie durch die erste Kuh jeweils eine Momentaufnahme aller Tierpositionen erstellt. Diese Positionen wurden anschliessend mittels K-Means-Clusteranalyse analysiert, wobei die optimale Clusteranzahl über das Calinski-Harabasz-Kriterium bestimmt wurde [@vegan], die minmale Klusteranzahl bertug 2 die maximale 6. Zusätzlich wurden die Positionen der Tiere anhand der euklidischen Distanz analysiert. Als Schwellenwert für „zusammen unterwegs sein” wurde hierbei ein Abstand von 5 m gewählt. Die Ergebnisse der Subgruppenanalyse wurden in einer Co-Occurrence-Matrix zusammengefasst und anschliessend als gewichtetes Netzwerk mit dem Paket igraph [@igraph] visualisiert. Zum schluss wurde mittels Mantel-Test wurde geprüft, ob Kühe der gleichen Rasse häufiger räumliche Nähe zueinander aufweisen als rassenübergreifende Paare [@Mantel1967; @vegan].
-
-> Auch hier kann ich die Fotos nicht Sehen... Ich habe auch eine Abbildung der Wege mit denen gerchnet wurde. Bitte entscheiden ob es beide abbildungen der wege braucht. Und gegebenen fals eine raus löschen.
-
-![Darstellung der beiden genutzten Wege auf dem Hin- und Rückweg vom Melkstand (eigene Darstellung, erstellt in ArcGIS Pro).](images/clipboard-117029847.jpeg){#fig-wege}
-
-Für die Analyse zur Identifikation möglicher Subgruppen innerhalb der übergeordneten Gruppe sowie möglicher gruppeninterner Rangorndungen wurden verschiedene Methoden verwendet.
-
-Die Ermittlung der Rangordnung erfolgte über fünf eigens konstruierte Messlinien entlang des Weges, die die Passierreihenfolge der Tiere erfasste und damit eine Rang-Zuordnung durchgeführt wurde.
+Der Zeitpunkt der Messlinienüberschreitung wurde mittels geometrischer Verschneidung (st_intersects) zwischen den Segmenten und den Messlinien ermittelt. Zur Präzisierung des Überquerungszeitpunkts wurde der Anteil des Jeweiligen Segments, welcher bis zur Schnittpunktposition zurückzulegen war, berechnet und proportional auf die Zeitspanne zum nachfolgenen GPS-Fixes übertragen. Bei mehrfachen Überschreitungen derselben Messlinie innerhalb eines Melkgangs wurde nur die erste Überquerung berücksichtigt. Anschliessend wurde die Rangfolge inerhalb der Versuchsgruppe und den Rückstand auf das vorderste Tier berechnet. Der durshschnittliche Rückstand auf das Erste Tier wurde mitels Rankplot visualisiert. Paarweise Unterschide zwischen zwischen den Tieren hinsichtlich dem Rang in der Grupp wurde mittels Dunn-Test (BH-Korrektur) identifiziert [@agricolae]. Um festzustellen, welche Tiere häufig gemeinsam unterwegs sind, wurde beim Erreichen einer Messlinie durch die erste Kuh jeweils eine Momentaufnahme aller Tierpositionen erstellt. Diese Positionen wurden anschliessend mittels K-Means-Clusteranalyse analysiert, wobei die optimale Clusteranzahl über das Calinski-Harabasz-Kriterium bestimmt wurde [@vegan], die minmale Klusteranzahl bertug 2 die maximale 6. Zusätzlich wurden die Positionen der Tiere anhand der euklidischen Distanz analysiert. Als Schwellenwert für „zusammen unterwegs sein” wurde hierbei ein Abstand von 5 m gewählt. Die Ergebnisse der Subgruppenanalyse wurden in einer Co-Occurrence-Matrix zusammengefasst und anschliessend als gewichtetes Netzwerk mit dem Paket igraph [@igraph] visualisiert. Zum schluss wurde mittels Mantel-Test wurde geprüft, ob Kühe der gleichen Rasse häufiger räumliche Nähe zueinander aufweisen als rassenübergreifende Paare [@Mantel1967; @vegan].
 
 ## Resultate
 
-Die Analysen zeigen, dass die Hinterwäldler-Kühe oft an der Spitze der untersuchten Gruppe zu finden sind. HW06 und HW13 sind signifikant häufiger an der Spitze der Gruppe anzutreffen als andere Kühe (siehe @fig-Rang). Es ist festzustellen, dass der Rückstand der Kühe auf die Schnellsten während des starken Anstiegs auf dem Wanderweg zunimmt (@fig-WW_Hin). Ebenso zeigt sich, dass die Gruppe kurz vor und nach dem Melkstand näher beieinander ist als in der Nähe der Weide.  
+Die Analysen zeigen, dass die Hinterwäldler-Kühe oft an der Spitze der untersuchten Gruppe zu finden sind. HW06 und HW13 sind signifikant häufiger an der Spitze der Gruppe anzutreffen als andere Kühe (siehe @fig-Rang). Es ist festzustellen, dass der Rückstand der Kühe auf die Schnellsten während des starken Anstiegs auf dem Wanderweg zunimmt (@fig-WW_Hin). Ebenso zeigt sich, dass die Gruppe kurz vor und nach dem Melkstand näher beieinander ist als in der Nähe der Weide.
 
 ::: {#fig-WW_Hin}
-
 ```{r}
 
 # Zitpunkte wann Linien überquert wurden Ermittlen: 
@@ -686,11 +673,10 @@ kreuzung_sum |>
 
 ```
 
-Die Entwicklung des Rückstands in Sekunden auf die erste Kuh wurde pro Messlinie über alle Wege zum Melkstand, die über die Wanderwegroute führten, gemittelt. Die Hinterwäldler-Kühe sind in Grüntönen, die Original Braunen in Blau und die Holsteins in Rot dargestellt. Unten ist das Höhenprofil des Wanderwegs zu sehen. 
-::: 
+Die Entwicklung des Rückstands in Sekunden auf die erste Kuh wurde pro Messlinie über alle Wege zum Melkstand, die über die Wanderwegroute führten, gemittelt. Die Hinterwäldler-Kühe sind in Grüntönen, die Original Braunen in Blau und die Holsteins in Rot dargestellt. Unten ist das Höhenprofil des Wanderwegs zu sehen.
+:::
 
 ::: {#fig-Str_Rückweg}
-
 ```{r}
 # Ploten 
 # kreuzung_sum |>
@@ -708,11 +694,10 @@ kreuzung_sum |>
 
 ```
 
-Die Entwicklung des Rückstands in Sekunden auf die erste Kuh wurde pro Messlinie über alle Wege zurück zur Weide, die über die Passstrase führten, gemittelt. Die Hinterwäldler-Kühe sind in Grüntönen, die Original Braunen in Blau und die Holsteins in Rot dargestellt. Unten ist das Höhenprofil des Passstrase zu sehen. 
-::: 
+Die Entwicklung des Rückstands in Sekunden auf die erste Kuh wurde pro Messlinie über alle Wege zurück zur Weide, die über die Passstrase führten, gemittelt. Die Hinterwäldler-Kühe sind in Grüntönen, die Original Braunen in Blau und die Holsteins in Rot dargestellt. Unten ist das Höhenprofil des Passstrase zu sehen.
+:::
 
 ::: {#fig-Rang}
-
 ```{r}
 library(agricolae)
 
@@ -754,13 +739,12 @@ ggplot(analyse_daten, aes(x = Rasse_ID, y = rang, fill = Rasse)) +
   theme(legend.position = "none")
 ```
 
-Die Tiere unterscheiden sich hinsichtlich ihres durchschnittlichen Ranges in der Gruppe höchst signifikant (Kruskal-Wallis-Test, H = 866,8, df = 15, p < 0,001) und der Effekt ist groß (ε² = 0,35). Die Buchstaben zeigen die Gruppen an, die sich signifikant unterscheiden.
-::: 
+Die Tiere unterscheiden sich hinsichtlich ihres durchschnittlichen Ranges in der Gruppe höchst signifikant (Kruskal-Wallis-Test, H = 866,8, df = 15, p \< 0,001) und der Effekt ist groß (ε² = 0,35). Die Buchstaben zeigen die Gruppen an, die sich signifikant unterscheiden.
+:::
 
-
+Die Kluster
 
 ::: {#fig-Klust}
-
 ```{r}
 # Gruppen in der Herde mit Kluster Analysiern
 library("vegan") 
@@ -900,10 +884,10 @@ plot(g,
      main = "Wie oft waren Kühe zusammen in derselben Gruppe")
 ```
 
-::: 
+Die Clusteranalyse zeigt, welche Tiere in derselben Subgruppe unterwegs sind. Je näher sich zwei Tiere in diesem Diagramm sind und je stärker die Verbindungslinie ausgeprägt ist, desto wahrscheinlicher ist es, dass die Kühe in der gleichen Subgruppe beobachtet werden können.
+:::
 
 ::: {#fig-Dist5}
-
 ```{r}
 # Gruppen in der Herde mit Euklidischerdistanz Analysiern
 # Matrix mit st_is_within_distance
@@ -950,10 +934,10 @@ plot(g_dist,
      main = "Wie oft waren Kühe innerhalb 5m beieinander")
 ```
 
-::: 
+Die Analise der Distanzen zwischen den Teren zeigt auf welche Tiere oft nahe (\< 5m) bei einander anzutreffen sind. Je näher sich zwei Tiere in diesem Graphen sind und je stärker die Verbindungslinie ausgeprägt ist, desto öfter sind sie nahe beieinander an zu trefen.
+:::
 
 ::: {#fig-Mantel}
-
 ```{r}
 # Statistik zu Gruppen: 
 
@@ -994,18 +978,13 @@ ggplot(co_long, aes(x = paar_typ, y = co_occur, fill = paar_typ)) +
   theme(legend.position = "none")
   
 ```
+:::
 
-::: 
+## Diskussion
 
+Diskussion fertig: Die Ergebnisse bestätigen die von uns aufgestellten Hypothesen und zeigen, dass innerhalb der zum Melkstand bzw. zur Weide getriebenen Gruppe sowohl Hierarchien als auch Subgruppenbildungen bestehen. Dabei konnten wir feststellen, dass es sowohl rassen- als auch tierspezifische Unterschiede in der Positionierung der Tiere innerhalb der getriebenen Gruppe gab. Auffällig war insbesondere, dass sich die Hinterwälder‑Kühe häufiger in den vorderen Rängen aufhielten, während sich die Originalbraunvieh‑ und Holstein‑Kühe beim Gang zum Melkstand oder zur Weide eher im hinteren Bereich befanden. Zudem zeigte sich, dass die vordersten als auch die hintersten Tiere weitgehend aus denselben Individuen bestanden. Während beispielsweise die Hinterwälder‑Kuh mit der ID 6 konsistent zu den vordersten Tieren gehörte, befand sich die Holstein‑Kuh mit der ID 12 durchgehend in den hintersten Rängen. Tiere, die sich hingegen im mittleren Bereich der getriebenen Herde aufhielten, zeigten eine generell grössere Varianz in ihrer Positionierung als jene in den vordersten oder hintersten Bereichen. Ebenfalls ist in den Grafiken erkennbar, dass es innerhalb derselben Rasse Tiere gab, die tendenziell deutlich vor oder hinter dem rassetypischen Durchschnittsbereich liefen. So lief beispielsweise die Holstein‑Kuh mit der ID 13 tendenziell eher im vorderen Bereich mit und war damit innerhalb der Holstein‑Gruppe häufig eines der führenden Tiere. Diese von uns identifizierten rassetypischen Unterschiede in der Anordnung innerhalb der Gruppe könnten durch verschiedene Gründe erklärt werden. Ein möglicher Grund dafür, dass sich die Hinterwälder-Tiere häufiger im vorderen Bereich der Gesamtgruppe aufhielten, könnte in ihrer ausgeprägteren Berggängigkeit liegen, welche bereits im Rahmen des PeaMaps-Projekts bestätigt wurde. Allerdings wäre unter dieser Annahme zu erwarten gewesen, dass die Führungsstärke der Hinterwälder‑Tiere gegenüber den anderen Rassen auf flacheren Wegabschnitten oder auf der Strasse geringer ausfällt, was sich anhand der je zwei Grafiken zu den Rangordnungen auf fünf Wegabschnitten sowohl auf der Strasse als auch auf dem Wanderweg nicht bestätigen lässt. Um den Einfluss der unterschiedlichen Berggängigkeiten der Rassen auf die Rangordnung fundiert prüfen zu können, wäre eine Untersuchung erforderlich, in der der Faktor Wegbeschaffenheit (Untergrund, Steigung, technische Schwierigkeit) klar vom rassespezifischen Bewegungsverhalten getrennt erfasst und analysiert wird. Des Weiteren konnten wir auch Subgruppenbildungen sowie «Laufpartnerschaften» identifizieren. Anhand der Netzwerkanalyse lässt sich erkennen, dass sich insbesondere Tiere derselben Rasse tendenziell in denselben Subgruppen aufhielten bzw. bevorzugt in räumlicher Nähe zueinander liefen. Zudem zeigt die Netzwerkanalyse, dass die Hinterwälder‑Kühe insgesamt weniger häufig in sehr geringer Distanz zueinander liefen als die Originalbraunvieh‑ oder insbesondere die Holstein‑Tiere. Ob diese Subgruppenbildungen bzw. «Laufpartnerschaften» sozialer Natur sind oder eher auf physiologische Eigenschaften der Tiere der unterschiedlichen Rassen zurückzuführen sind, lässt sich anhand unserer Analyse jedoch nicht eindeutig bestimmen. Die vermehrt beobachtete räumliche Nähe zwischen Holstein‑ und Originalbraunvieh‑Tieren könnte durch eine durch treibdruck induzierte Gruppendynamik erklärt werden. Dabei sammeln sich langsamere oder weniger motivierte Tiere am Ende der Herde an und werden durch den von hinten wirkenden Treibdruck in dichterer Formation nach vorne geschoben. Dieses mechanisch bedingte Muster kann scheinbare Laufpartnerschaften erzeugen, die nicht sozial begründet sind. Um tatsächliche soziale Beziehungen zwischen einzelnen Tieren untersuchen zu können, wäre folglich ein Untersuchungsdesign ohne menschlichen Einfluss, beispielsweise Beobachtungen auf freier Weide ohne Treiben, besser geeignet. Auf soziale Beziehungen beziehungsweise auf eine typische Charakteristik von Herdentieren könnte zudem hinweisen, dass in den Grafiken teilweise die zeitliche Distanz zwischen einzelnen Tieren und dem jeweiligen Leittier deutlich zunimmt. Dies könnte darauf zurückzuführen sein, dass einzelne Tiere kurzfristig stehen bleiben, beispielsweise um zu grasen, und andere Tiere dieses Verhalten nachmachen, was auf gruppendynamische Effekte hindeutet. Abschliessend lässt sich sagen, dass sich anhand dieser Bewegungsanalyse sowohl Hierarchien als auch gruppendynamische Aspekte klar identifizieren liessen. Die Aussagekraft dieser Befunde ist jedoch aufgrund der geringen Wiederholbarkeit begrenzt. Die Analyse weiterer Tage (Wiederholungen), an denen die Tiere zum Melkstand oder zur Weide liefen würde dazu beitragen, die gewonnenen Erkenntnisse zu verifizieren oder gegebenenfalls zu widerlegen. Als weitere Analyse innerhalb unseres Projekts wären Berechnungen zur Zeitdauer bzw. zu den mittleren Geschwindigkeiten pro Tier auf den unterschiedlichen Wegtypen, (Wanderweg vs. Strasse) interessant gewesen. Damit liesse sich, wie bereits erwähnt, der Einfluss der rassespezifischen Berggängigkeit auf das Bewegungsverhalten genauer quantifizieren.
 
-
-## Discussion
-
-## Appendix
-
-> was für ein Word Dokument ist da gemint? Kümerst Du dich darum?
-
-### Wordcount
+## Anhang
 
 <!-- after installing the wordcountadding, remove the line "#| eval: false" -->
 
