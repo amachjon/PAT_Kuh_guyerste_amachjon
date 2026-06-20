@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jonas Amacher, Stefanie Guyer">
+
+<title>Analyse der Herdendynamik von Milchkühen mittels GPS-Bewegungsdaten</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="index_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-bb462d781dde1847d9e3ccf7736099dd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="index_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+
+<script src="index_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<script src="index_files/libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+
+<link href="index_files/libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
+
+<script src="index_files/libs/leaflet-1.3.1/leaflet.js"></script>
+
+<link href="index_files/libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
+
+<script src="index_files/libs/proj4-2.6.2/proj4.min.js"></script>
+
+<script src="index_files/libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+
+<link href="index_files/libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
+
+<script src="index_files/libs/leaflet-binding-2.2.3/leaflet.js"></script>
+
+<script src="index_files/libs/leaflet-providers-2.0.0/leaflet-providers_2.0.0.js"></script>
+
+<script src="index_files/libs/leaflet-providers-plugin-2.2.3/leaflet-providers-plugin.js"></script>
+
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Analyse der Herdendynamik von Milchkühen mittels GPS-Bewegungsdaten</h1>
+<p class="subtitle lead">Identifikation von Subgruppen und Rangordnungen</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Autor:in</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jonas Amacher, Stefanie Guyer </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+</section>
+<section id="einleitung" class="level2">
+<h2 class="anchored" data-anchor-id="einleitung">Einleitung</h2>
+<p>Studien zu sozialen Beziehungen bei Wildtieren haben gezeigt, dass viele Arten stabile soziale Bindungen und Hierarchien ausbilden und dass diese Beziehungen und Hierarchien teilweise massgeblich zur Erhöhung des individuellen oder gruppenbezogenen Fitnesserfolgs beitragen können <span class="citation" data-cites="stanton2012 wittig2008 silk2003">(<a href="#ref-stanton2012" role="doc-biblioref">Stanton und Mann 2012</a>; <a href="#ref-wittig2008" role="doc-biblioref">Wittig u.&nbsp;a. 2008</a>; <a href="#ref-silk2003" role="doc-biblioref">Silk, Alberts, und Altmann 2003</a>)</span>.</p>
+<p>Demgegenüber wurden soziale Strukturen in Nutztierherden, beispielsweise bei Milchkühen, bislang deutlich weniger untersucht, was vor allem dem produktionsbezogenen Forschungsfokus geschuldet ist. Entsprechend besteht bezüglich sozialen Dynamiken bei Nutztieren erhebliche Wissenslücken <span class="citation" data-cites="boyland2016">(<a href="#ref-boyland2016" role="doc-biblioref">Boyland u.&nbsp;a. 2016</a>)</span>.</p>
+<p>Gleichwohl belegen zahlreiche Beobachtungen und Studien, dass Umgruppierungen oder Störungen sozialer Strukturen bei Milchkühen deutliche Nachteile mit sich bringen. Veränderungen in der Herdenzusammensetzung lösen messbare Stressreaktionen aus, die sich in veränderten Verhaltensparametern (z.B. reduzierte Liegezeiten, verändertes Fress- und Wiederkauverhalten) sowie in physiologischen Stressindikatoren wie erhöhten Cortisolwerten äussern <span class="citation" data-cites="raussi2005 walker2015 bøe2003">(<a href="#ref-raussi2005" role="doc-biblioref">Raussi u.&nbsp;a. 2005</a>; <a href="#ref-walker2015" role="doc-biblioref">Walker u.&nbsp;a. 2015</a>; <a href="#ref-bøe2003" role="doc-biblioref">Bøe und Færevik 2003</a>)</span>. Ebenfalls belegen Studien, dass auch die Milchleistung nach einer Umgruppierung häufig abnimmt <span class="citation" data-cites="vonkeyserlingk2008 bøe2003">(<a href="#ref-vonkeyserlingk2008" role="doc-biblioref">Von Keyserlingk, Olenick, und Weary 2008</a>; <a href="#ref-bøe2003" role="doc-biblioref">Bøe und Færevik 2003</a>)</span>.</p>
+<p>Während zahlreiche Studien die Bedeutung der Herdendynamik anhand physiologischer und verhaltensbezogener Parameter beschreiben, gibt es bislang nur wenige Untersuchungen, welche soziale Strukturen innerhalb von Milchkuhherden anhand von Bewegungsdaten analysieren. Dabei bieten moderne hochauflösende GPS-Daten jedoch die Möglichkeit, soziale Beziehungen und Gruppenstrukturen objektiv zu erfassen, beispielsweise über räumliche Nähe- und Distanzmuster innerhalb der Herde.</p>
+<p>Vor diesem Hintergrund untersucht die vorliegende Arbeit die Herdendynamik einer Milchkuhherde anhand von GPS-Daten. Dabei werden zwei zentrale Forschungsfragen adressiert:</p>
+<ul>
+<li><p>Zeigt sich innerhalb der Gruppe eine Hierarchie? Gibt es ein Leittier, das meist vorne läuft?</p></li>
+<li><p>Lassen sich innerhalb der Herde anhand räumlicher Nähe- und Distanzmuster Subgruppen identifizieren?</p></li>
+</ul>
+<blockquote class="blockquote">
+<p>Hirarchie in Subgruppen können wir nicht beantworten / ich würde “bestimmte Hierarchieordnungen” raus streichen.</p>
+</blockquote>
+<ul>
+<li>Zeigen sich innerhalb der Subgruppen bestimmte Hierarchieordnungen oder besonders stabile soziale Bindungen?</li>
+</ul>
+</section>
+<section id="daten-und-methoden" class="level2">
+<h2 class="anchored" data-anchor-id="daten-und-methoden">Daten und Methoden</h2>
+<section id="daten" class="level3">
+<h3 class="anchored" data-anchor-id="daten">Daten</h3>
+<p>Zur Beantwortung der Forschungsfragen wurden Daten aus dem laufenden Agroscope-Projekt PeaMaps (2024-2027) verwendet, in dem verschiedene Milchkuhrassen auf der Alp Weissenstein mittels GPS getrackt werden. Ziel des Projekts ist der Vergleich des Bewegungsverhaltens unterschiedlicher Rassen unter alpinen Bedingungen, um Aussagen zur Eignung der jeweiligen Rassen für die Alpbeweidung zu ermöglichen. Dabei stehen sowohl Aspekte der Effizienz im Hinblick auf die Offenhaltung der Landschaft (z. B. Verbuschungskontrolle) als auch Fragen des Tierwohls im Fokus <span class="citation" data-cites="kurt2024">(<a href="#ref-kurt2024" role="doc-biblioref">Kurt u.&nbsp;a. 2024</a>)</span>.</p>
+<p>Die vom Projektleiter Manuel Schneider zur Verfügung gestellten Rohdaten umfassen die in <a href="#tbl-Datenstruktur" class="quarto-xref">Tabelle&nbsp;1</a> dargestellten Variablen.</p>
+<div id="tbl-Datenstruktur" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-Datenstruktur-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabelle&nbsp;1: Datenstruktur der Rohdaten mit Übersicht der enthaltenen Variablen sowie deren Beschreibung und Einheiten
+</figcaption>
+<div aria-describedby="tbl-Datenstruktur-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 63%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Beschreibung</th>
+<th>Einheit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ID</td>
+<td>Eindeutige ganze Zahl zur Identifikation jeder Kuh; innerhalb jeder Rasse fortlaufend ab 1 nummeriert</td>
+<td>ganze Zahl (Integer)</td>
+</tr>
+<tr class="even">
+<td>Rasse</td>
+<td>Zugehörigkeit der Kuh zu einer Rasse</td>
+<td><p>HO = Holstein;</p>
+<p>HW = Hinterwälder;</p>
+<p>OB = Original Braunvieh</p></td>
+</tr>
+<tr class="odd">
+<td>Time</td>
+<td>Zeitpunkt der GPS-Messung</td>
+<td>YYYY-MM-DD HH:MM:SS</td>
+</tr>
+<tr class="even">
+<td>Day</td>
+<td>Tag der Messung</td>
+<td>0-365 (Tagesindex)</td>
+</tr>
+<tr class="odd">
+<td>Hour</td>
+<td>Stunde der Messung</td>
+<td>0-23</td>
+</tr>
+<tr class="even">
+<td>TimeSlice</td>
+<td>kombinierte Informationen aus Datum und Zeitabschnitt der Messung</td>
+<td><p>MM-DD-A/M</p>
+<p>(M = Morgen, A = Abend)</p></td>
+</tr>
+<tr class="odd">
+<td>Altitude</td>
+<td>Höhe über Meer</td>
+<td>Meter über Meer</td>
+</tr>
+<tr class="even">
+<td>PDOP</td>
+<td>Genauigkeitsmass der GPS-Positionsbestimmung (Position Dilution of Precision)</td>
+<td>numerischer Wert (Float)</td>
+</tr>
+<tr class="odd">
+<td>Valid</td>
+<td>Positionsqualität</td>
+<td>kategorial (DGPS höchste Stufe)</td>
+</tr>
+<tr class="even">
+<td>NSat</td>
+<td>Anzahl empfangene Satelliten</td>
+<td>ganze Zahl (Integer)</td>
+</tr>
+<tr class="odd">
+<td>geom</td>
+<td>geometische Position</td>
+<td>Punktgeometrie in LV95 (EPSG: 2056), Meter</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Insgesamt umfasst der Datensatz GPS-Positionsdaten von 44 Tieren (15 Holstein, 14 Hinterwälder, 15 Original Braunvieh) während ihrem Gang zwischen Weide und Melkstand (Hin- und Rückweg) (<a href="#fig-Rassen" class="quarto-xref">Abbildung&nbsp;1 (a)</a>, <a href="#fig-Melkstand" class="quarto-xref">Abbildung&nbsp;1 (b)</a>). Da täglich zwei Melkungen stattfanden, beinhaltet jeder Tag zwei Aufzeichnungsintervalle, die jeweils den Weg von der Weide zum Melkstand, den Melkvorgang sowie den Rückweg zur Weide abdecken. Ein Aufzeichnungsintervall, welches somit den gesamten Ablauf von der Weide zum Melkstand, die Melkung sowie den Rückweg zur Weide umfasst, dauert im Durchschnitt etwa vier Stunden. Das Messintervall betrug 20 Sekunden. Der Datensatz umfasst insgesamt 18 Tage und somit 36 Aufzeichnungsintervalle.</p>
+<blockquote class="blockquote">
+<p>Ich kann die Fotos nicht Sehen… Habe die Datei nicht.</p>
+</blockquote>
+<div id="fig-Weissenstein" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-Weissenstein-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-Weissenstein" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-Rassen" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-Rassen-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/clipboard-3687077910.png" class="img-fluid figure-img" data-ref-parent="fig-Weissenstein">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-Rassen-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Die Rassen Hinterwälder (links), Holstein (Mitte) und Original Braunvieh (rechts) vereint auf einer Weide der Alp Weissenstein.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-Weissenstein" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-Melkstand" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-Melkstand-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/clipboard-3651173996.png" class="img-fluid figure-img" data-ref-parent="fig-Weissenstein">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-Melkstand-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) Die Kühe werden zweimal täglich im mobilen Weidemelkstand gemolken.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-Weissenstein-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Abbildung&nbsp;1: Fotos von den verschiedenen Rassen und dem Melkstand auf der Alp Weissenstein <span class="citation" data-cites="strickhof.ch2025">(<a href="#ref-strickhof.ch2025" role="doc-biblioref">strickhof.ch 2025</a>)</span>.
+</figcaption>
+</figure>
+</div>
+<p>Die im Datensatz enthaltenen 44 Tiere wurden dabei nicht alle zusammen von der Weide zum Melkstand und wieder zurück getrieben, sondern in kleineren Gruppen von 16-17 Tieren. Die Kombination der Tiere blieb dabei jeweils für eine Woche lang dieselbe. Folglich wurden in der Woche 1 (25.06.-30.06.2025), der Woche 2 (14.07-19.06.2025) und der Woche 3 (02.08.-07.08.2025) folgende Tiere zusammen zum Melkstand und wieder zurück getrieben <a href="#tbl-Subgruppen" class="quarto-xref">Tabelle&nbsp;2</a>:</p>
+<div id="tbl-Subgruppen" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-Subgruppen-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabelle&nbsp;2: Zusammensetzung der Subgruppen während der drei Untersuchungsperioden. Aufgeführt sind die Tiere, die innerhalb derselben Zeitperiode gemeinsam den Weg von der Weide zum Melkstand sowie zurück zur Weide zurücklegten. Die Tierkennungen setzen sich aus der Rasse (HO = Holstein, HW = Hinterwälder, OB = Original Braunvieh) und einer individuellen ID zusammen.
+</figcaption>
+<div aria-describedby="tbl-Subgruppen-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 81%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Zeitperiode</th>
+<th>Subgruppen (gemeinsam zwischen Melkstand und Weide bewegte Tiere)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Wo. 1: 25.06.-30.06.2025</td>
+<td>HO 01, HO 02, HO 03, HO 04, HO 05, HW 08, HW 09, HW 10, HW 11, HW 12, HW 13, HW 14, OB 01, OB 03, OB 04, OB 05, OB 06</td>
+</tr>
+<tr class="even">
+<td>Wo. 2: 14.07.-19.07.2025</td>
+<td>HO 06, HO 07, HO 08, HO 09, HO 10, HW 01, HW 02, HW 03, HW 04, HW 09, HW 10, HW 11, OB 07, OB 09, OB 10, OB 11</td>
+</tr>
+<tr class="odd">
+<td>Wo. 3: 02.08.-07.08.2025</td>
+<td>HO 11, HO 12, HO 13, HO 14, HO 15, HW 05, HW 06, HW 07, HW 08, HW 13, HW 14, OB 02, OB 08, OB 12, OB 13, OB 14, OB 15</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="datenvorverarbeitung" class="level3">
+<h3 class="anchored" data-anchor-id="datenvorverarbeitung">Datenvorverarbeitung</h3>
+<p>Die Analyse wird in R herausgegeben vom <span class="citation" data-cites="R">R Core Team (<a href="#ref-R" role="doc-biblioref">2025</a>)</span>, Version 4.5.2, durchgeführt. Das Paket sf von <span class="citation" data-cites="sf">Pebesma und Bivand (<a href="#ref-sf" role="doc-biblioref">2023</a>)</span> wird für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) werden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben <span class="citation" data-cites="tidyverse">(<a href="#ref-tidyverse" role="doc-biblioref">Wickham u.&nbsp;a. 2019</a>)</span>. Visualisierungen werden mit tmap von <span class="citation" data-cites="tmap">Tennekes (<a href="#ref-tmap" role="doc-biblioref">2018</a>)</span> oder ggplot2 von <span class="citation" data-cites="ggplot2">Wickham (<a href="#ref-ggplot2" role="doc-biblioref">2016</a>)</span> erstellt.</p>
+<p>Um den Rahmen dieser Semesterarbeit einzuhalten, beschränkt sich die Analyse auf die untersuchung der Daten der dritten Erhebungswoche (<a href="#tbl-Subgruppen" class="quarto-xref">Tabelle&nbsp;2</a>). Rohsdaten aus GPS-Aufzeichnungen enthalten systematische Messungenauigkeiten, die auf atmosphärische Störungen, Abschattung oder Reflexion durch Gelände und Vegetation zurückzuführen sind <span class="citation" data-cites="FrairEtal2010 LaubePurves2011">(<a href="#ref-FrairEtal2010" role="doc-biblioref">Frair u.&nbsp;a. 2010</a>; <a href="#ref-LaubePurves2011" role="doc-biblioref">Laube und Purves 2011</a>)</span>. Zur Positionsbestimmung benötigt ein GPS-Empfänger das Signal von mindestens vier Satelliten <span class="citation" data-cites="HofmannWellenhofEtal2008">(<a href="#ref-HofmannWellenhofEtal2008" role="doc-biblioref">Hofmann-Wellenhof, Lichtenegger, und Wasle 2008</a>)</span>. Da die Rohdaten offensichtliche Ungenauigkeiten aufwiesen, wurden alle Fixes mit ungenügender Satellitenabdeckung entfernt. Anschliessend wuden für Milchkühe unrelistisch hohe geschwindikeiten aussortiert. Dazu wuden die folgenden Konvinience variabeln berechnet, das Segment, Strecke zum nächsten Fix und die Zeit welche gebraucht wurde um diese Strecke zurück zu legen (timelag), daraus ergibt sich die Schritgeschwindikeit. Fixes am Anfang und Ende eines Segments mit Schrittgeschwindigkeit von mehr als 25 Kmh wurden entfernt. Zuletzt wurden die Trajektorien zeitlich auf die Wegphasen beschränkt, dazu wurde für den Hin- und Rückweg jeweils den Zeitraum zwischen der ersten übercshreitung der Start line und der letzten überschreitung der Zielline ermittelt. Ein 2 min. Buffer dient dazu sicher zustellen, dass auch das Segment der Start und Ziellinienüberschreitung sicher noch im Datensatz enthalten ist.</p>
+</section>
+<section id="methoden" class="level3">
+<h3 class="anchored" data-anchor-id="methoden">Methoden</h3>
+<p>Die Tiere nutzten für die Wege zwischen Weide und Melkstand sowie für den Rückweg zur Weide stets dieselben zwei Routen. Nördlich über den Wanderweg oder südlich über die Passstrasse (<a href="#fig-Wege_Messlinen" class="quarto-xref">Abbildung&nbsp;3</a>). In allen Zeitperioden (<a href="#tbl-Subgruppen" class="quarto-xref">Tabelle&nbsp;2</a>) wurden beide Routen von den Tieren genutzt, zu einem gegebenen Zeitpunkt haben jedoch alle Kühe die selbe Rute benutzt. Die beiden Routen wiesen dabei ähnliche Längen auf, wobei die insgesamt zurückgelegte Strecke für Hin- und Rückweg etwa zwei Kilometer beträgt (<a href="#fig-wege" class="quarto-xref">Abbildung&nbsp;2</a>).</p>
+<blockquote class="blockquote">
+<p>Auch hier kann ich die Fotos nicht Sehen… Ich habe auch eine Abbildung der Wege mit denen gerchnet wurde. Bitte entscheiden ob es beide abbildungen der wege braucht. Und gegebenen fals eine raus löschen.</p>
+</blockquote>
+<div id="fig-wege" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-wege-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/clipboard-117029847.jpeg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-wege-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Abbildung&nbsp;2: Darstellung der beiden genutzten Wege auf dem Hin- und Rückweg vom Melkstand (eigene Darstellung, erstellt in ArcGIS Pro).
+</figcaption>
+</figure>
+</div>
+<p>Für die Analyse zur Identifikation möglicher Subgruppen innerhalb der übergeordneten Gruppe sowie möglicher gruppeninterner Rangorndungen wurden verschiedene Methoden verwendet.</p>
+<p>Die Ermittlung der Rangordnung erfolgte über fünf eigens konstruierte Messlinien entlang des Weges, die die Passierreihenfolge der Tiere erfasste und damit eine Rang-Zuordnung durchgeführt wurde.</p>
+<blockquote class="blockquote">
+<p>erklären wie die Messlinien gezeichnet wurden</p>
+</blockquote>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Weg + Start und Ende und Messlinein Plotten. </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"view"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(Wander_Weg)    <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(Strasse)       <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"blue"</span>)  <span class="sc">+</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(Start_Ende[<span class="dv">1</span>, ]) <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"green"</span>) <span class="sc">+</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(Start_Ende[<span class="dv">2</span>, ]) <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"red"</span>)<span class="sc">+</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(ww_messline)   <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"pink"</span>)   <span class="sc">+</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(str_messline)  <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"pink"</span>)</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div id="fig-Wege_Messlinen" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-Wege_Messlinen-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell">
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-960ad46ce64a94586a81" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-960ad46ce64a94586a81">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}},"attributionControl":true},"calls":[{"method":"createMapPane","args":["tmap401",401]},{"method":"createMapPane","args":["tmap402",402]},{"method":"createMapPane","args":["tmap403",403]},{"method":"createMapPane","args":["tmap404",404]},{"method":"createMapPane","args":["tmap405",405]},{"method":"createMapPane","args":["tmap406",406]},{"method":"addLayersControl","args":[["Esri.WorldGrayCanvas","OpenStreetMap","Esri.WorldTopoMap"],["Wander_Weg","Strasse","Start_Ende[1, ]","Start_Ende[2, ]","ww_messline","str_messline"],{"collapsed":true,"autoZIndex":true,"position":"topleft"}]},{"method":"addProviderTiles","args":["Esri.WorldGrayCanvas",null,"Esri.WorldGrayCanvas",{"minZoom":0,"maxZoom":18,"maxNativeZoom":17,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"pane":"tilePane"}]},{"method":"addProviderTiles","args":["OpenStreetMap",null,"OpenStreetMap",{"minZoom":0,"maxZoom":18,"maxNativeZoom":17,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"pane":"tilePane"}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Esri.WorldTopoMap",{"minZoom":0,"maxZoom":18,"maxNativeZoom":17,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"pane":"tilePane"}]},{"method":"addPolylines","args":[[[[{"lng":[9.787997536459375,9.787997536459375,9.788067416472336,9.78812291979874,9.78831039315271,9.788445463161807,9.788574239727238,9.788733989474725,9.788879639563948,9.788997859747322,9.78905725304924,9.789117373067823,9.789201599734767,9.789324083130781,9.789445113216452,9.789580556474787,9.78968350979085,9.789809026455442,9.789904756443537,9.789997683130373,9.790117326440489,9.790279153061817,9.790459543076436,9.790596876452378,9.790706893138998,9.790784753180732,9.790876063196521,9.790971089821314,9.791103389786517,9.791258906464531,9.791462263169352,9.791698093143649,9.791919963111287,9.792157309778688,9.792388423145693,9.792635089824136,9.792808843136811,9.793009533132315,9.793243469773516,9.793507116438455,9.793725739801566,9.793908016479731,9.794079659816674,9.794253946488471,9.794464159857192,9.794702709907787,9.794930273264388,9.795107396594341,9.795273113228859,9.795439733242615,9.795644763391437,9.795863740125357,9.796108850072414,9.796357323408479,9.796620129896896,9.796890959700084,9.7971067264531,9.797255176533715,9.797417943307577,9.797638243381924,9.797929230053981,9.798193450092475,9.798428533463156,9.798652993521564,9.798876743535132,9.799095070172264,9.799299683532553,9.799490143569974,9.799657340134294,9.799833896845133,9.800062683463008,9.800345159904365,9.800635756554708,9.800893893172336,9.801043306486456,9.801130006506925,9.801185946562553,9.801299586528181,9.801385676517588,9.801407329802684,9.80139094646635,9.801351576446351,9.801285563031989,9.801200649742436,9.801092106465926,9.801092106465926],"lat":[46.58298708286462,46.58298708286462,46.58299196621367,46.58299088294033,46.58298655955581,46.58298424620772,46.58301581285715,46.58311049959764,46.58322574957167,46.58335375616176,46.58346250283257,46.58357014283654,46.58365330284336,46.58368234289185,46.58367920287311,46.58365903618895,46.58365474620172,46.58367454285791,46.58369124284791,46.58371329283867,46.58373271288813,46.58375854626853,46.58378979957101,46.5838147895249,46.58382694617917,46.5838021795067,46.58376608284209,46.5837332595279,46.58373482621236,46.58374289624251,46.58374332963594,46.58374223302012,46.58374741627594,46.58376022297731,46.58376478304282,46.58376571962351,46.58376599288037,46.58377122962398,46.58378125642741,46.58379201965116,46.58380167291794,46.58380561291864,46.58380496956582,46.58380290957252,46.58379283299271,46.5837721663529,46.58373199960113,46.58367977955164,46.58363245623627,46.58358419958249,46.58351592961514,46.58342647966412,46.58332923965649,46.58324596633932,46.58320016970399,46.58319732970672,46.58321287292259,46.58319590950875,46.58314463960976,46.58307863973155,46.58301253305119,46.58293308635267,46.58282783960983,46.58270339629779,46.58257060965992,46.58243075293242,46.58228192292845,46.58211519293845,46.58194315287781,46.58176938624405,46.58164979307404,46.58158165641467,46.58156168968975,46.58154910634574,46.58154355619629,46.58151163948923,46.58147324285856,46.58142492953176,46.58138730949409,46.58132638281812,46.58126200615197,46.58117945615494,46.58109295951007,46.58101085950968,46.58096533284805,46.58096533284805]}]]],"X1","Wander_Weg",{"interactive":false,"className":"","pane":"tmap401","stroke":true,"color":"#000000","weight":1,"opacity":1,"fill":false,"fillColor":"#000000","fillOpacity":0.2,"dashArray":"","smoothFactor":1,"noClip":false},null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[9.787419229930981,9.787419229930981,9.787499216531932,9.787888840687101,9.788360413900461,9.788856226464127,9.789067859830295,9.789240973128338,9.789450653184533,9.789620726538567,9.789808666439091,9.790002723264301,9.790230119901752,9.790416459774359,9.790565409804266,9.790688839762465,9.790820449809857,9.790952046534436,9.79112728324333,9.791339803286663,9.791595823262879,9.791803329832904,9.791992303110847,9.792166396454157,9.792382879787995,9.792634616466916,9.792898903053876,9.793179656395278,9.793458233168874,9.793711349824544,9.79396445989539,9.794207456637837,9.794436643211343,9.79466583662456,9.794910606727969,9.795216713307211,9.795537713360504,9.795856599982981,9.796127923172014,9.796403049670543,9.796626032950108,9.796863909745815,9.797087049741513,9.797327913063031,9.797593876416887,9.797849953280041,9.798126623455952,9.798384343446573,9.798642940160455,9.798888453518403,9.799072546657074,9.799235549966804,9.799387283369555,9.799582286691756,9.799753420052967,9.799893199976022,9.800048889950606,9.800230256538203,9.800444073123018,9.800665233175437,9.800858556612448,9.801048293244428,9.801204686578965,9.801318913236088,9.801376049822682,9.801345236420598,9.801306169750157,9.801231943129888,9.801153866457488,9.801058056525381,9.800936363347768,9.801110972411216,9.801344422521666,9.801684966524631,9.80170067639231,9.801699502997364,9.801626833180009,9.801633403166459,9.801669699695912,9.801787333110521,9.801926133108676,9.802017799757413,9.802114589896167,9.802150813262163,9.802206599813164,9.802175043153918,9.802175043153918],"lat":[46.5832701495159,46.5832701495159,46.58317294282876,46.5830564106745,46.58298309099043,46.5829340929532,46.58293071957912,46.58293661959966,46.58292119627808,46.58291657957703,46.58290847956837,46.58288683632396,46.58287548630888,46.58285279955633,46.58287007619858,46.58288667287398,46.5828935028661,46.58288500287403,46.58284612294099,46.58280579966463,46.58276456301304,46.58274684626913,46.58274979955002,46.58276380294514,46.58277573631384,46.58277946302164,46.58280284637942,46.58281763637898,46.58283400305506,46.58282801631854,46.58281015965627,46.58277671969733,46.58274566960617,46.58269771963057,46.58265250973514,46.58259310977841,46.58254547981063,46.58250305310229,46.58247837299169,46.58249798303363,46.58254713299558,46.58259354958851,46.58262982636256,46.58265009966071,46.58267803633814,46.58265842639926,46.58260389968136,46.58250679300455,46.58240718302134,46.58229090965516,46.58219384288024,46.58209460954596,46.58201970625917,46.58192253625503,46.58182597956851,46.58171210285303,46.5816263562373,46.58157540964035,46.58157589626341,46.58156948296709,46.5815477629392,46.58149963621561,46.5814521762342,46.58137795617905,46.58129357281665,46.58117840282534,46.58109254949406,46.5810239428305,46.5809922761829,46.5810099761735,46.58107982953616,46.58123212664251,46.58133022350568,46.58138654619127,46.58130631617797,46.58118967617869,46.58109434948778,46.58112169615463,46.58122562617795,46.58130207288477,46.58134151953938,46.58141163282848,46.5814264995147,46.58140758617396,46.58135228615363,46.58135652615469,46.58135652615469]}]]],"X1_1","Strasse",{"interactive":false,"className":"","pane":"tmap402","stroke":true,"color":"#0000FF","weight":1,"opacity":1,"fill":false,"fillColor":"#0000FF","fillOpacity":0.2,"dashArray":"","smoothFactor":1,"noClip":false},null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[9.789139252579307,9.789762095094581],"lat":[46.57932937042693,46.58651302036812]}]]],"X1_2","Start_Ende[1, ]",{"interactive":true,"className":"","pane":"tmap403","stroke":true,"color":"#00FF00","weight":1,"opacity":1,"fill":false,"fillColor":"#00FF00","fillOpacity":0.2,"dashArray":"","smoothFactor":1,"noClip":false},"<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>S_E<\/nobr><\/td><td align=\"right\"><nobr>1<\/nobr><\/td><\/tr><\/table><\/div>",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[9.797818373783036,9.802279674427069],"lat":[46.57837338017722,46.58487928784308]}]]],"X1_3","Start_Ende[2, ]",{"interactive":true,"className":"","pane":"tmap404","stroke":true,"color":"#FF0000","weight":1,"opacity":1,"fill":false,"fillColor":"#FF0000","fillOpacity":0.2,"dashArray":"","smoothFactor":1,"noClip":false},"<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>S_E<\/nobr><\/td><td align=\"right\"><nobr>2<\/nobr><\/td><\/tr><\/table><\/div>",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[9.79147685733343,9.791447688385951],"lat":[46.58329367188602,46.58419300634413]}]],[[{"lng":[9.793280238955189,9.793206719607738],"lat":[46.58333220091581,46.58423033088607]}]],[[{"lng":[9.794881096138187,9.79533372021133],"lat":[46.58325794306974,46.58410163454327]}]],[[{"lng":[9.796838393111617,9.796943546793631],"lat":[46.58274902275483,46.58364565559069]}]],[[{"lng":[9.798243012228179,9.799062999757105],"lat":[46.58235356378105,46.58305324629787]}]]],["X1_4","X2","X3","X4","X5"],"ww_messline",{"interactive":true,"className":"","pane":"tmap405","stroke":true,"color":["#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB"],"weight":[1,1,1,1,1],"opacity":[1,1,1,1,1],"fill":false,"fillColor":["#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB"],"fillOpacity":0.2,"dashArray":["","","","",""],"smoothFactor":1,"noClip":false},["<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>1<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>2<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>3<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>4<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>5<\/nobr><\/td><\/tr><\/table><\/div>"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[9.791190353676116,9.791489274940925],"lat":[46.58236799400117,46.58324362409226]}]],[[{"lng":[9.793222237708314,9.793137094002512],"lat":[46.58236882499148,46.58326646670881]}]],[[{"lng":[9.794744290014076,9.795076945747374],"lat":[46.58221760561728,46.58308743256817]}]],[[{"lng":[9.79677166698305,9.79648041618931],"lat":[46.58210871342019,46.58298557134087]}]],[[{"lng":[9.798086484426461,9.798682226511646],"lat":[46.58210665176647,46.58290695242086]}]]],["X1_5","X2_1","X3_1","X4_1","X5_1"],"str_messline",{"interactive":true,"className":"","pane":"tmap406","stroke":true,"color":["#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB"],"weight":[1,1,1,1,1],"opacity":[1,1,1,1,1],"fill":false,"fillColor":["#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB","#FFC0CB"],"fillOpacity":0.2,"dashArray":["","","","",""],"smoothFactor":1,"noClip":false},["<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>1<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>2<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>3<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>4<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>messline<\/nobr><\/td><td align=\"right\"><nobr>5<\/nobr><\/td><\/tr><\/table><\/div>"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"fitBounds":[46.58090810058142,9.787729340592509,46.58388417844579,9.80167552566955,[]],"limits":{"lat":[46.57837338017722,46.58651302036812],"lng":[9.787419229930981,9.802279674427069]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-Wege_Messlinen-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Abbildung&nbsp;3: Darstellung der beiden genutzten Wege und den definerten Start-, Ziel- und Messlinen. Wanderweg nördlich in schwarz, Strasse südlich in balu, Startlinie bei der Weide in grün, Messlinen in rosa und Zielline beim Melkstand in rot.
+</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+</section>
+<section id="discussion" class="level2">
+<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
+</section>
+<section id="appendix" class="level2">
+<h2 class="anchored" data-anchor-id="appendix">Appendix</h2>
+<blockquote class="blockquote">
+<p>was für ein Word Dokument ist da gemint? Kümerst Du dich darum?</p>
+</blockquote>
+<section id="wordcount" class="level3">
+<h3 class="anchored" data-anchor-id="wordcount">Wordcount</h3>
+<!-- after installing the wordcountadding, remove the line "#| eval: false" -->
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>wordcountaddin<span class="sc">::</span><span class="fu">word_count</span>(<span class="st">"index.qmd"</span>)</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>:::</p>
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">Literatur</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-bøe2003" class="csl-entry" role="listitem">
+Bøe, Knut Egil, und Gry Færevik. 2003. <span>„Grouping and Social Preferences in Calves, Heifers and Cows“</span>. <em>Applied Animal Behaviour Science</em> 80 (3): 175–90. <a href="https://doi.org/10.1016/S0168-1591(02)00217-4">https://doi.org/10.1016/S0168-1591(02)00217-4</a>.
+</div>
+<div id="ref-boyland2016" class="csl-entry" role="listitem">
+Boyland, Natasha K., David T. Mlynski, Richard James, Lauren J. N. Brent, und Darren P. Croft. 2016. <span>„The Social Network Structure of a Dynamic Group of Dairy Cows: From Individual to Group Level Patterns“</span>. <em>Applied Animal Behaviour Science</em> 174 (Januar): 1–10. <a href="https://doi.org/10.1016/j.applanim.2015.11.016">https://doi.org/10.1016/j.applanim.2015.11.016</a>.
+</div>
+<div id="ref-FrairEtal2010" class="csl-entry" role="listitem">
+Frair, Jacqueline L., John Fieberg, Mark Hebblewhite, Francesca Cagnacci, Nicholas J. DeCesare, und Luca Pedrotti. 2010. <span>„Resolving issues of imprecise and habitat-biased locations in ecological analyses using <span>GPS</span> telemetry data“</span>. <em>Philosophical Transactions of the Royal Society B: Biological Sciences</em> 365 (1550): 2187–2200. <a href="https://doi.org/10.1098/rstb.2010.0044">https://doi.org/10.1098/rstb.2010.0044</a>.
+</div>
+<div id="ref-HofmannWellenhofEtal2008" class="csl-entry" role="listitem">
+Hofmann-Wellenhof, Bernhard, Herbert Lichtenegger, und Erwin Wasle. 2008. <em><span>GNSS</span> – <span>Global Navigation Satellite Systems</span>: <span>GPS</span>, <span>GLONASS</span>, <span>Galileo</span>, and more</em>. Wien: Springer. <a href="https://doi.org/10.1007/978-3-211-73017-1">https://doi.org/10.1007/978-3-211-73017-1</a>.
+</div>
+<div id="ref-kurt2024" class="csl-entry" role="listitem">
+Kurt, Manuel, Ruozhu Han, Maximilian Meyer, Cristian Moreno Garcia, Megan Mortin, und Caren Pauler. 2024. <span>„PeaMaps: Promoting ecological and economic sustainability and animal welfare by matching cattle productivity and site properties in mountain rangelands“</span>. <a href="https://data.snf.ch/grants/grant/219655">https://data.snf.ch/grants/grant/219655</a>.
+</div>
+<div id="ref-LaubePurves2011" class="csl-entry" role="listitem">
+Laube, Patrick, und Ross S. Purves. 2011. <span>„How fast is a cow? <span>Cross-Scale</span> Analysis of Movement Data“</span>. <em>Transactions in GIS</em> 15 (3): 401–18. <a href="https://doi.org/10.1111/j.1467-9671.2011.01256.x">https://doi.org/10.1111/j.1467-9671.2011.01256.x</a>.
+</div>
+<div id="ref-sf" class="csl-entry" role="listitem">
+Pebesma, Edzer, und Roger Bivand. 2023. <em><span>Spatial Data Science: With applications in R</span></em>. <span>Chapman and Hall/CRC</span>. <a href="https://doi.org/10.1201/9780429459016">https://doi.org/10.1201/9780429459016</a>.
+</div>
+<div id="ref-R" class="csl-entry" role="listitem">
+R Core Team. 2025. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
+</div>
+<div id="ref-raussi2005" class="csl-entry" role="listitem">
+Raussi, Satu, Alain Boissy, Eric Delval, Philippe Pradel, Jutta Kaihilahti, und Isabelle Veissier. 2005. <span>„Does Repeated Regrouping Alter the Social Behaviour of Heifers?“</span> <em>Applied Animal Behaviour Science</em> 93 (1-2): 1–12. <a href="https://doi.org/10.1016/j.applanim.2004.12.001">https://doi.org/10.1016/j.applanim.2004.12.001</a>.
+</div>
+<div id="ref-silk2003" class="csl-entry" role="listitem">
+Silk, Joan B., Susan C. Alberts, und Jeanne Altmann. 2003. <span>„Social Bonds of Female Baboons Enhance Infant Survival“</span>. <em>Science</em> 302 (5648): 1231–34. <a href="https://doi.org/10.1126/science.1088580">https://doi.org/10.1126/science.1088580</a>.
+</div>
+<div id="ref-stanton2012" class="csl-entry" role="listitem">
+Stanton, Margaret A., und Janet Mann. 2012. <span>„Early Social Networks Predict Survival in Wild Bottlenose Dolphins“</span>. Herausgegeben von Gabriele Sorci. <em>PLoS ONE</em> 7 (10): e47508. <a href="https://doi.org/10.1371/journal.pone.0047508">https://doi.org/10.1371/journal.pone.0047508</a>.
+</div>
+<div id="ref-strickhof.ch2025" class="csl-entry" role="listitem">
+strickhof.ch. 2025. <span>„Welche Kuh passt auf die Alp?“</span> <a href="https://www.strickhof.ch/publikationen/welche-kuh-passt-auf-die-alp/">https://www.strickhof.ch/publikationen/welche-kuh-passt-auf-die-alp/</a>.
+</div>
+<div id="ref-tmap" class="csl-entry" role="listitem">
+Tennekes, Martijn. 2018. <span>„<span>tmap</span>: Thematic Maps in <span>R</span>“</span>. <em>Journal of Statistical Software</em> 84 (6): 1–39. <a href="https://doi.org/10.18637/jss.v084.i06">https://doi.org/10.18637/jss.v084.i06</a>.
+</div>
+<div id="ref-vonkeyserlingk2008" class="csl-entry" role="listitem">
+Von Keyserlingk, M. A. G., D. Olenick, und D. M. Weary. 2008. <span>„Acute Behavioral Effects of Regrouping Dairy Cows“</span>. <em>Journal of Dairy Science</em> 91 (3): 1011–16. <a href="https://doi.org/10.3168/jds.2007-0532">https://doi.org/10.3168/jds.2007-0532</a>.
+</div>
+<div id="ref-walker2015" class="csl-entry" role="listitem">
+Walker, Jessica K., David R. Arney, Natalie K. Waran, Ian G. Handel, und Clive J. C. Phillips. 2015. <span>„The Effect of Conspecific Removal on Behavioral and Physiological Responses of Dairy Cattle“</span>. <em>Journal of Dairy Science</em> 98 (12): 8610–22. <a href="https://doi.org/10.3168/jds.2014-8937">https://doi.org/10.3168/jds.2014-8937</a>.
+</div>
+<div id="ref-ggplot2" class="csl-entry" role="listitem">
+Wickham, Hadley. 2016. <em>ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. <a href="https://ggplot2.tidyverse.org">https://ggplot2.tidyverse.org</a>.
+</div>
+<div id="ref-tidyverse" class="csl-entry" role="listitem">
+Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy D’Agostino McGowan, Romain François, Garrett Grolemund, u.&nbsp;a. 2019. <span>„Welcome to the <span>tidyverse</span>“</span>. <em>Journal of Open Source Software</em> 4 (43): 1686. <a href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.
+</div>
+<div id="ref-wittig2008" class="csl-entry" role="listitem">
+Wittig, Roman M., Catherine Crockford, Julia Lehmann, Patricia L. Whitten, Robert M. Seyfarth, und Dorothy L. Cheney. 2008. <span>„Focused Grooming Networks and Stress Alleviation in Wild Female Baboons“</span>. <em>Hormones and Behavior</em> 54 (1): 170–77. <a href="https://doi.org/10.1016/j.yhbeh.2008.02.009">https://doi.org/10.1016/j.yhbeh.2008.02.009</a>.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Kopiert");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Kopiert");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

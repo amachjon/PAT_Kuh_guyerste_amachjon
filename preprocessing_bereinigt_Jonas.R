@@ -383,9 +383,9 @@ kreuzungszeiten_berechnen <- function(df, linien_liste) {
            linie_typ    = name
          ) |>
          st_drop_geometry() |>
-         select(quelle_layer, Rasse_ID, richtung, route, linie_typ, Time_kreuzung, Rasse, Tageszeit) |>
-         group_by(quelle_layer, Rasse_ID, richtung) #|>
-         #slice_min(Time_kreuzung, n = 1, with_ties = FALSE) #nimt inm falle mehrerer überschreitungen die erste. 
+         dplyr::select(quelle_layer, Rasse_ID, richtung, route, linie_typ, Time_kreuzung, Rasse, Tageszeit) |>
+         group_by(quelle_layer, Rasse_ID, richtung) |>
+         slice_min(Time_kreuzung, n = 1, with_ties = FALSE) #nimt inm falle mehrerer überschreitungen die erste. 
   }) |>
     bind_rows()
 }
@@ -655,7 +655,7 @@ erste_kreuzung <- kreuzungs_zeiten |>
   slice_min(Time_kreuzung, n = 1, with_ties = FALSE) |>
   ungroup()
 
-# 2. Nächster GPS-Punkt jeder Kuh zu diesem Zeitpunkt
+# Nächster GPS-Punkt jeder Kuh zu diesem Zeitpunkt
 positionen <- erste_kreuzung |>
   rowwise() |>
   mutate(pos = list({
@@ -830,260 +830,103 @@ plot(g_dist,
      vertex.label.cex = 0.8,
      main = "Wie oft waren Kühe innerhalb 5m beieinander")
   
+###########################################################################
+# Statistik zu Gruppen: 
+
+# Rassen-Matrix erstellen (gleiche Rasse = 1, verschiedene = 0)
+rasse_vektor <- str_extract(alle_kuehe, "^[A-Z]+") #Rasse aus RassenID ziehen
+
+rassen_matrix <- outer(rasse_vektor, rasse_vektor, "==") + 0L
+dimnames(rassen_matrix) <- list(alle_kuehe, alle_kuehe) #Zeilen und Spalten nahmen hinzu fügen. 
+diag(rassen_matrix) <- 0 #Diagonal Null setzen
+
+# Mantel-Test
+mantel_result <- mantel(dist_matrix, rassen_matrix, method = "pearson", permutations = 999)
+print(mantel_result)
+
+# Visualisierung: Co-Occurrence 
+co_long <- dist_matrix  |>
+  as.data.frame() |>
+  rownames_to_column("Kuh1") |>
+  pivot_longer(-Kuh1, names_to = "Kuh2", values_to = "co_occur") |>
+  filter(Kuh1 < Kuh2) |>   # nur oberes Dreieck der Matrix behalten / keine Duplikate
+  mutate(
+    gleiche_rasse = str_extract(Kuh1, "^[A-Z]+") == str_extract(Kuh2, "^[A-Z]+"), #Vergleichen der Rasse (extrahiert aus RassenID)
+    paar_typ      = if_else(gleiche_rasse, "Gleiche Rasse", "Verschiedene Rasse")
+  )
+
+#Plot erstllen 
+ggplot(co_long, aes(x = paar_typ, y = co_occur, fill = paar_typ)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.15, alpha = 0.3, size = 1) +
+  scale_fill_manual(values = c("Gleiche Rasse"      = "green",
+                               "Verschiedene Rasse" = "blue")) +
+  labs(
+    x        = NULL,
+    y        = "Begegnungshäufigkeit  (< 5 m)",
+    fill     = NULL
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
   
-  
-  
-  
-##################################################################################
+###############################################################################
 
-# 2. Co-occurrence Matrix
-alle_kuehe <- sort(unique(liste_positionen$Rasse_ID))
-co_matrix  <- matrix(0L, nrow = length(alle_kuehe), ncol = length(alle_kuehe),
-                     dimnames = list(alle_kuehe, alle_kuehe))
+# Kurskalwallis Test auf Rängen: 
+kruskal_result <- kruskal(max(analyse_daten$rang) + 1 - analyse_daten$rang,
+                          analyse_daten$Rasse_ID,
+                          p.adj   = "BH",
+                          group   = TRUE,
+                          console = TRUE)
 
-events <- cluster_results |>
-  filter(!is.na(cluster)) |>
-  group_by(quelle_layer, richtung, ref_linie, ref_time) |>
-  group_split()
+labels_kw <- tibble(
+  Rasse_ID = rownames(kruskal_result$groups),
+  groups   = str_trim(kruskal_result$groups$groups),
+  y_pos    = min(analyse_daten$rang, na.rm = TRUE) - 0.5
+)
 
-for (ev in events) {
-  idx <- ev$Rasse_ID
-  mat <- outer(ev$cluster, ev$cluster, "==") + 0L
-  dimnames(mat) <- list(idx, idx)
-  co_matrix[idx, idx] <- co_matrix[idx, idx] + mat
-}
-
-
-events[1]
-
-|>
-  rowwise() |>
-  mutate(pos = list({
-    ql <- quelle_layer; ri <- richtung; tc <- Time_kreuzung
-    
-      mutate(x = st_coordinates(geom)[, 1],
-             y = st_coordinates(geom)[, 2]) |>
-      st_drop_geometry() |>
-      select(Rasse_ID, x, y)
-  })) |>
-  ungroup()
-
-cluster_zuweisung <- function(pos_df) {
-  if (nrow(pos_df) < 3) return(NULL)
-  coords <- as.matrix(pos_df[, c("x", "y")])
-  
-  ckm      <- cascadeKM(coords,
-                        inf.gr    = 2,
-                        sup.gr    = min(nrow(pos_df) - 1, 6),
-                        criterion = "ssi")
-  
-  ssi_vals <- ckm$results[nrow(ckm$results), ]
-  k_idx    <- which.max(ssi_vals)
-  
-  if (length(k_idx) == 0) return(NULL)   # alle SSI-Werte NA
-  
-  k <- as.integer(colnames(ckm$results)[k_idx])
-  
-  if (is.na(k) || k < 2) return(NULL)    # k ungültig
-  
-  km <- cclust(coords, centers = k, method = "kmeans")
-  pos_df |> mutate(cluster = km$cluster)
-}
- 
-
-  
-
-
-cluster_results <- positionen |>
-  mutate(cluster_df = map(pos, cluster_zuweisung))
-
-# 4. Co-occurrence Matrix aufbauen (Summe über alle Zeitpunkte)
-alle_kuehe <- sort(unique(daten_weg$Rasse_ID))
-
-co_matrix <- matrix(0L,
-                    nrow = length(alle_kuehe),
-                    ncol = length(alle_kuehe),
-                    dimnames = list(alle_kuehe, alle_kuehe))
-
-for (cd in cluster_results$cluster_df) {
-  if (is.null(cd)) next
-  mat        <- outer(cd$cluster, cd$cluster, "==") + 0L
-  dimnames(mat) <- list(cd$Rasse_ID, cd$Rasse_ID)
-  idx        <- cd$Rasse_ID
-  co_matrix[idx, idx] <- co_matrix[idx, idx] + mat
-}
-
-
-
-
-#################################################################################
-
-# Rankplot mit Höhenprofil (Wanderweg, Mittelwerte):
-kreuzung_ww <- kreuzung_sum |>
-  filter(route == "Wanderweg") |>
-  mutate(linie_typ = as.numeric(linie_typ))
-
-ggplot(kreuzung_ww, aes(x = linie_typ, y = mean_rang, group = Rasse_ID, color = Rasse_ID)) +
-  # #geom_ribbon(data = hoehen_profil_ww,
-  #             aes(x = linie_typ, ymin = hoehe_skaliert, ymax = 20, group = 1),
-  #             fill = "grey85", color = "grey60",
-  #             inherit.aes = FALSE) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 3) +
-  geom_text(aes(label = Rasse_ID),
-            data = filter(kreuzung_ww, linie_typ == 0),
-            hjust = 1.2, size = 3) +
-  geom_text(aes(label = Rasse_ID),
-            data = filter(kreuzung_ww, linie_typ == 6),
-            hjust = -0.2, size = 3) +
-  scale_color_manual(values = farb_vektor) +
-  scale_y_reverse(breaks = 1:20) +
-  scale_x_continuous(breaks = 0:6, labels = c("Weide", paste("ML", 1:5), "Melkstand")) +
-  labs(title = "Rangveränderung entlang des Wanderwegs", x = NULL, y = "Mittlerer Rang (1 = Erster)") +
+# Boxplot
+ggplot(analyse_daten, aes(x = Rasse_ID, y = rang, fill = Rasse)) +
+  geom_boxplot() +
+  geom_text(data = labels_kw,
+            aes(x = Rasse_ID, y = y_pos, label = groups),
+            hjust = 0.5, vjust = 1,
+            inherit.aes = FALSE) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 3) +
+  scale_fill_manual(values = c("HO" = "#e6a8a8",
+                               "OB" = "#a8a8e6",
+                               "HW" = "#a8dba8")) +
+  labs(title = "Rang pro Kuh", x = NULL, y = "Rang (1 = Erster)") +
+  scale_y_reverse() +
   theme_minimal() +
   theme(legend.position = "none")
 
-# Höhenprofil aus Wanderweg-Punkten aufbereiten:
-hoehen_profil <- daten_weg |>
-  filter(route == "Wanderweg", richtung == "Hinweg") |>
-  mutate(
-    linie_typ = (st_coordinates(st_transform(geom, 4326))[, 1] - S_E[1]) / diff(S_E) * 6
-  ) |>
-  st_drop_geometry() |>
-  filter(between(linie_typ, 0, 6)) |>
-  mutate(linie_typ = round(linie_typ, 1)) |>
-  group_by(linie_typ) |>
-  summarise(Altitude = mean(Altitude, na.rm = TRUE)) |>
-  arrange(linie_typ) |>
-  mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
+# Teststatistik und p-Wert
+kruskal_result$statistics
+
+# Mittlere Ränge pro Kuh
+kruskal_result$means
+
+# Buchstabengruppen
+kruskal_result$groups
+
+#Für eine vollständigere Auswertung mit Effektgrösse:
+
+# Kruskal-Wallis Test (base R) für sauberen Output
+kw_test <- kruskal.test(rang ~ Rasse_ID, data = analyse_daten)
+print(kw_test)
+
+# Effektgrösse: Epsilon-Quadrat 
+n <- nrow(analyse_daten)
+k <- n_distinct(analyse_daten$Rasse_ID)
+H <- kw_test$statistic
+
+eta_sq <- (H - k + 1) / (n - k)
+cat("Epsilon² =", round(eta_sq, 3),
+    "\n(0.01 = klein, 0.06 = mittel, 0.14 = gross)\n")
 
 
-hoehen_profil <- Wander_Weg |>
-  st_transform(4326) |>
-  st_coordinates() |>
-  as_tibble() |>
-  mutate(linie_typ = (X - S_E[1]) / diff(S_E) * 6) |>
-  filter(between(linie_typ, 0, 6)) |>
-  mutate(linie_typ = round(linie_typ, 1)) |>
-  group_by(linie_typ) |>
-  summarise(Altitude = mean(Z, na.rm = TRUE)) |>
-  arrange(linie_typ) |>
-  mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
+# Gleichmässigkeit der Gruppenvarianzen (Levene)
+car::leveneTest(rang ~ Rasse_ID, data = analyse_daten)
 
-hoehen_profil <- alle_daten |>
-  filter(quelle_layer == "06-25-A", Hour < 17, Rasse_ID == "HO01") |>
-  filter(is.na(steplength) | steplength > 5) |>
-  mutate(
-    linie_typ = (st_coordinates(st_transform(geom, 4326))[, 1] - S_E[1]) / diff(S_E) * 6
-  ) |>
-  st_drop_geometry() |>
-  filter(between(linie_typ, 0, 6)) |>
-  mutate(linie_typ = round(linie_typ, 1)) |>
-  group_by(linie_typ) |>
-  summarise(Altitude = mean(Altitude, na.rm = TRUE)) |>
-  arrange(linie_typ) |>
-  mutate(hoehe_skaliert = scales::rescale(Altitude, to = c(15.5, 11)))
-
-rank_plot <- function(daten, y_var, hoehen_dat) {
-  y_name  <- rlang::as_label(enquo(y_var))
-  y_label <- if (y_name == "mean_rang") "Mittlerer Rang (1 = Erster)" else "Mittlerer Rückstand [s]"
-  route   <- unique(daten$route)
-  y_ceil  <- max(dplyr::pull(daten, {{ y_var }}), na.rm = TRUE) * 1.1
-  
-  ggplot(daten, aes(x = linie_typ, y = {{ y_var }}, group = Rasse_ID, color = Rasse_ID)) +
-    geom_ribbon(data = hoehen_dat,
-                aes(x = linie_typ, ymin = hoehe_skaliert, ymax = y_ceil, group = 1),
-                fill = "grey85", color = "grey60",
-                inherit.aes = FALSE) +
-    geom_line(linewidth = 1) +
-    geom_point(size = 3) +
-    geom_text(aes(label = Rasse_ID),
-              data = filter(daten, linie_typ == min(linie_typ)),
-              hjust = 1.2, size = 3) +
-    geom_text(aes(label = Rasse_ID),
-              data = filter(daten, linie_typ == max(linie_typ)),
-              hjust = -0.2, size = 3) +
-    scale_color_manual(values = farb_vektor) +
-    scale_y_reverse() +
-    scale_x_continuous(breaks = 0:6, labels = c("Wiese", paste("ML", 1:5), "Melkstand")) +
-    labs(title = paste("Entwicklung entlang:", route), x = NULL, y = y_label) +
-    theme_minimal() +
-    theme(legend.position = "none")
-}
-
-# Aufruf:
-plot_rankprofil(kreuzung_ww,  mean_rang, hoehen_profil_ww)
-plot_rankprofil(kreuzung_str, mean_rang)
-plot_rankprofil(kreuzung_ww,  mean_rückstand)
-
-
-daten_weg$Tageszeit <- substr(daten_weg$quelle_layer,7,7)
-
-
-positionen$pos[[1]]   # Daten anschauen — evtl. alle Punkte identisch?
-
-
-ckm_test <- cascadeKM(as.matrix(positionen$pos[[1]][, c("x","y")]),
-                      inf.gr = 2, sup.gr = 3, criterion = "ssi")
-rownames(ckm_test$results)
-
-
-cluster_zuweisung <- function(pos_df) {
-  if (nrow(pos_df) < 3) return(NULL)
-  coords <- as.matrix(pos_df[, c("x", "y")])
-  
-  ckm <- cascadeKM(coords,
-                   inf.gr    = 2,
-                   sup.gr    = min(nrow(pos_df) - 1, 6),
-                   criterion = "ssi")
-  
-  # Letzte Zeile = SSI-Kriterium (unabhängig vom exakten Zeilennamen)
-  k <- as.integer(colnames(ckm$results)[which.max(ckm$results[nrow(ckm$results), ])])
-  
-  km <- cclust(coords, centers = k, method = "kmeans")
-  pos_df |> mutate(cluster = km$cluster)
-}
-
-cluster_zuweisung <- function(pos_df) {
-  if (nrow(pos_df) < 3) return(NULL)
-  coords <- as.matrix(pos_df[, c("x", "y")])
-  
-  # Optimale Clusteranzahl mit SSI (vegan)
-  ckm <- cascadeKM(coords,
-                   inf.gr   = 2,
-                   sup.gr   = min(nrow(pos_df) - 1, 6),
-                   criterion = "ssi")
-  k   <- as.integer(colnames(ckm$results)[which.max(ckm$results["SSI", ])])
-  
-  # Clustering mit cclust
-  km  <- cclust(coords, centers = k, method = "kmeans")
-  pos_df |> mutate(cluster = km$cluster)
-}
-
-cluster_results <- positionen |>
-  mutate(cluster_df = map(pos, cluster_zuweisung))
-
-
-# 3. Hilfsfunktion: optimale Cluster-Anzahl (SSI) → k-means
-cluster_zuweisung <- function(pos_df) {
-  if (nrow(pos_df) < 3) return(NULL)
-  coords <- as.matrix(pos_df[, c("x", "y")])
-  k <- suppressMessages(
-    NbClust(coords, min.nc = 2, max.nc = min(nrow(pos_df) - 1, 6),
-            method = "kmeans", index = "ssi")$Best.nc["Number_clusters"]
-  )
-  pos_df |> mutate(cluster = kmeans(coords, centers = k, nstart = 10)$cluster)
-}
-
-# Funktion welche Pro Kuh die position vor der Kreuzungszeit berechent: 
-positionen <- function(x){
-  daten_weg |>
-    filter(quelle_layer == erste_kreuzung$quelle_layer[x],
-           richtung == erste_kreuzung$richtung[x]) |>
-    group_by(Rasse_ID) |>
-    slice_min(abs(as.numeric(difftime(Time, erste_kreuzung$Time_kreuzung [x], 
-                                      units = "secs"))), n = 1, with_ties = FALSE) |>
-    ungroup() %>% 
-    mutate(ref_linie = erste_kreuzung$linie_typ[x],
-           ref_time = erste_kreuzung$Time_kreuzung[x])
-} 
+# Stichprobengrösse pro Kuh
+analyse_daten |> count(Rasse_ID)

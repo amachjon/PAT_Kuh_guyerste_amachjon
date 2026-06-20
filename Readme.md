@@ -19,17 +19,12 @@ quarto render Readme.md --to pdf
 
 **Patterns & Trends in Environmental Data / Computational Movement Analysis / Geo 880**
 
-+----------------+------------------------------------------------------------------------------------------------------------------+
-| Semester:      | FS26                                                                                                             |
-+:===============+:=================================================================================================================+
-| **Daten:**     | GPS-Daten von Milchkühen sowie Temperaturdaten                                                                   |
-+----------------+------------------------------------------------------------------------------------------------------------------+
-| **Titel:**     | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
-+----------------+------------------------------------------------------------------------------------------------------------------+
-| **Student 1:** | Jonas Amacher                                                                                                    |
-+----------------+------------------------------------------------------------------------------------------------------------------+
-| **Student 2:** | Stefanie Guyer                                                                                                   |
-+----------------+------------------------------------------------------------------------------------------------------------------+
+| Semester: | FS26 |
+|:---|:---|
+| **Daten:** | GPS-Daten von Milchkühen sowie Temperaturdaten |
+| **Titel:** | Einfluss der Temperatur auf das Bewegungsverhalten dreier Milchkuhrassen auf dem Weg von der Weide zum Melkstand |
+| **Student 1:** | Jonas Amacher |
+| **Student 2:** | Stefanie Guyer |
 
 ## Hintergrund
 
