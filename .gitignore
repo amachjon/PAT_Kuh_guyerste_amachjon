@@ -6,3 +6,6 @@
 /GPS path data
 GPS path data/*
 GPS path data.zip
+*.csv
+*.png
+Grafik_*

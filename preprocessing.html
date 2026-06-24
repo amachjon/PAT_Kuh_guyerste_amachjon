@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>preprocessing</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="preprocessing_files/libs/clipboard/clipboard.min.js"></script>
+<script src="preprocessing_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="preprocessing_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="preprocessing_files/libs/quarto-html/popper.min.js"></script>
+<script src="preprocessing_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="preprocessing_files/libs/quarto-html/anchor.min.js"></script>
+<link href="preprocessing_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="preprocessing_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="preprocessing_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="preprocessing_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="preprocessing_files/libs/bootstrap/bootstrap-bb462d781dde1847d9e3ccf7736099dd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">preprocessing</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"sf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Linking to GEOS 3.13.1, GDAL 3.11.4, PROJ 9.7.0; sf_use_s2() is TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"tidyverse"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Paket 'dplyr' wurde unter R Version 4.5.3 erstellt</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.1     ✔ readr     2.1.5
+✔ forcats   1.0.1     ✔ stringr   1.6.0
+✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.1.0     </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"dplyr"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"purrr"</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"stringr"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"tmap"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"lubridate"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"zoo"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attache Paket: 'zoo'
+
+Die folgenden Objekte sind maskiert von 'package:base':
+
+    as.Date, as.Date.numeric</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Eine liste aller .gpkg Dateien im Ordner erstellen:</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>gpkg_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"GPS Path data/"</span>, <span class="at">pattern =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.gpkg$"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Hilfsfunktion: liest einen Layer ein.</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>f_layer <span class="ot">&lt;-</span> <span class="cf">function</span>(filename,layer) { <span class="co">#Erstellt eine Funktion mit dem Nahmen f_layer, welche eiun filename und ein layername als Imput braucht.</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_read</span>(filename, <span class="at">layer =</span> layer, <span class="at">quiet =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> <span class="co"># Liest einen Layer ein. </span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">quelle_file  =</span> <span class="fu">basename</span>(filename), <span class="co"># Fügt den Dateinamen in einer Spalte hinzu.</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">quelle_layer  =</span> layer <span class="co"># Fügt den Layername in einer Spalte hinzu.</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 2.Hilfsfunktion Liest ein File ein (alle Layer) und erstellt darau ein Datea Frame im long format.</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>f_files <span class="ot">&lt;-</span> <span class="cf">function</span>(filename) { <span class="co">#Erstellt eine Funktion mit dem Nahmen f_file welche eiun filename als Imput braucht.</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  layer_names <span class="ot">&lt;-</span> <span class="fu">st_layers</span>(filename)<span class="sc">$</span>name <span class="co"># Listet alle Layer auf welche im file enthalten sind.</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(layer_names, \(layer) <span class="fu">f_layer</span>(filename, layer)) <span class="co"># Nimt die Liste der Layer und führt füe jedes element die Funktion f_layer aus. (\(layer)´weil map_dfr eigendlich eine Funktion mit nur einem Imput erwartet.)</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Alle Date Einlesen in eine grosse Tabelle (long Format)</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>Kuh_Daten <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(gpkg_files, f_files) <span class="co">#Führt die Einlese Funktion für alle gpkg Files durch und fügt die Daten in eiener einzigen Tabelle zusammen. </span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="do">###############################################################################</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="do">###############################################################################</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Datenstruktur </span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>alle_daten <span class="ot">&lt;-</span> Kuh_Daten <span class="sc">|&gt;</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">Time =</span> <span class="fu">as.POSIXct</span>(Time, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>, <span class="at">tz =</span> <span class="st">"UTC"</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="do">###############################################################################</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Konvinience Spalten hinzufügen: </span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co"># RASSE </span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>alle_daten <span class="ot">&lt;-</span> alle_daten <span class="sc">|&gt;</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">Rasse =</span> <span class="fu">str_extract</span>(quelle_file, <span class="st">"(?&lt;=-)[A-Z]{2}"</span>)</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="co"># ID pro Kuh und Rasse (Bsp.: R1-HO01 = 01)</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>alle_daten <span class="ot">&lt;-</span> alle_daten <span class="sc">|&gt;</span> </span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="fu">str_extract</span>(quelle_file, <span class="st">"</span><span class="sc">\\</span><span class="st">d{2}(?=</span><span class="sc">\\</span><span class="st">.gpkg)"</span>)</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Rasse und ID </span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>alle_daten <span class="ot">&lt;-</span> alle_daten <span class="sc">|&gt;</span> </span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Rasse_ID =</span> <span class="fu">str_extract</span>(quelle_file, <span class="st">"(?&lt;=-)</span><span class="sc">\\</span><span class="st">w+(?=</span><span class="sc">\\</span><span class="st">.gpkg)"</span>)</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Time &gt; HMS = nur hour, minute und seconds</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>alle_daten <span class="ot">&lt;-</span> alle_daten <span class="sc">|&gt;</span> </span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">HMS =</span> <span class="fu">str_extract</span>(alle_daten<span class="sc">$</span>Time, <span class="st">"</span><span class="sc">\\</span><span class="st">d{2}:</span><span class="sc">\\</span><span class="st">d{2}:</span><span class="sc">\\</span><span class="st">d{2}"</span>))</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Spalte mit Versuchsgruppe hinzufügen:</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>alle_daten<span class="sc">$</span>Grupe <span class="ot">&lt;-</span> <span class="fu">substr</span>(alle_daten<span class="sc">$</span>quelle_file, <span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="co"># Spalte mit Tageszeit: </span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>alle_daten<span class="sc">$</span>Tageszeit <span class="ot">&lt;-</span> <span class="fu">substr</span>(alle_daten<span class="sc">$</span>quelle_layer,<span class="dv">7</span>,<span class="dv">7</span>)</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="co"># Hilfsfunktionen Definieren:</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>distance_by_element <span class="ot">&lt;-</span> <span class="cf">function</span>(later, now){</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_distance</span>(later, now, <span class="at">by_element =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="co"># Distanz zum Nächsten Punkt berechenen</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>alle_daten <span class="ot">&lt;-</span> alle_daten <span class="sc">|&gt;</span></span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quelle_layer, Rasse_ID) <span class="sc">|&gt;</span></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Time, <span class="at">.by_group =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">steplength =</span> <span class="fu">mapply</span>(distance_by_element, geom, <span class="fu">lead</span>(geom))</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a><span class="do">#####################################################</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a><span class="do">#####################################################</span></span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a><span class="do">###### Weg definieren: ############################</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>Wander_Weg <span class="ot">&lt;-</span> alle_daten <span class="sc">|&gt;</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(quelle_layer <span class="sc">==</span> <span class="st">"06-25-A"</span> <span class="sc">&amp;</span> <span class="co">#Erste Kuh die diesen Weg genommen hat dient als grundlage</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>           Hour <span class="sc">&lt;</span> <span class="dv">17</span> <span class="sc">&amp;</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>           Rasse_ID <span class="sc">==</span> <span class="st">"HO01"</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Time) <span class="sc">|&gt;</span></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(steplength) <span class="sc">|</span> steplength <span class="sc">&gt;</span> <span class="dv">5</span>) <span class="sc">|&gt;</span> <span class="co"># mind. 5m Bewegung</span></span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">st_coordinates</span>(geom)[, <span class="dv">1</span>],</span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">st_coordinates</span>(geom)[, <span class="dv">2</span>],</span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">rollmean</span>(x, <span class="at">k =</span> <span class="dv">3</span>, <span class="at">fill =</span> <span class="st">"extend"</span>),  <span class="co"># Weg glätten (mittelwert über ein fenster von 3 bilden)</span></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">rollmean</span>(y, <span class="at">k =</span> <span class="dv">3</span>, <span class="at">fill =</span> <span class="st">"extend"</span>)</span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> <span class="dv">2056</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">geometry =</span> <span class="fu">st_cast</span>(<span class="fu">st_combine</span>(geometry), <span class="st">"LINESTRING"</span>))</span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>Strasse <span class="ot">&lt;-</span> alle_daten <span class="sc">|&gt;</span></span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(quelle_layer <span class="sc">==</span> <span class="st">"06-27-M"</span> <span class="sc">&amp;</span> <span class="co">#Erste Kuh die diesen Weg genommen hat dient als grundlage</span></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>           Hour <span class="sc">&lt;</span> <span class="dv">7</span><span class="sc">&amp;</span></span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>           Rasse_ID <span class="sc">==</span> <span class="st">"HO01"</span></span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Time) <span class="sc">|&gt;</span></span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(steplength) <span class="sc">|</span> steplength <span class="sc">&gt;</span> <span class="dv">5</span>) <span class="sc">|&gt;</span> <span class="co"># mind. 5m Bewegung</span></span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">st_coordinates</span>(geom)[, <span class="dv">1</span>],</span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">st_coordinates</span>(geom)[, <span class="dv">2</span>],</span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">rollmean</span>(x, <span class="at">k =</span> <span class="dv">3</span>, <span class="at">fill =</span> <span class="st">"extend"</span>),   <span class="co"># Weg glätten</span></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">rollmean</span>(y, <span class="at">k =</span> <span class="dv">3</span>, <span class="at">fill =</span> <span class="st">"extend"</span>)</span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> <span class="dv">2056</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">geometry =</span> <span class="fu">st_cast</span>(<span class="fu">st_combine</span>(geometry), <span class="st">"LINESTRING"</span>))</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a><span class="co"># Hilfsfunktion für Senkrechte Linien: </span></span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>senkrechte_linie <span class="ot">&lt;-</span> <span class="cf">function</span>(weg_coords, idx, <span class="at">laenge =</span> <span class="dv">100</span>, <span class="at">fenster =</span> <span class="dv">3</span>) {</span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>  idx1 <span class="ot">&lt;-</span> idx <span class="sc">-</span> fenster <span class="co"># Punkte am anfuang und ende das Fensters ermitteln.</span></span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>  idx2 <span class="ot">&lt;-</span> idx <span class="sc">+</span> fenster</span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>  dx <span class="ot">&lt;-</span> weg_coords[idx2, <span class="dv">1</span>] <span class="sc">-</span> weg_coords[idx1, <span class="dv">1</span>] <span class="co">#Veränderung in x und y richtung feststellen.</span></span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>  dy <span class="ot">&lt;-</span> weg_coords[idx2, <span class="dv">2</span>] <span class="sc">-</span> weg_coords[idx1, <span class="dv">2</span>]</span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>  len <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(dx<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> dy<span class="sc">^</span><span class="dv">2</span>) <span class="co"># Länge des Vektors ermitteln.</span></span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>  perp_x <span class="ot">&lt;-</span> <span class="sc">-</span>dy <span class="sc">/</span> len <span class="co"># Vektor drehung und normierung auf Länge 1. </span></span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>  perp_y <span class="ot">&lt;-</span>  dx <span class="sc">/</span> len</span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a>  mx <span class="ot">&lt;-</span> weg_coords[idx, <span class="dv">1</span>] <span class="co">#Position der Line in der mitte des Fensters festlegen. </span></span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>  my <span class="ot">&lt;-</span> weg_coords[idx, <span class="dv">2</span>]</span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_linestring</span>(<span class="fu">rbind</span>( <span class="co"># Linie einfügen</span></span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(mx <span class="sc">-</span> perp_x <span class="sc">*</span> laenge<span class="sc">/</span><span class="dv">2</span>, my <span class="sc">-</span> perp_y <span class="sc">*</span> laenge<span class="sc">/</span><span class="dv">2</span>),</span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(mx <span class="sc">+</span> perp_x <span class="sc">*</span> laenge<span class="sc">/</span><span class="dv">2</span>, my <span class="sc">+</span> perp_y <span class="sc">*</span> laenge<span class="sc">/</span><span class="dv">2</span>)</span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a><span class="co"># Koordinaten System transformieren: </span></span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a>str_coords      <span class="ot">&lt;-</span> <span class="fu">st_coordinates</span>(Strasse<span class="sc">$</span>geometry[[<span class="dv">1</span>]])</span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a>str_coords_4326 <span class="ot">&lt;-</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(Strasse, <span class="dv">4326</span>))</span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a><span class="co"># Koordinaten für Start und Ende des Weges ab Karte festgelegt:</span></span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>S_E <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">9.7895</span>,<span class="fl">9.8000</span>)</span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a><span class="co">#Nächster Punkt zu dieser Koordinate finden: </span></span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a>S_E_idx  <span class="ot">&lt;-</span> <span class="fu">sapply</span>(S_E, <span class="cf">function</span>(d) <span class="fu">which.min</span>(<span class="fu">abs</span>(str_coords_4326[, <span class="dv">1</span>] <span class="sc">-</span> d)))</span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a><span class="co"># Start und Endline genirieren: </span></span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>Start_Ende <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_along</span>(S_E_idx), <span class="cf">function</span>(i) {</span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a>  <span class="fu">senkrechte_linie</span>(str_coords, S_E_idx[i], <span class="at">laenge =</span> <span class="dv">800</span>, <span class="at">fenster =</span> <span class="dv">3</span>)</span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span></span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_sfc</span>(<span class="at">crs =</span> <span class="fu">st_crs</span>(<span class="dv">2056</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_sf</span>(<span class="at">S_E =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">geometry =</span> .)</span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a><span class="co"># Hilfs Funktion für Messlinien erstellen:</span></span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a>mess_linien_erstellen <span class="ot">&lt;-</span> <span class="cf">function</span>(weg, <span class="at">lon_min =</span> S_E[<span class="dv">1</span>], <span class="at">lon_max =</span> S_E[<span class="dv">2</span>], <span class="at">n =</span> <span class="dv">5</span>, <span class="at">laenge =</span> <span class="dv">100</span>, <span class="at">fenster =</span> <span class="dv">2</span>) {</span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Wählt nur den weg aus:</span></span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a>  weg_gefiltert <span class="ot">&lt;-</span> weg <span class="sc">|&gt;</span></span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_cast</span>(<span class="st">"POINT"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">st_coordinates</span>(geometry)[, <span class="dv">1</span>] <span class="sc">&lt;</span> lon_max,</span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>           <span class="fu">st_coordinates</span>(geometry)[, <span class="dv">1</span>] <span class="sc">&gt;</span> lon_min) <span class="sc">|&gt;</span></span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_transform</span>(<span class="dv">2056</span>)</span>
+<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Liest die Kordinaten aus</span></span>
+<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a>  weg_coords  <span class="ot">&lt;-</span> <span class="fu">st_coordinates</span>(weg_gefiltert<span class="sc">$</span>geometry)</span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Berechenet die Kummulierte distanz:</span></span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a>  kum_dist    <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">cumsum</span>(<span class="fu">sqrt</span>(<span class="fu">diff</span>(weg_coords[,<span class="dv">1</span>])<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="fu">diff</span>(weg_coords[,<span class="dv">2</span>])<span class="sc">^</span><span class="dv">2</span>)))</span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a>  gesamt_dist <span class="ot">&lt;-</span> <span class="fu">max</span>(kum_dist)</span>
+<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Rechnet die Abschnittlängen aus: </span></span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>  ziel_dist <span class="ot">&lt;-</span> <span class="fu">seq</span>(gesamt_dist <span class="sc">/</span> (n<span class="sc">+</span><span class="dv">1</span>), gesamt_dist <span class="sc">*</span> n<span class="sc">/</span>(n<span class="sc">+</span><span class="dv">1</span>), <span class="at">length.out =</span> n)</span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>  mess_idx  <span class="ot">&lt;-</span> <span class="fu">sapply</span>(ziel_dist, <span class="cf">function</span>(d) <span class="fu">which.min</span>(<span class="fu">abs</span>(kum_dist <span class="sc">-</span> d))) <span class="co"># Wählt das nächste Element aus. </span></span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Erstellt die Linien: </span></span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lapply</span>(<span class="fu">seq_along</span>(mess_idx), <span class="cf">function</span>(i) {</span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>    <span class="fu">senkrechte_linie</span>(weg_coords, mess_idx[i], <span class="at">laenge =</span> laenge, <span class="at">fenster =</span> fenster)</span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">%&gt;%</span></span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_sfc</span>(<span class="at">crs =</span> <span class="fu">st_crs</span>(weg)) <span class="sc">%&gt;%</span> <span class="co"># Setzt das richtige koordinatensystem</span></span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_sf</span>(<span class="at">messline =</span> <span class="dv">1</span><span class="sc">:</span>n, <span class="at">geometry =</span> .) <span class="co">#Erstellt eine Liste von geometrie Objekten. </span></span>
+<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a><span class="co"># Messlinien erstellen: </span></span>
+<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a>ww_messline <span class="ot">&lt;-</span> <span class="fu">mess_linien_erstellen</span>(Wander_Weg)</span>
+<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>str_messline <span class="ot">&lt;-</span> <span class="fu">mess_linien_erstellen</span>(Strasse)</span>
+<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
+<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a><span class="co"># Datenbereinigung:</span></span>
+<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a><span class="co"># Unnötige Layer entfernen:</span></span>
+<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a>daten_ber <span class="ot">&lt;-</span> alle_daten[<span class="sc">!</span><span class="fu">endsWith</span>(alle_daten<span class="sc">$</span>quelle_layer, <span class="st">"lns"</span>), ]</span>
+<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a><span class="co"># Der datensatz enthält am 14.7 Morgens nur eine Kuh, weglassen: </span></span>
+<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a>daten_ber <span class="ot">&lt;-</span> daten_ber[daten_ber<span class="sc">$</span>quelle_layer <span class="sc">!=</span> <span class="st">"07-14-M"</span>, ]</span>
+<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a><span class="co"># Daten Gruppe 3 für die weitera Analyse auswählen: </span></span>
+<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a><span class="co"># daten_ber &lt;- daten_ber [daten_ber$Grupe == "R1",]</span></span>
+<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a><span class="co"># daten_ber &lt;- daten_ber [daten_ber$Grupe == "R2",]</span></span>
+<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a>daten_ber <span class="ot">&lt;-</span> daten_ber [daten_ber<span class="sc">$</span>Grupe <span class="sc">==</span> <span class="st">"R3"</span>,]</span>
+<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a><span class="co"># Alle Daten die mit weniger alls 4 Sateliten bestimmt wurden Entfernen. (min 4 Sateliten sind für eine genaue position notwendig.) </span></span>
+<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a>daten_ber  <span class="ot">&lt;-</span> daten_ber [daten_ber <span class="sc">$</span>NSat <span class="sc">&gt;</span><span class="st">"3"</span>,]</span>
+<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a><span class="co"># NA daten entfernen: </span></span>
+<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a>daten_ber <span class="ot">&lt;-</span> daten_ber[<span class="sc">!</span><span class="fu">is.na</span>(daten_ber<span class="sc">$</span>NSat),]</span>
+<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a><span class="co"># Hilfsfunktion definieren: </span></span>
+<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a>difftime_secs <span class="ot">&lt;-</span> <span class="cf">function</span>(later, now) {</span>
+<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(later, now, <span class="at">units =</span> <span class="st">"secs"</span>))</span>
+<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a><span class="co"># Hilofsfunktion um ein segment aus 2 Punkten als Linestring zu definieren: (Um das auf den Punkt folgende segment zu bestimmen) </span></span>
+<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a>segment <span class="ot">&lt;-</span> <span class="cf">function</span>(p1, p2) {</span>
+<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tryCatch</span>(</span>
+<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_linestring</span>(<span class="fu">rbind</span>(<span class="fu">st_coordinates</span>(p1), <span class="fu">st_coordinates</span>(p2))),</span>
+<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a>    <span class="at">error =</span> <span class="cf">function</span>(e) <span class="fu">st_linestring</span>()  <span class="co"># falls Fehler → leere Linie zurückgeben</span></span>
+<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-213"><a href="#cb9-213" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-214"><a href="#cb9-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a><span class="co"># Zu hohe Geschwindikeiten raus filtern (Kuh nicht schneller als 25 Kmh im Alpinen gelände): </span></span>
+<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a><span class="cf">repeat</span> { <span class="co">#Repetiert das ganze fals ausreisser zu nahe aneinander liegen um erfasst zu werden. </span></span>
+<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(daten_ber)</span>
+<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Punkte:"</span>, n, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a>  daten_ber <span class="ot">&lt;-</span> daten_ber <span class="sc">|&gt;</span></span>
+<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(quelle_layer, Rasse_ID) <span class="sc">|&gt;</span></span>
+<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a>      <span class="at">timelag    =</span> <span class="fu">difftime_secs</span>(<span class="fu">lead</span>(Time), Time),</span>
+<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a>      <span class="at">segment =</span> <span class="fu">st_sfc</span>(<span class="fu">mapply</span>( segment, geom, <span class="fu">lead</span>(geom), <span class="at">SIMPLIFY =</span> <span class="cn">FALSE</span>), <span class="co">#Nach Punkt folgendes Segment generieeren und Länge davon berechnen. </span></span>
+<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a>                       <span class="at">crs =</span> <span class="fu">st_crs</span>(daten_ber)),</span>
+<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a>      <span class="at">steplength =</span> <span class="fu">as.numeric</span>(<span class="fu">st_length</span>(segment)),</span>
+<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a>      <span class="at">speed      =</span> steplength <span class="sc">/</span> timelag</span>
+<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(</span>
+<span id="cb9-230"><a href="#cb9-230" aria-hidden="true" tabindex="-1"></a>      (<span class="fu">is.na</span>(speed)      <span class="sc">|</span> speed      <span class="sc">&lt;</span> <span class="dv">7</span>) <span class="sc">&amp;</span></span>
+<span id="cb9-231"><a href="#cb9-231" aria-hidden="true" tabindex="-1"></a>        (<span class="fu">is.na</span>(<span class="fu">lag</span>(speed)) <span class="sc">|</span> <span class="fu">lag</span>(speed) <span class="sc">&lt;</span> <span class="dv">7</span>)</span>
+<span id="cb9-232"><a href="#cb9-232" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-233"><a href="#cb9-233" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(daten_ber) <span class="sc">==</span> n) <span class="cf">break</span></span>
+<span id="cb9-234"><a href="#cb9-234" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Punkte: 96131 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Start und End der Wanderung pro Tier feststellen:  </span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>S_E_Zeit_pro_Kuh <span class="ot">&lt;-</span> daten_ber <span class="sc">|&gt;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">crosses_start =</span> <span class="fu">lengths</span>(<span class="fu">st_intersects</span>(segment, Start_Ende[<span class="dv">1</span>, ])) <span class="sc">&gt;</span> <span class="dv">0</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">crosses_end   =</span> <span class="fu">lengths</span>(<span class="fu">st_intersects</span>(segment, Start_Ende[<span class="dv">2</span>, ])) <span class="sc">&gt;</span> <span class="dv">0</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(crosses_start <span class="sc">|</span> crosses_end) <span class="sc">%&gt;%</span> <span class="co"># Nur einträge behalten die mindestens 1 = True haben</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quelle_layer, Rasse_ID) <span class="sc">|&gt;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Time, <span class="at">.by_group =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">start_hin_Weg =</span> crosses_start <span class="sc">&amp;</span> <span class="fu">lead</span>(crosses_end, <span class="at">default =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    start_rück<span class="at">_Weg =</span> crosses_end <span class="sc">&amp;</span> <span class="fu">lead</span>(crosses_start, <span class="at">default =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">end_hin_Weg  =</span> <span class="fu">lag</span>(start_hin_Weg,  <span class="at">default =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    end_rück<span class="at">_Weg =</span> <span class="fu">lag</span>(start_rück_Weg, <span class="at">default =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  )  </span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Start und End Zeitpunkte pro Layer feststellen: </span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>S_E_Zeit <span class="ot">&lt;-</span> S_E_Zeit_pro_Kuh <span class="sc">|&gt;</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quelle_layer) <span class="sc">|&gt;</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">start_hin  =</span> <span class="fu">min</span>(Time[start_hin_Weg],  <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">ankunft_hin  =</span> <span class="fu">max</span>(Time[end_hin_Weg],    <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    start_rück <span class="ot">=</span> <span class="fu">min</span>(Time[start_rück_Weg], <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    ankunft_rück <span class="ot">=</span> <span class="fu">max</span>(Time[end_rück_Weg],   <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Filtern nach Zeit in der die Kühe auf dem Weg Wahren (mit 2Minuten Buffer)</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>daten_weg <span class="ot">&lt;-</span> daten_ber <span class="sc">|&gt;</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(S_E_Zeit, <span class="at">by =</span> <span class="st">"quelle_layer"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">auf_hinweg  =</span> Time <span class="sc">&gt;=</span> (start_hin  <span class="sc">-</span> <span class="fu">minutes</span>(<span class="dv">2</span>)) <span class="sc">&amp;</span> Time <span class="sc">&lt;=</span> (ankunft_hin  <span class="sc">+</span> <span class="fu">minutes</span>(<span class="dv">2</span>)),</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    auf_rückweg <span class="ot">=</span> Time <span class="sc">&gt;=</span> (start_rück <span class="sc">-</span> <span class="fu">minutes</span>(<span class="dv">2</span>)) <span class="sc">&amp;</span> Time <span class="sc">&lt;=</span> (ankunft_rück <span class="sc">+</span> <span class="fu">minutes</span>(<span class="dv">2</span>))</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(auf_hinweg <span class="sc">|</span> auf_rückweg) <span class="sc">|&gt;</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">richtung =</span> <span class="fu">case_when</span>(</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>      auf_hinweg  <span class="sc">&amp;</span> <span class="sc">!</span>auf_rückweg <span class="sc">~</span> <span class="st">"Hinweg"</span>,</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>      auf_rückweg <span class="sc">&amp;</span> <span class="sc">!</span>auf_hinweg  <span class="sc">~</span> <span class="st">"Rückweg"</span>)</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>  )<span class="sc">%&gt;%</span> </span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>auf_hinweg,<span class="sc">-</span>auf_rückweg,<span class="sc">-</span>start_hin,<span class="sc">-</span>start_rück,<span class="sc">-</span>ankunft_hin,<span class="sc">-</span>ankunft_rück)</span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Sauen welche Kuh wann den weg Vollständig absolviert hat: </span></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>vollstaendige_wege <span class="ot">&lt;-</span> S_E_Zeit_pro_Kuh <span class="sc">|&gt;</span></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quelle_layer, Rasse_ID) <span class="sc">|&gt;</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">hin_komplett  =</span> <span class="fu">any</span>(start_hin_Weg),</span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>    rück<span class="at">_komplett =</span> <span class="fu">any</span>(start_rück_Weg),</span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Nur Halb absolvierte Wege raus filtern: </span></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>daten_weg <span class="ot">&lt;-</span> daten_weg <span class="sc">|&gt;</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(vollstaendige_wege, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"quelle_layer"</span>, <span class="st">"Rasse_ID"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>    (richtung <span class="sc">==</span> <span class="st">"Hinweg"</span>  <span class="sc">&amp;</span> hin_komplett) <span class="sc">|</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>      (richtung <span class="sc">==</span> <span class="st">"Rückweg"</span> <span class="sc">&amp;</span> rück_komplett)</span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>hin_komplett, <span class="sc">-</span>rück_komplett)</span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a><span class="co"># Liste der Daten für diesen Plot Erstelen: </span></span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>Plot_Daten <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Strasse"</span>,</span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Wander_Weg"</span>,</span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Start_Ende"</span>,</span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ww_messline"</span>,</span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>  <span class="st">"str_messline"</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a><span class="co"># Weg + Start und Ende und Messlinein Plotten. </span></span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>ℹ tmap modes "plot" - "view"
+ℹ toggle with `tmap::ttm()`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>Grafik_1 <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(Wander_Weg)    <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(Strasse)       <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"blue"</span>)  <span class="sc">+</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(Start_Ende[<span class="dv">1</span>, ]) <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"green"</span>) <span class="sc">+</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(Start_Ende[<span class="dv">2</span>, ]) <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"red"</span>)<span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(ww_messline)   <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"darkgreen"</span>)   <span class="sc">+</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(str_messline)  <span class="sc">+</span> <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"darkgreen"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_save</span>(Grafik_1, <span class="st">"Grafik_1.html"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">units =</span> <span class="st">"in"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Interactive map saved to C:\Users\Jonas\Documents\10.0_Master\5.0_Paterns_and_Trends\R-Uebungen\PAT_Kuh_guyerste_amachjon\Grafik_1.html</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="do">#####</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="do">#####</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Herausfinden Wann welcher weg genommen wurde:</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># # Pro Layer und Richtung die Route mit der geringeren mittlerer Distanz zum Routentrajektoer herausfinden und zuweisen:</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>route_pro_layer <span class="ot">&lt;-</span> daten_weg <span class="sc">|&gt;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>( <span class="co"># Daten punkte auswählen welche auf dem Weg liegen: (zwoschen start unde ende)</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(geom, <span class="dv">4326</span>))[, <span class="dv">1</span>] <span class="sc">&gt;</span> S_E[<span class="dv">1</span>],</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(geom, <span class="dv">4326</span>))[, <span class="dv">1</span>] <span class="sc">&lt;</span> S_E[<span class="dv">2</span>]</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="co"># Distanz jedes Punktes zu beiden Routen berechnen:</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">dist_wanderweg =</span> <span class="fu">as.numeric</span>(<span class="fu">st_distance</span>(geom, <span class="fu">st_union</span>(Wander_Weg))),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">dist_strasse   =</span> <span class="fu">as.numeric</span>(<span class="fu">st_distance</span>(geom, <span class="fu">st_union</span>(Strasse)))</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quelle_layer, richtung) <span class="sc">|&gt;</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_dist_ww  =</span> <span class="fu">mean</span>(dist_wanderweg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_dist_str =</span> <span class="fu">mean</span>(dist_strasse,   <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">route         =</span> <span class="fu">if_else</span>(mean_dist_ww <span class="sc">&lt;</span> mean_dist_str, <span class="st">"Wanderweg"</span>, <span class="st">"Strasse"</span>),</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Route zurück in Hauptdatensatz joinen:</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>daten_weg <span class="ot">&lt;-</span> daten_weg <span class="sc">|&gt;</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    route_pro_layer <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(quelle_layer, richtung, route),</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"quelle_layer"</span>, <span class="st">"richtung"</span>)</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Daten für den volgenden Plot ergänzen:</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>Plot_Daten <span class="ot">&lt;-</span> <span class="fu">c</span> (Plot_Daten,<span class="st">"daten_weg"</span>)</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualisieren:</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"view"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>ℹ tmap modes "plot" - "view"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>Grafik_2 <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(daten_weg) <span class="sc">+</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="at">col =</span> <span class="st">"route"</span>, <span class="at">palette =</span> <span class="fu">c</span>(<span class="st">"Wanderweg"</span> <span class="ot">=</span> <span class="st">"green"</span>, <span class="st">"Strasse"</span> <span class="ot">=</span> <span class="st">"blue"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+── tmap v3 code detected ───────────────────────────────────────────────────────
+[v3-&gt;v4] `tm_tm_dots()`: migrate the argument(s) related to the scale of the
+visual variable `fill` namely 'palette' (rename to 'values') to fill.scale =
+tm_scale(&lt;HERE&gt;).[v3-&gt;v4] `tm_dots()`: use 'fill' for the fill color of polygons/symbols
+(instead of 'col'), and 'col' for the outlines (instead of 'border.col').</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_save</span>(Grafik_2, <span class="st">"Grafik_2.html"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">units =</span> <span class="st">"in"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Multiple palettes called "green" found: "kovesi.green", "tableau.green". The first one, "kovesi.green", is returned.
+Registered S3 method overwritten by 'jsonify':
+  method     from    
+  print.json jsonlite
+Interactive map saved to C:\Users\Jonas\Documents\10.0_Master\5.0_Paterns_and_Trends\R-Uebungen\PAT_Kuh_guyerste_amachjon\Grafik_2.html</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Zitpunkte wann Linien überquert wurden Ermittlen: </span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Hilfsfunktion zum berechnen des wahrscheindlichsten ¨berschreitungs zeitpunkts erstellen. </span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>kreuzungszeiten_berechnen <span class="ot">&lt;-</span> <span class="cf">function</span>(df, linien_liste) {</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  crs_df <span class="ot">&lt;-</span> <span class="fu">st_crs</span>(df)  </span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">imap</span>(linien_liste, \(linie, name) {<span class="co">#üergibt der funktion den linien Nahmen mit, damit der später noch bekant ist / zur vwerfügung steht. </span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    linie_sfc <span class="ot">&lt;-</span> <span class="fu">st_sfc</span>(linie, <span class="at">crs =</span> crs_df)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    df <span class="sc">|&gt;</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(<span class="fu">lengths</span>(<span class="fu">st_intersects</span>(segment, linie_sfc)) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">schnittpunkt =</span> <span class="fu">st_intersection</span>(segment, linie_sfc),</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">dist_zum_sp  =</span> <span class="fu">as.numeric</span>(<span class="fu">st_distance</span>(geom, schnittpunkt, <span class="at">by_element =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">anteil       =</span> dist_zum_sp <span class="sc">/</span> steplength, <span class="co"># Vergleicht distanz zum Schnitpunkt mit der gasamt dixtanz des segments. </span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">Time_kreuzung     =</span> <span class="fu">round</span>(Time <span class="sc">+</span> anteil <span class="sc">*</span> timelag), <span class="co"># fügt den entsprechenden zeitanteil zur Segmentstartzeit dazu. </span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">linie_typ    =</span> name</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">|&gt;</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">select</span>(quelle_layer, Rasse_ID, richtung, route, linie_typ, Time_kreuzung, Rasse, Tageszeit) <span class="sc">|&gt;</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(quelle_layer, Rasse_ID, richtung) <span class="sc">|&gt;</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">slice_min</span>(Time_kreuzung, <span class="at">n =</span> <span class="dv">1</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="co">#nimt inm falle mehrerer überschreitungen die erste. </span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>()</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Linien Namen hinzufügen: </span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>linien_ww <span class="ot">&lt;-</span> <span class="fu">setNames</span>(</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="fu">st_geometry</span>(Start_Ende[<span class="dv">1</span>, ]), <span class="fu">st_geometry</span>(ww_messline), <span class="fu">st_geometry</span>(Start_Ende[<span class="dv">2</span>, ])),</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">1</span>)</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Wanderwegdaten auswählen und Kreuzungszeiten berechnen:</span></span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>kreuzungs_zeiten_ww<span class="ot">&lt;-</span> daten_weg <span class="sc">|&gt;</span></span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(route <span class="sc">==</span> <span class="st">"Wanderweg"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kreuzungszeiten_berechnen</span>(linien_ww)</span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Linien Namen hinzufügen: </span></span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>linien_str <span class="ot">&lt;-</span> <span class="fu">setNames</span>(</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="fu">st_geometry</span>(Start_Ende[<span class="dv">1</span>, ]), <span class="fu">st_geometry</span>(str_messline), <span class="fu">st_geometry</span>(Start_Ende[<span class="dv">2</span>, ])),</span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">6</span>,<span class="dv">1</span>)</span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Strassen-Daten auswählen und Kreuzungszeiten berechnen:</span></span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>kreuzungs_zeiten_str <span class="ot">&lt;-</span> daten_weg <span class="sc">|&gt;</span></span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(route <span class="sc">==</span> <span class="st">"Strasse"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kreuzungszeiten_berechnen</span>(linien_str)</span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Zusammenführen:</span></span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>kreuzungs_zeiten <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(kreuzungs_zeiten_ww, kreuzungs_zeiten_str)</span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a><span class="do">###############################################################################</span></span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a><span class="co"># Rank Plot mit mittelwerten über den ganzen versuch: </span></span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Rang pro Messlinie </span></span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>kreuzung_sum <span class="ot">&lt;-</span> kreuzungs_zeiten <span class="sc">%&gt;%</span></span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(route, quelle_layer, richtung, linie_typ) <span class="sc">%&gt;%</span></span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">rang      =</span> <span class="fu">rank</span>(Time_kreuzung),</span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>    rückstand <span class="ot">=</span> Time_kreuzung <span class="sc">-</span> <span class="fu">min</span>(Time_kreuzung),</span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>    <span class="at">linie_typ =</span> <span class="fu">as.numeric</span>(linie_typ)</span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(route, Rasse_ID, linie_typ, richtung ) <span class="sc">%&gt;%</span></span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_rang      =</span> <span class="fu">mean</span>(rang),</span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>    mean_rückstand <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">mean</span>(rückstand)),</span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Library für höhenlagen lagen laden: </span></span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(elevatr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Paket 'elevatr' wurde unter R Version 4.5.3 erstellt</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>elevatr v0.99.0 NOTE: Version 0.99.0 of 'elevatr' uses 'sf' and 'terra'.  Use 
+of the 'sp', 'raster', and underlying 'rgdal' packages by 'elevatr' is being 
+deprecated; however, get_elev_raster continues to return a RasterLayer.  This 
+will be dropped in future versions, so please plan accordingly.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Funktion für Höhen Profile erstellen: </span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>hoehenprofil <span class="ot">&lt;-</span> <span class="cf">function</span>(rute){</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Punkte extrahieren und auf Bereich zwischen Start und Ende filtern</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  weg_pts <span class="ot">&lt;-</span> rute <span class="sc">|&gt;</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_cast</span>(<span class="st">"POINT"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_transform</span>(<span class="dv">4326</span>)</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  weg_pts <span class="ot">&lt;-</span> weg_pts[</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_coordinates</span>(weg_pts)[, <span class="dv">1</span>] <span class="sc">&gt;</span> S_E[<span class="dv">1</span>] <span class="sc">&amp;</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">st_coordinates</span>(weg_pts)[, <span class="dv">1</span>] <span class="sc">&lt;</span> S_E[<span class="dv">2</span>],]</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Höhe pro Punkt abrufen</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  weg_pts <span class="ot">&lt;-</span> <span class="fu">get_elev_point</span>(weg_pts, <span class="at">src =</span> <span class="st">"aws"</span>, <span class="at">z =</span> <span class="dv">12</span>)</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Kumulative Distanz berechnen, auf 0–6 skalieren</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  hoehen_profil <span class="ot">&lt;-</span> weg_pts <span class="sc">|&gt;</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">dist           =</span> <span class="fu">as.numeric</span>(<span class="fu">st_distance</span>(geometry, <span class="fu">lag</span>(geometry), <span class="at">by_element =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">dist           =</span> <span class="fu">replace_na</span>(dist, <span class="dv">0</span>),</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">kum_dist       =</span> <span class="fu">cumsum</span>(dist)</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">transmute</span>(</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">hoehe_m        =</span> elevation,</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">linie_typ      =</span> scales<span class="sc">::</span><span class="fu">rescale</span>(kum_dist, <span class="at">to =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">6</span>)), <span class="co">#skalieren nach den Messlinen</span></span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>hoehen_profil_ww <span class="ot">&lt;-</span> <span class="fu">hoehenprofil</span>(Wander_Weg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Mosaicing &amp; Projecting
+Note: Elevation units are in meters</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>hoehen_profil_str <span class="ot">&lt;-</span> <span class="fu">hoehenprofil</span>(Strasse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Mosaicing &amp; Projecting
+Note: Elevation units are in meters</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># interleave Funktion definieren (Hilfsfunktion, Geleiche hellikeit nicht nahe bei einander)</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>interleave_idx <span class="ot">&lt;-</span> <span class="cf">function</span>(n) {</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="fu">seq</span>(<span class="dv">1</span>, n, <span class="at">by =</span> <span class="dv">2</span>), <span class="fu">seq</span>(<span class="dv">2</span>, n, <span class="at">by =</span> <span class="dv">2</span>))</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Farbvektor (Hell Dunkel interleaved, nach mittlerem Rang) (jade Rasse bekommt Ihre Farbe)</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>rasse_farben <span class="ot">&lt;-</span>kreuzungs_zeiten <span class="sc">%&gt;%</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(route, quelle_layer, richtung, linie_typ) <span class="sc">%&gt;%</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">rang =</span> <span class="fu">rank</span>(Time_kreuzung)) <span class="sc">%&gt;%</span> </span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Rasse_ID, Rasse) <span class="sc">%&gt;%</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_rang =</span> <span class="fu">mean</span>(rang, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Rasse) <span class="sc">%&gt;%</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(mean_rang) <span class="sc">%&gt;%</span></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">idx   =</span> <span class="fu">interleave_idx</span>(<span class="fu">n</span>()),</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">farbe =</span> <span class="fu">case_when</span>(</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>      Rasse <span class="sc">==</span> <span class="st">"HO"</span> <span class="sc">~</span> <span class="fu">colorRampPalette</span>(<span class="fu">c</span>(<span class="st">"#7a1a1a"</span>, <span class="st">"#e6a8a8"</span>))(<span class="fu">n</span>())[idx],</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>      Rasse <span class="sc">==</span> <span class="st">"OB"</span> <span class="sc">~</span> <span class="fu">colorRampPalette</span>(<span class="fu">c</span>(<span class="st">"#1a1a7a"</span>, <span class="st">"#a8a8e6"</span>))(<span class="fu">n</span>())[idx],</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>      Rasse <span class="sc">==</span> <span class="st">"HW"</span> <span class="sc">~</span> <span class="fu">colorRampPalette</span>(<span class="fu">c</span>(<span class="st">"#1a6b1a"</span>, <span class="st">"#a8dba8"</span>))(<span class="fu">n</span>())[idx]</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>farb_vektor <span class="ot">&lt;-</span> <span class="fu">setNames</span>(rasse_farben<span class="sc">$</span>farbe, rasse_farben<span class="sc">$</span>Rasse_ID)</span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Daten für den Folgenden Plot ergänzen: </span></span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>Plot_Daten <span class="ot">&lt;-</span> <span class="fu">c</span>(Plot_Daten, <span class="st">"kreuzung_sum"</span>, <span class="st">"kreuzungs_zeiten"</span>, <span class="st">"hoehen_profil_ww"</span>, <span class="st">"hoehen_profil_str"</span> )</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Daten csv für Plots: </span></span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>Plot_Daten_csv <span class="ot">&lt;-</span> <span class="st">"farb_vektor"</span></span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a><span class="co">#Funktion zum erstellen der Rankplots: </span></span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a>rank_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(daten, y_var, hoehen_dat) {</span>
+<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a>  y_name     <span class="ot">&lt;-</span> rlang<span class="sc">::</span><span class="fu">as_label</span>(<span class="fu">enquo</span>(y_var)) <span class="co">#macht aus Variabelnnamen ein Teext </span></span>
+<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a>  y_label    <span class="ot">&lt;-</span> <span class="cf">if</span> (y_name <span class="sc">==</span> <span class="st">"mean_rang"</span>) <span class="st">"Mittlerer Rang (1 = Erster)"</span> <span class="cf">else</span> <span class="st">"Mittlerer Rückstand [s]"</span></span>
+<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a>  route      <span class="ot">&lt;-</span> <span class="fu">unique</span>(daten<span class="sc">$</span>route)</span>
+<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a>  y_spal     <span class="ot">&lt;-</span> <span class="fu">max</span>(dplyr<span class="sc">::</span><span class="fu">pull</span>(daten, {{ y_var }}), <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="co"># die als y Variable definierte Spalte aus dem Datensatz ziehen. </span></span>
+<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a>  y_max_plot <span class="ot">&lt;-</span> y_spal <span class="sc">*</span> <span class="fl">1.4</span>   <span class="co"># Platz für Höhenprofil unterhalb der Ränge</span></span>
+<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a>  elev_min   <span class="ot">&lt;-</span> <span class="fu">min</span>(hoehen_dat<span class="sc">$</span>hoehe_m, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-41"><a href="#cb28-41" aria-hidden="true" tabindex="-1"></a>  elev_max   <span class="ot">&lt;-</span> <span class="fu">max</span>(hoehen_dat<span class="sc">$</span>hoehe_m, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-42"><a href="#cb28-42" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb28-43"><a href="#cb28-43" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Höhendaten angepast an die Restlichen daten Skalieren </span></span>
+<span id="cb28-44"><a href="#cb28-44" aria-hidden="true" tabindex="-1"></a>  hoehen_dat <span class="ot">&lt;-</span> hoehen_dat <span class="sc">|&gt;</span></span>
+<span id="cb28-45"><a href="#cb28-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">hoehe_skaliert =</span> scales<span class="sc">::</span><span class="fu">rescale</span>(hoehe_m, <span class="at">to =</span> <span class="fu">c</span>(y_max_plot, y_spal )))</span>
+<span id="cb28-46"><a href="#cb28-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb28-47"><a href="#cb28-47" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot drehen drehen fals Rückweg: </span></span>
+<span id="cb28-48"><a href="#cb28-48" aria-hidden="true" tabindex="-1"></a>  richtung   <span class="ot">&lt;-</span> <span class="fu">unique</span>(daten<span class="sc">$</span>richtung)</span>
+<span id="cb28-49"><a href="#cb28-49" aria-hidden="true" tabindex="-1"></a>  x_scale <span class="ot">&lt;-</span> <span class="cf">if</span> (richtung <span class="sc">==</span> <span class="st">"Rückweg"</span>) {</span>
+<span id="cb28-50"><a href="#cb28-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_reverse</span>(<span class="at">breaks =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Wiese"</span>, <span class="fu">paste</span>(<span class="st">"ML"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>), <span class="st">"Melkstand"</span>))</span>
+<span id="cb28-51"><a href="#cb28-51" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb28-52"><a href="#cb28-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Wiese"</span>, <span class="fu">paste</span>(<span class="st">"ML"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>), <span class="st">"Melkstand"</span>))</span>
+<span id="cb28-53"><a href="#cb28-53" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb28-54"><a href="#cb28-54" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb28-55"><a href="#cb28-55" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Eigentlicher Plot ersten: </span></span>
+<span id="cb28-56"><a href="#cb28-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(daten, <span class="fu">aes</span>(<span class="at">x =</span> linie_typ, <span class="at">y =</span> {{ y_var }}, <span class="at">group =</span> Rasse_ID, <span class="at">color =</span> Rasse_ID))<span class="sc">+</span></span>
+<span id="cb28-57"><a href="#cb28-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(</span>
+<span id="cb28-58"><a href="#cb28-58" aria-hidden="true" tabindex="-1"></a>      <span class="at">data        =</span> hoehen_dat,</span>
+<span id="cb28-59"><a href="#cb28-59" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(<span class="at">x =</span> linie_typ, <span class="at">ymin =</span> hoehe_skaliert, <span class="at">ymax =</span> y_max_plot, <span class="at">group =</span> <span class="dv">1</span>),</span>
+<span id="cb28-60"><a href="#cb28-60" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill        =</span> <span class="st">"grey85"</span>, <span class="at">color =</span> <span class="st">"grey60"</span>,</span>
+<span id="cb28-61"><a href="#cb28-61" aria-hidden="true" tabindex="-1"></a>      <span class="at">inherit.aes =</span> <span class="cn">FALSE</span></span>
+<span id="cb28-62"><a href="#cb28-62" aria-hidden="true" tabindex="-1"></a>    )<span class="sc">+</span></span>
+<span id="cb28-63"><a href="#cb28-63" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb28-64"><a href="#cb28-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb28-65"><a href="#cb28-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> Rasse_ID),</span>
+<span id="cb28-66"><a href="#cb28-66" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> <span class="fu">filter</span>(daten, linie_typ <span class="sc">==</span> <span class="fu">min</span>(linie_typ)),</span>
+<span id="cb28-67"><a href="#cb28-67" aria-hidden="true" tabindex="-1"></a>              <span class="at">hjust =</span> <span class="fl">1.2</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb28-68"><a href="#cb28-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> Rasse_ID),</span>
+<span id="cb28-69"><a href="#cb28-69" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> <span class="fu">filter</span>(daten, linie_typ <span class="sc">==</span> <span class="fu">max</span>(linie_typ)),</span>
+<span id="cb28-70"><a href="#cb28-70" aria-hidden="true" tabindex="-1"></a>              <span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.2</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb28-71"><a href="#cb28-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_manual</span>(<span class="at">values =</span> farb_vektor) <span class="sc">+</span></span>
+<span id="cb28-72"><a href="#cb28-72" aria-hidden="true" tabindex="-1"></a>    x_scale <span class="sc">+</span></span>
+<span id="cb28-73"><a href="#cb28-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="cn">NULL</span>, <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> y_label) <span class="sc">+</span></span>
+<span id="cb28-74"><a href="#cb28-74" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb28-75"><a href="#cb28-75" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)<span class="sc">+</span></span>
+<span id="cb28-76"><a href="#cb28-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_reverse</span>(</span>
+<span id="cb28-77"><a href="#cb28-77" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits   =</span> <span class="fu">c</span>(y_max_plot, <span class="dv">0</span>),</span>
+<span id="cb28-78"><a href="#cb28-78" aria-hidden="true" tabindex="-1"></a>      <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(</span>
+<span id="cb28-79"><a href="#cb28-79" aria-hidden="true" tabindex="-1"></a>        <span class="at">transform =</span> <span class="sc">~</span> scales<span class="sc">::</span><span class="fu">rescale</span>(., <span class="at">from =</span> <span class="fu">c</span>(y_spal, y_max_plot), <span class="at">to =</span> <span class="fu">c</span>(elev_max, elev_min)),</span>
+<span id="cb28-80"><a href="#cb28-80" aria-hidden="true" tabindex="-1"></a>        <span class="at">name      =</span> <span class="st">"Höhe (m ü. M.)"</span>,</span>
+<span id="cb28-81"><a href="#cb28-81" aria-hidden="true" tabindex="-1"></a>        <span class="at">breaks    =</span> <span class="fu">seq</span>(<span class="fu">ceiling</span>(elev_min <span class="sc">/</span> <span class="dv">20</span>) <span class="sc">*</span> <span class="dv">20</span>, <span class="fu">floor</span>(elev_max <span class="sc">/</span> <span class="dv">20</span>) <span class="sc">*</span> <span class="dv">20</span>, <span class="at">by =</span> <span class="dv">20</span>)</span>
+<span id="cb28-82"><a href="#cb28-82" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb28-83"><a href="#cb28-83" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb28-84"><a href="#cb28-84" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb28-85"><a href="#cb28-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-86"><a href="#cb28-86" aria-hidden="true" tabindex="-1"></a><span class="co"># Ploten </span></span>
+<span id="cb28-87"><a href="#cb28-87" aria-hidden="true" tabindex="-1"></a>kreuzung_sum <span class="sc">|&gt;</span></span>
+<span id="cb28-88"><a href="#cb28-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(route <span class="sc">==</span> <span class="st">"Wanderweg"</span>, richtung <span class="sc">==</span> <span class="st">"Hinweg"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb28-89"><a href="#cb28-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rank_plot</span>( mean_rückstand, hoehen_profil_ww)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="preprocessing_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"Grafik_3.png"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">units =</span> <span class="st">"in"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Ploten </span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># kreuzung_sum |&gt;</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="co">#   filter(route == "Wanderweg", richtung == "Rückweg") |&gt;</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   rank_plot( mean_rückstand, hoehen_profil_ww)</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="co"># kreuzung_sum |&gt;</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="co">#   filter(route == "Strasse", richtung == "Hinweg") |&gt;</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="co">#   rank_plot( mean_rückstand, hoehen_profil_str)</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>kreuzung_sum <span class="sc">|&gt;</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(route <span class="sc">==</span> <span class="st">"Strasse"</span>, richtung <span class="sc">==</span> <span class="st">"Rückweg"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rank_plot</span>( mean_rückstand, hoehen_profil_str)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="preprocessing_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"Grafik_4.png"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">units =</span> <span class="st">"in"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(agricolae)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Paket 'agricolae' wurde unter R Version 4.5.3 erstellt</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rangfolge für Kruskalwallis Test berechen.</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>analyse_daten <span class="ot">&lt;-</span> kreuzungs_zeiten <span class="sc">|&gt;</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quelle_layer, richtung, linie_typ) <span class="sc">|&gt;</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">rang =</span> <span class="fu">rank</span>(Time_kreuzung)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Kurskalwallis Test auf Rängen: </span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>kruskal_result <span class="ot">&lt;-</span> agricolae<span class="sc">::</span><span class="fu">kruskal</span>(<span class="fu">max</span>(analyse_daten<span class="sc">$</span>rang) <span class="sc">+</span> <span class="dv">1</span> <span class="sc">-</span> analyse_daten<span class="sc">$</span>rang, <span class="co"># dreht reienfolge so das Tiere in der vordersten Gruppe a bekommen. </span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>                                     analyse_daten<span class="sc">$</span>Rasse_ID,</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">p.adj   =</span> <span class="st">"BH"</span>,</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">group   =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">console =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Study: max(analyse_daten$rang) + 1 - analyse_daten$rang ~ analyse_daten$Rasse_ID
+Kruskal-Wallis test's
+Ties or no Ties
+
+Critical Value: 866.7926
+Degrees of freedom: 15
+Pvalue Chisq  : 0 
+
+analyse_daten$Rasse_ID,  means of the ranks
+
+     max.analyse_daten.rang....1...analyse_daten.rang   r
+HO11                                         829.8474 154
+HO12                                         402.9578 154
+HO13                                        1402.2955 154
+HO14                                         931.3539 154
+HO15                                        1162.9188 154
+HW05                                        1274.4610 154
+HW06                                        1966.0584 154
+HW07                                        1631.8571 154
+HW08                                        1294.0390 154
+HW13                                        1905.4773 154
+HW14                                        1575.1753 154
+OB02                                        1386.2532 154
+OB12                                        1285.4123 154
+OB13                                         558.8442 154
+OB14                                        1214.1331 154
+OB15                                         898.9156 154
+
+Post Hoc Analysis
+
+P value adjustment method: BH
+t-Student: 1.960934
+Alpha    : 0.05
+Minimum Significant Difference: 128.1787 
+
+Treatments with the same letter are not significantly different.
+
+     max(analyse_daten$rang) + 1 - analyse_daten$rang groups
+HW06                                        1966.0584      a
+HW13                                        1905.4773      a
+HW07                                        1631.8571      b
+HW14                                        1575.1753      b
+HO13                                        1402.2955      c
+OB02                                        1386.2532      c
+HW08                                        1294.0390     cd
+OB12                                        1285.4123     cd
+HW05                                        1274.4610     cd
+OB14                                        1214.1331      d
+HO15                                        1162.9188      d
+HO14                                         931.3539      e
+OB15                                         898.9156      e
+HO11                                         829.8474      e
+OB13                                         558.8442      f
+HO12                                         402.9578      g</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>labels_kw <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Rasse_ID =</span> <span class="fu">rownames</span>(kruskal_result<span class="sc">$</span>groups),</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">groups   =</span> <span class="fu">str_trim</span>(kruskal_result<span class="sc">$</span>groups<span class="sc">$</span>groups),</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y_pos    =</span> <span class="fu">min</span>(analyse_daten<span class="sc">$</span>rang, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fl">0.5</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Boxplot</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(analyse_daten, <span class="fu">aes</span>(<span class="at">x =</span> Rasse_ID, <span class="at">y =</span> rang, <span class="at">fill =</span> Rasse)) <span class="sc">+</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> labels_kw,</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">x =</span> Rasse_ID, <span class="at">y =</span> y_pos, <span class="at">label =</span> groups),</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">vjust =</span> <span class="dv">1</span>,</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun =</span> mean, <span class="at">geom =</span> <span class="st">"point"</span>, <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"HO"</span> <span class="ot">=</span> <span class="st">"#e6a8a8"</span>,</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"OB"</span> <span class="ot">=</span> <span class="st">"#a8a8e6"</span>,</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"HW"</span> <span class="ot">=</span> <span class="st">"#a8dba8"</span>)) <span class="sc">+</span></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Rang (1 = Erster)"</span>) <span class="sc">+</span></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_reverse</span>() <span class="sc">+</span></span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="preprocessing_files/figure-html/unnamed-chunk-1-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"Grafik_5.png"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">units =</span> <span class="st">"in"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Gruppen in der Herde mit Kluster Analysiern</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(<span class="st">"vegan"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Lade nötiges Paket: permute</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Zeitpunkt der ersten Kreuzung pro Layer + Richtung + Linie</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  erste_kreuzung <span class="ot">&lt;-</span> kreuzungs_zeiten <span class="sc">|&gt;</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(quelle_layer, richtung, linie_typ) <span class="sc">|&gt;</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice_min</span>(Time_kreuzung, <span class="at">n =</span> <span class="dv">1</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 2. Nächster GPS-Punkt jeder Kuh zu diesem Zeitpunkt</span></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  positionen <span class="ot">&lt;-</span> erste_kreuzung <span class="sc">|&gt;</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rowwise</span>() <span class="sc">|&gt;</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pos =</span> <span class="fu">list</span>({</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>      ql <span class="ot">&lt;-</span> quelle_layer; ri <span class="ot">&lt;-</span> richtung; tc <span class="ot">&lt;-</span> Time_kreuzung</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>      daten_weg <span class="sc">|&gt;</span></span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">filter</span>(quelle_layer <span class="sc">==</span> ql, richtung <span class="sc">==</span> ri) <span class="sc">|&gt;</span></span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(Rasse_ID) <span class="sc">|&gt;</span></span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">slice_min</span>(<span class="fu">abs</span>(<span class="fu">as.numeric</span>(<span class="fu">difftime</span>(Time, tc, <span class="at">units =</span> <span class="st">"secs"</span>))),</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>                  <span class="at">n =</span> <span class="dv">1</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">x =</span> <span class="fu">st_coordinates</span>(geom)[, <span class="dv">1</span>],</span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a>               <span class="at">y =</span> <span class="fu">st_coordinates</span>(geom)[, <span class="dv">2</span>]) <span class="sc">|&gt;</span></span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>        dplyr<span class="sc">::</span><span class="fu">select</span> (Rasse_ID, x, y)</span>
+<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a>    })) <span class="sc">|&gt;</span></span>
+<span id="cb37-23"><a href="#cb37-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb37-24"><a href="#cb37-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb37-25"><a href="#cb37-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Hifs-Funktion welche Pro Kuh die position vor der Kreuzungszeit (Referenzzeit) berechent: </span></span>
+<span id="cb37-26"><a href="#cb37-26" aria-hidden="true" tabindex="-1"></a>  positionen <span class="ot">&lt;-</span> <span class="cf">function</span>(x){</span>
+<span id="cb37-27"><a href="#cb37-27" aria-hidden="true" tabindex="-1"></a>    daten_weg <span class="sc">|&gt;</span></span>
+<span id="cb37-28"><a href="#cb37-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(quelle_layer <span class="sc">==</span> erste_kreuzung<span class="sc">$</span>quelle_layer[x],</span>
+<span id="cb37-29"><a href="#cb37-29" aria-hidden="true" tabindex="-1"></a>             richtung     <span class="sc">==</span> erste_kreuzung<span class="sc">$</span>richtung[x],</span>
+<span id="cb37-30"><a href="#cb37-30" aria-hidden="true" tabindex="-1"></a>             Time         <span class="sc">&lt;=</span> erste_kreuzung<span class="sc">$</span>Time_kreuzung[x]) <span class="sc">|&gt;</span>  </span>
+<span id="cb37-31"><a href="#cb37-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(Rasse_ID) <span class="sc">|&gt;</span></span>
+<span id="cb37-32"><a href="#cb37-32" aria-hidden="true" tabindex="-1"></a>      <span class="fu">slice_max</span>(Time, <span class="at">n =</span> <span class="dv">1</span>, <span class="at">with_ties =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span>                 </span>
+<span id="cb37-33"><a href="#cb37-33" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb37-34"><a href="#cb37-34" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">ref_linie =</span> erste_kreuzung<span class="sc">$</span>linie_typ[x],</span>
+<span id="cb37-35"><a href="#cb37-35" aria-hidden="true" tabindex="-1"></a>             <span class="at">ref_time  =</span> erste_kreuzung<span class="sc">$</span>Time_kreuzung[x])</span>
+<span id="cb37-36"><a href="#cb37-36" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb37-37"><a href="#cb37-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb37-38"><a href="#cb37-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Anzahl Zeilen zählen </span></span>
+<span id="cb37-39"><a href="#cb37-39" aria-hidden="true" tabindex="-1"></a>  n_row <span class="ot">=</span> <span class="fu">nrow</span>(erste_kreuzung)</span>
+<span id="cb37-40"><a href="#cb37-40" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb37-41"><a href="#cb37-41" aria-hidden="true" tabindex="-1"></a>  <span class="co"># funktion pro Zeile ausführen und alles zusammen fügen: </span></span>
+<span id="cb37-42"><a href="#cb37-42" aria-hidden="true" tabindex="-1"></a>  liste_positionen <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span>n_row, positionen) <span class="sc">|&gt;</span> </span>
+<span id="cb37-43"><a href="#cb37-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>()</span>
+<span id="cb37-44"><a href="#cb37-44" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb37-45"><a href="#cb37-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str</span>(liste_positionen)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>sf [2,414 × 28] (S3: sf/tbl_df/tbl/data.frame)
+ $ Time        : POSIXct[1:2414], format: "2025-08-02 15:30:37" "2025-08-02 15:30:40" ...
+ $ Log_Nr      : num [1:2414] 999 999 999 999 999 999 999 999 999 999 ...
+ $ ID          : chr [1:2414] "05" "06" "07" "13" ...
+ $ Day         : chr [1:2414] "213" "213" "213" "213" ...
+ $ Hour        : chr [1:2414] "15" "15" "15" "15" ...
+ $ Altitude    : num [1:2414] 2018 2016 2018 2023 2021 ...
+ $ PDOP        : num [1:2414] 1.86 1.42 1.45 1.47 2.23 1.43 1.43 1.42 1.43 1.42 ...
+ $ Valid       : chr [1:2414] "DGPS" "DGPS" "DGPS" "DGPS" ...
+ $ NSat        : num [1:2414] 8 8 7 8 4 7 7 8 7 8 ...
+ $ TimeSlice   : chr [1:2414] "08-02-A" "08-02-A" "08-02-A" "08-02-A" ...
+ $ quelle_file : chr [1:2414] "R3-HW05.gpkg" "R3-HW06.gpkg" "R3-HW07.gpkg" "R3-HW13.gpkg" ...
+ $ quelle_layer: chr [1:2414] "08-02-A" "08-02-A" "08-02-A" "08-02-A" ...
+ $ FIX         : chr [1:2414] NA NA NA NA ...
+ $ Satellites  : int [1:2414] NA NA NA NA NA NA NA NA NA NA ...
+ $ geom        :sfc_POINT of length 2414; first list element:  'XY' num [1:2] 2780098 1161780
+ $ Rasse       : chr [1:2414] "HW" "HW" "HW" "HW" ...
+ $ Rasse_ID    : chr [1:2414] "HW05" "HW06" "HW07" "HW13" ...
+ $ HMS         : chr [1:2414] "15:30:37" "15:30:40" "15:30:52" "15:30:56" ...
+ $ Grupe       : chr [1:2414] "R3" "R3" "R3" "R3" ...
+ $ Tageszeit   : chr [1:2414] "A" "A" "A" "A" ...
+ $ steplength  : num [1:2414] 9.56 21.35 16.82 18.29 7.81 ...
+ $ timelag     : num [1:2414] 20 20 20 20 20 20 20 20 20 20 ...
+ $ segment     :sfc_LINESTRING of length 2414; first list element:  'XY' num [1:2, 1:2] 2780098 2780104 1161780 1161787
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : NULL
+  .. ..$ : chr [1:2] "X" "Y"
+ $ speed       : num [1:2414] 0.478 1.068 0.841 0.914 0.39 ...
+ $ richtung    : chr [1:2414] "Hinweg" "Hinweg" "Hinweg" "Hinweg" ...
+ $ route       : chr [1:2414] "Strasse" "Strasse" "Strasse" "Strasse" ...
+ $ ref_linie   : chr [1:2414] "0" "0" "0" "0" ...
+ $ ref_time    : POSIXct[1:2414], format: "2025-08-02 15:30:56" "2025-08-02 15:30:56" ...
+ - attr(*, "sf_column")= chr "geom"
+ - attr(*, "agr")= Factor w/ 3 levels "constant","aggregate",..: NA NA NA NA NA NA NA NA NA NA ...
+  ..- attr(*, "names")= chr [1:27] "Time" "Log_Nr" "ID" "Day" ...</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Hilfsfunktion um aus aus dem Segment und dem anteil die wahrschindlichste position der Kuh zu berechen: </span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  punkt_auf_segment <span class="ot">&lt;-</span> <span class="cf">function</span>(seg, ant) {</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    coords <span class="ot">&lt;-</span> <span class="fu">st_coordinates</span>(seg)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_point</span>(<span class="fu">c</span>(</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>      coords[<span class="dv">1</span>, <span class="dv">1</span>] <span class="sc">+</span> ant <span class="sc">*</span> (coords[<span class="dv">2</span>, <span class="dv">1</span>] <span class="sc">-</span> coords[<span class="dv">1</span>, <span class="dv">1</span>]),</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>      coords[<span class="dv">1</span>, <span class="dv">2</span>] <span class="sc">+</span> ant <span class="sc">*</span> (coords[<span class="dv">2</span>, <span class="dv">2</span>] <span class="sc">-</span> coords[<span class="dv">1</span>, <span class="dv">2</span>])</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Positionen der Kühe zur referenzzeit berechen: </span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  liste_positionen <span class="ot">&lt;-</span> liste_positionen <span class="sc">|&gt;</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Anteil des Segments der bis ref_time zurückgelegt wurde</span></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">anteil =</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(ref_time, Time, <span class="at">units =</span> <span class="st">"secs"</span>)) <span class="sc">/</span> timelag,</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Interpolierter Punkt entlang des Segments</span></span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">pos_ref_time =</span> <span class="fu">st_sfc</span>(</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mapply</span>(punkt_auf_segment, segment, anteil, <span class="at">SIMPLIFY =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">crs =</span> <span class="fu">st_crs</span>(liste_positionen)</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Seed Setzen (für wiederholbarkeit)</span></span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">73</span>)</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Kluster Berechenen:</span></span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>  cluster_results <span class="ot">&lt;-</span> liste_positionen <span class="sc">|&gt;</span></span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(ref_time) <span class="sc">|&gt;</span></span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_modify</span>(<span class="sc">~</span> { <span class="co"># pro gruppe folgendes ausführen:</span></span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a>      coords   <span class="ot">&lt;-</span> <span class="fu">st_coordinates</span>(<span class="fu">st_sfc</span>(.x<span class="sc">$</span>pos_ref_time)) </span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a>      km_cascade  <span class="ot">&lt;-</span> <span class="fu">cascadeKM</span>(coords, <span class="at">inf.gr =</span> <span class="dv">2</span>, <span class="co"># Bestimmen wie vile Gruppen zwischen 2 und 6</span></span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a>                               <span class="at">sup.gr    =</span> <span class="fu">min</span>(<span class="fu">nrow</span>(coords) <span class="sc">-</span> <span class="dv">1</span>, <span class="dv">6</span>),</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a>                               <span class="at">criterion =</span> <span class="st">"calinski"</span>)</span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a>      k_idx    <span class="ot">&lt;-</span> <span class="fu">which.max</span>(km_cascade<span class="sc">$</span>results[<span class="fu">nrow</span>(km_cascade<span class="sc">$</span>results), ]) <span class="co"># Sinvollste aufteilung wählen</span></span>
+<span id="cb39-37"><a href="#cb39-37" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb39-38"><a href="#cb39-38" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(.x, <span class="at">cluster =</span> km_cascade<span class="sc">$</span>partition[, k_idx]) <span class="co">#Die Gruppen als zahl in die liste hin zu fügen. </span></span>
+<span id="cb39-39"><a href="#cb39-39" aria-hidden="true" tabindex="-1"></a>    }) <span class="sc">|&gt;</span></span>
+<span id="cb39-40"><a href="#cb39-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb39-41"><a href="#cb39-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-42"><a href="#cb39-42" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-43"><a href="#cb39-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Matrix welche kühe oft zusammen sind erstellen </span></span>
+<span id="cb39-44"><a href="#cb39-44" aria-hidden="true" tabindex="-1"></a>  alle_kuehe <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(cluster_results<span class="sc">$</span>Rasse_ID)) <span class="co"># Anzahl unterschidliche Kühe feststellen</span></span>
+<span id="cb39-45"><a href="#cb39-45" aria-hidden="true" tabindex="-1"></a>  clu_matrix  <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>L, <span class="at">nrow =</span> <span class="fu">length</span>(alle_kuehe), <span class="at">ncol =</span> <span class="fu">length</span>(alle_kuehe), <span class="co"># Lehre (gefüllt mit 0en) Matrix erstellen </span></span>
+<span id="cb39-46"><a href="#cb39-46" aria-hidden="true" tabindex="-1"></a>                        <span class="at">dimnames =</span> <span class="fu">list</span>(alle_kuehe, alle_kuehe))</span>
+<span id="cb39-47"><a href="#cb39-47" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-48"><a href="#cb39-48" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-49"><a href="#cb39-49" aria-hidden="true" tabindex="-1"></a>  cluster_results <span class="sc">|&gt;</span></span>
+<span id="cb39-50"><a href="#cb39-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(ref_time) <span class="sc">|&gt;</span></span>
+<span id="cb39-51"><a href="#cb39-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_walk</span>(<span class="sc">~</span> { <span class="co">#wendet folgendes auf alle oben definierten gruppen an </span></span>
+<span id="cb39-52"><a href="#cb39-52" aria-hidden="true" tabindex="-1"></a>      idx <span class="ot">&lt;-</span> .x<span class="sc">$</span>Rasse_ID  <span class="co"># gibt die RassenID zurück</span></span>
+<span id="cb39-53"><a href="#cb39-53" aria-hidden="true" tabindex="-1"></a>      mat <span class="ot">&lt;-</span> (<span class="fu">outer</span>(.x<span class="sc">$</span>cluster, .x<span class="sc">$</span>cluster, <span class="st">"=="</span>) <span class="sc">+</span> <span class="dv">0</span>L) <span class="co"># Schaut welche matchen und wandelt True/Fals in 1 und 0 um</span></span>
+<span id="cb39-54"><a href="#cb39-54" aria-hidden="true" tabindex="-1"></a>      <span class="fu">dimnames</span>(mat) <span class="ot">&lt;-</span> <span class="fu">list</span>(idx, idx) <span class="co"># Beschriften der Zeilen und spalten mit den RassenIDs</span></span>
+<span id="cb39-55"><a href="#cb39-55" aria-hidden="true" tabindex="-1"></a>      clu_matrix[idx, idx] <span class="ot">&lt;&lt;-</span> clu_matrix[idx, idx] <span class="sc">+</span> mat <span class="co">#Aktualisiert die matrix (in dem es die resultate der neusten Gruppe dazu adiert)</span></span>
+<span id="cb39-56"><a href="#cb39-56" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb39-57"><a href="#cb39-57" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-58"><a href="#cb39-58" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Kuh mit sich selbst entfernen</span></span>
+<span id="cb39-59"><a href="#cb39-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diag</span>(clu_matrix) <span class="ot">&lt;-</span> <span class="dv">0</span>   </span>
+<span id="cb39-60"><a href="#cb39-60" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-61"><a href="#cb39-61" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Daten füe Plot in liste Ergänzen</span></span>
+<span id="cb39-62"><a href="#cb39-62" aria-hidden="true" tabindex="-1"></a>  Plot_Daten_csv <span class="ot">&lt;-</span> <span class="fu">c</span>(Plot_Daten_csv, <span class="st">"clu_matrix"</span> )</span>
+<span id="cb39-63"><a href="#cb39-63" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb39-64"><a href="#cb39-64" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb39-65"><a href="#cb39-65" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Library laden</span></span>
+<span id="cb39-66"><a href="#cb39-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(igraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Paket 'igraph' wurde unter R Version 4.5.3 erstellt</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attache Paket: 'igraph'
+
+Das folgende Objekt ist maskiert 'package:vegan':
+
+    diversity
+
+Das folgende Objekt ist maskiert 'package:permute':
+
+    permute
+
+Das folgende Objekt ist maskiert 'package:agricolae':
+
+    similarity
+
+Die folgenden Objekte sind maskiert von 'package:lubridate':
+
+    %--%, union
+
+Die folgenden Objekte sind maskiert von 'package:dplyr':
+
+    as_data_frame, groups, union
+
+Die folgenden Objekte sind maskiert von 'package:purrr':
+
+    compose, simplify
+
+Das folgende Objekt ist maskiert 'package:tidyr':
+
+    crossing
+
+Das folgende Objekt ist maskiert 'package:tibble':
+
+    as_data_frame
+
+Die folgenden Objekte sind maskiert von 'package:stats':
+
+    decompose, spectrum
+
+Das folgende Objekt ist maskiert 'package:base':
+
+    union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Daten für den Graphen extrahieren: </span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">graph_from_adjacency_matrix</span>(clu_matrix, <span class="at">mode     =</span> <span class="st">"upper"</span>, <span class="co"># nur die obere hälfte der Matrix verwenden</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">weighted =</span> <span class="cn">TRUE</span>, <span class="at">diag     =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Knotenfarben nach Rasse</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">V</span>(g)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">case_when</span>(</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(<span class="fu">V</span>(g)<span class="sc">$</span>name, <span class="st">"^HO"</span>) <span class="sc">~</span> <span class="st">"#e6a8a8"</span>,</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(<span class="fu">V</span>(g)<span class="sc">$</span>name, <span class="st">"^OB"</span>) <span class="sc">~</span> <span class="st">"#a8a8e6"</span>,</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(<span class="fu">V</span>(g)<span class="sc">$</span>name, <span class="st">"^HW"</span>) <span class="sc">~</span> <span class="st">"#a8dba8"</span>,</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"grey"</span></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Seed Setzen (für wiederholbarkeit)</span></span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">73</span>)</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">png</span>(<span class="st">"Grafik_6.png"</span>, <span class="at">width =</span> <span class="dv">2000</span>, <span class="at">height =</span> <span class="dv">1600</span>, <span class="at">res =</span> <span class="dv">300</span>)</span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Graph erstellen: </span></span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(g,</span>
+<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a>       <span class="at">layout       =</span> <span class="fu">layout_with_fr</span>(g),</span>
+<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">edge.width   =</span> <span class="fu">E</span>(g)<span class="sc">$</span>weight <span class="sc">/</span> <span class="fu">max</span>(<span class="fu">E</span>(g)<span class="sc">$</span>weight) <span class="sc">*</span> <span class="dv">10</span>,</span>
+<span id="cb42-22"><a href="#cb42-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.color =</span> <span class="fu">V</span>(g)<span class="sc">$</span>color,</span>
+<span id="cb42-23"><a href="#cb42-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.label =</span> <span class="fu">V</span>(g)<span class="sc">$</span>name,</span>
+<span id="cb42-24"><a href="#cb42-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.size  =</span> <span class="dv">25</span>,</span>
+<span id="cb42-25"><a href="#cb42-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.label.cex =</span> <span class="fl">0.8</span>,</span>
+<span id="cb42-26"><a href="#cb42-26" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> <span class="st">"Wie oft waren Kühe zusammen in derselben Gruppe"</span>)</span>
+<span id="cb42-27"><a href="#cb42-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-28"><a href="#cb42-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="do">########</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="do">########</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Gruppen in der Herde mit Euklidischerdistanz Analysiern</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Matrix mit st_is_within_distance</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  dist_matrix  <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>L, <span class="at">nrow =</span> <span class="fu">length</span>(alle_kuehe), <span class="at">ncol =</span> <span class="fu">length</span>(alle_kuehe), <span class="co"># Lehre (gefüllt mit 0en) Matrix erstellen </span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>                         <span class="at">dimnames =</span> <span class="fu">list</span>(alle_kuehe, alle_kuehe))</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>  liste_positionen <span class="sc">|&gt;</span></span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(ref_time) <span class="sc">|&gt;</span></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_walk</span>(<span class="sc">~</span> {</span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>      idx    <span class="ot">&lt;-</span> .x<span class="sc">$</span>Rasse_ID</span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>      pos_sf <span class="ot">&lt;-</span> <span class="fu">st_sf</span>(<span class="at">geometry =</span> <span class="fu">st_sfc</span>(.x<span class="sc">$</span>pos_ref_time, <span class="at">crs =</span> <span class="dv">2056</span>))</span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Welche Kühe sind innerhalb 5m?</span></span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>      nah <span class="ot">&lt;-</span> <span class="fu">st_is_within_distance</span>(pos_sf, <span class="at">dist =</span> <span class="dv">5</span>, <span class="at">sparse =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="dv">0</span>L</span>
+<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">dimnames</span>(nah)  <span class="ot">&lt;-</span> <span class="fu">list</span>(idx, idx)</span>
+<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a>      dist_matrix [idx, idx] <span class="ot">&lt;&lt;-</span> dist_matrix [idx, idx] <span class="sc">+</span> nah</span>
+<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-24"><a href="#cb44-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diag</span>(dist_matrix ) <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb44-25"><a href="#cb44-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-26"><a href="#cb44-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Daten füe Plot in liste Ergänzen</span></span>
+<span id="cb44-27"><a href="#cb44-27" aria-hidden="true" tabindex="-1"></a>  Plot_Daten_csv <span class="ot">&lt;-</span> <span class="fu">c</span>(Plot_Daten_csv, <span class="st">"dist_matrix"</span> )</span>
+<span id="cb44-28"><a href="#cb44-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-29"><a href="#cb44-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Graph erstellen und plotten</span></span>
+<span id="cb44-30"><a href="#cb44-30" aria-hidden="true" tabindex="-1"></a>  g_dist <span class="ot">&lt;-</span> <span class="fu">graph_from_adjacency_matrix</span>(dist_matrix,</span>
+<span id="cb44-31"><a href="#cb44-31" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">mode     =</span> <span class="st">"upper"</span>,</span>
+<span id="cb44-32"><a href="#cb44-32" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">weighted =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb44-33"><a href="#cb44-33" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">diag     =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb44-34"><a href="#cb44-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-35"><a href="#cb44-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">V</span>(g_dist)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">case_when</span>(</span>
+<span id="cb44-36"><a href="#cb44-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(<span class="fu">V</span>(g_dist)<span class="sc">$</span>name, <span class="st">"^HO"</span>) <span class="sc">~</span> <span class="st">"#e6a8a8"</span>,</span>
+<span id="cb44-37"><a href="#cb44-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(<span class="fu">V</span>(g_dist)<span class="sc">$</span>name, <span class="st">"^OB"</span>) <span class="sc">~</span> <span class="st">"#a8a8e6"</span>,</span>
+<span id="cb44-38"><a href="#cb44-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(<span class="fu">V</span>(g_dist)<span class="sc">$</span>name, <span class="st">"^HW"</span>) <span class="sc">~</span> <span class="st">"#a8dba8"</span></span>
+<span id="cb44-39"><a href="#cb44-39" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb44-40"><a href="#cb44-40" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-41"><a href="#cb44-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">73</span>)</span>
+<span id="cb44-42"><a href="#cb44-42" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-43"><a href="#cb44-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">png</span>(<span class="st">"Grafik_7.png"</span>, <span class="at">width =</span> <span class="dv">2000</span>, <span class="at">height =</span> <span class="dv">1600</span>, <span class="at">res =</span> <span class="dv">300</span>)</span>
+<span id="cb44-44"><a href="#cb44-44" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb44-45"><a href="#cb44-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(g_dist,</span>
+<span id="cb44-46"><a href="#cb44-46" aria-hidden="true" tabindex="-1"></a>       <span class="at">layout       =</span> <span class="fu">layout_with_fr</span>(g_dist),</span>
+<span id="cb44-47"><a href="#cb44-47" aria-hidden="true" tabindex="-1"></a>       <span class="at">edge.width   =</span> <span class="fu">E</span>(g_dist)<span class="sc">$</span>weight <span class="sc">/</span> <span class="fu">max</span>(<span class="fu">E</span>(g_dist)<span class="sc">$</span>weight) <span class="sc">*</span> <span class="dv">8</span>,</span>
+<span id="cb44-48"><a href="#cb44-48" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.color =</span> <span class="fu">V</span>(g_dist)<span class="sc">$</span>color,</span>
+<span id="cb44-49"><a href="#cb44-49" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.label =</span> <span class="fu">V</span>(g_dist)<span class="sc">$</span>name,</span>
+<span id="cb44-50"><a href="#cb44-50" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.size  =</span> <span class="dv">25</span>,</span>
+<span id="cb44-51"><a href="#cb44-51" aria-hidden="true" tabindex="-1"></a>       <span class="at">vertex.label.cex =</span> <span class="fl">0.8</span>,</span>
+<span id="cb44-52"><a href="#cb44-52" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> <span class="st">"Wie oft waren Kühe innerhalb 5m beieinander"</span>)</span>
+<span id="cb44-53"><a href="#cb44-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-54"><a href="#cb44-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="do">####</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>     </span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Statistik zu Gruppen: </span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Daten füe Plot in liste Ergänzen</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  Plot_Daten_csv <span class="ot">&lt;-</span> <span class="fu">c</span>(Plot_Daten_csv, <span class="st">"alle_kuehe"</span>, <span class="st">"Plot_Daten"</span>, <span class="st">"Plot_Daten_csv"</span> )</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Rassen-Matrix erstellen (gleiche Rasse = 1, verschiedene = 0)</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>  rasse_vektor <span class="ot">&lt;-</span> <span class="fu">str_extract</span>(alle_kuehe, <span class="st">"^[A-Z]+"</span>) <span class="co">#Rasse aus RassenID ziehen</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>  rassen_matrix <span class="ot">&lt;-</span> <span class="fu">outer</span>(rasse_vektor, rasse_vektor, <span class="st">"=="</span>) <span class="sc">+</span> <span class="dv">0</span>L</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dimnames</span>(rassen_matrix) <span class="ot">&lt;-</span> <span class="fu">list</span>(alle_kuehe, alle_kuehe) <span class="co">#Zeilen und Spalten nahmen hinzu fügen. </span></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diag</span>(rassen_matrix) <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co">#Diagonal Null setzen</span></span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Mantel-Test</span></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>  mantel_result <span class="ot">&lt;-</span> <span class="fu">mantel</span>(dist_matrix, rassen_matrix, <span class="at">method =</span> <span class="st">"pearson"</span>, <span class="at">permutations =</span> <span class="dv">999</span>)</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">#print(mantel_result)</span></span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Visualisierung: Co-Occurrence </span></span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a>  co_long <span class="ot">&lt;-</span> dist_matrix  <span class="sc">|&gt;</span></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rownames_to_column</span>(<span class="st">"Kuh1"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="sc">-</span>Kuh1, <span class="at">names_to =</span> <span class="st">"Kuh2"</span>, <span class="at">values_to =</span> <span class="st">"co_occur"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Kuh1 <span class="sc">&lt;</span> Kuh2) <span class="sc">|&gt;</span>   <span class="co"># nur oberes Dreieck der Matrix behalten / keine Duplikate</span></span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">gleiche_rasse =</span> <span class="fu">str_extract</span>(Kuh1, <span class="st">"^[A-Z]+"</span>) <span class="sc">==</span> <span class="fu">str_extract</span>(Kuh2, <span class="st">"^[A-Z]+"</span>), <span class="co">#Vergleichen der Rasse (extrahiert aus RassenID)</span></span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">paar_typ      =</span> <span class="fu">if_else</span>(gleiche_rasse, <span class="st">"Gleiche Rasse"</span>, <span class="st">"Verschiedene Rasse"</span>)</span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Plot erstllen </span></span>
+<span id="cb46-33"><a href="#cb46-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(co_long, <span class="fu">aes</span>(<span class="at">x =</span> paar_typ, <span class="at">y =</span> co_occur, <span class="at">fill =</span> paar_typ)) <span class="sc">+</span></span>
+<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb46-35"><a href="#cb46-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.15</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb46-36"><a href="#cb46-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Gleiche Rasse"</span>      <span class="ot">=</span> <span class="st">"green"</span>,</span>
+<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Verschiedene Rasse"</span> <span class="ot">=</span> <span class="st">"blue"</span>)) <span class="sc">+</span></span>
+<span id="cb46-38"><a href="#cb46-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb46-39"><a href="#cb46-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">x        =</span> <span class="cn">NULL</span>,</span>
+<span id="cb46-40"><a href="#cb46-40" aria-hidden="true" tabindex="-1"></a>      <span class="at">y        =</span> <span class="st">"Begegnungshäufigkeit  (&lt; 5 m)"</span>,</span>
+<span id="cb46-41"><a href="#cb46-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill     =</span> <span class="cn">NULL</span></span>
+<span id="cb46-42"><a href="#cb46-42" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb46-43"><a href="#cb46-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb46-44"><a href="#cb46-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="preprocessing_files/figure-html/unnamed-chunk-1-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggsave</span>(<span class="st">"Grafik_8.png"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">units =</span> <span class="st">"in"</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Daten für Plots Exportieren:</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> Plot_Daten) {</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_write</span>(<span class="fu">get</span>(i), <span class="fu">paste0</span>(i, <span class="st">".gpkg"</span>),  <span class="at">append=</span><span class="cn">FALSE</span>)</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>  }         </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Deleting layer `Strasse' using driver `GPKG'
+Writing layer `Strasse' to data source `Strasse.gpkg' using driver `GPKG'
+Writing 1 features with 0 fields and geometry type Line String.
+Deleting layer `Wander_Weg' using driver `GPKG'
+Writing layer `Wander_Weg' to data source `Wander_Weg.gpkg' using driver `GPKG'
+Writing 1 features with 0 fields and geometry type Line String.
+Deleting layer `Start_Ende' using driver `GPKG'
+Writing layer `Start_Ende' to data source `Start_Ende.gpkg' using driver `GPKG'
+Writing 2 features with 1 fields and geometry type Line String.
+Deleting layer `ww_messline' using driver `GPKG'
+Writing layer `ww_messline' to data source `ww_messline.gpkg' using driver `GPKG'
+Writing 5 features with 1 fields and geometry type Line String.
+Deleting layer `str_messline' using driver `GPKG'
+Writing layer `str_messline' to data source `str_messline.gpkg' using driver `GPKG'
+Writing 5 features with 1 fields and geometry type Line String.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in clean_columns(as.data.frame(obj), factorsAsCharacter): Dropping
+column(s) segment of class(es) sfc_LINESTRING;sfc</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Deleting layer `daten_weg' using driver `GPKG'
+Writing layer `daten_weg' to data source `daten_weg.gpkg' using driver `GPKG'
+Writing 30737 features with 24 fields and geometry type Point.
+Deleting layer `kreuzung_sum' using driver `GPKG'
+Writing layer `kreuzung_sum' to data source `kreuzung_sum.gpkg' using driver `GPKG'
+Writing 448 features with 6 fields without geometries.
+Deleting layer `kreuzungs_zeiten' using driver `GPKG'
+Writing layer `kreuzungs_zeiten' to data source 
+  `kreuzungs_zeiten.gpkg' using driver `GPKG'
+Writing 2464 features with 8 fields without geometries.
+Deleting layer `hoehen_profil_ww' using driver `GPKG'
+Writing layer `hoehen_profil_ww' to data source 
+  `hoehen_profil_ww.gpkg' using driver `GPKG'
+Writing 55 features with 2 fields without geometries.
+Deleting layer `hoehen_profil_str' using driver `GPKG'
+Writing layer `hoehen_profil_str' to data source 
+  `hoehen_profil_str.gpkg' using driver `GPKG'
+Writing 47 features with 2 fields without geometries.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> Plot_Daten_csv) {</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">write.csv</span>(<span class="fu">get</span>(j), <span class="fu">paste0</span>(j, <span class="st">".csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>, <span class="at">append=</span><span class="cn">FALSE</span>)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  }    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in write.csv(get(j), paste0(j, ".csv"), row.names = FALSE, append =
+FALSE): Versuch ignoriert 'append' zu setzen</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in write.csv(get(j), paste0(j, ".csv"), row.names = FALSE, append =
+FALSE): Versuch ignoriert 'append' zu setzen
+Warning in write.csv(get(j), paste0(j, ".csv"), row.names = FALSE, append =
+FALSE): Versuch ignoriert 'append' zu setzen
+Warning in write.csv(get(j), paste0(j, ".csv"), row.names = FALSE, append =
+FALSE): Versuch ignoriert 'append' zu setzen
+Warning in write.csv(get(j), paste0(j, ".csv"), row.names = FALSE, append =
+FALSE): Versuch ignoriert 'append' zu setzen
+Warning in write.csv(get(j), paste0(j, ".csv"), row.names = FALSE, append =
+FALSE): Versuch ignoriert 'append' zu setzen</code></pre>
+</div>
+</div>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
