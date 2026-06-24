@@ -12,43 +12,6 @@ lang: de
 bibliography: bibliography.bib
 ---
 
-```{r preprocessing}
-#| code-summary: preprocessing
-#| include: false
-
-library("sf")
-library("tidyverse")
-library("dplyr")
-library("purrr")
-library("stringr")
-library("tmap")
-library("lubridate")
-library("zoo")
-
-# Vorprozesiert Daten einlesen: 
-# Liste der Einzulesenden CSV Dateien einlesen: 
-Plot_daten_csv <- read_csv("Plot_Daten_csv.csv")
-# Liste als Vektor definieren: 
-Plot_daten_csv <- Plot_daten_csv$x
-
-# CSV Daten einlesen:
-for (j in Plot_daten_csv) {
-  assign(
-    j, read.csv(paste0(j, ".csv"))
-  )
-}
-
-# Liste als Vektor definieren: 
-Plot_Daten <- Plot_Daten$x
-# Geodaten einlesen:
-for (i in Plot_Daten){
- assign(
-    i, st_read(paste0(i,".gpkg"))
- )
-}
-
-```
-
 ## Abstract
 
 Bewegungsanalysen von Weidetieren können dazu genutzt werden, ein besseres Verständnis über Gruppendynamiken, deren räumlichen Bedarf und viele weitere verhaltensrelevante Aspekte zu gewinnen. Im Rahmen dieser Untersuchung wurde eine solche Bewegungsanalyse von Milchkühen auf einer Alpweide durchgeführt, wobei der Fokus auf der Identifizierung von Hierarchien, Subgruppen sowie Unterschieden zwischen Tieren derselben Rasse und rassespezifischen Unterschieden im Bewegungsverhalten lag. Für die Bewegungsanalyse, die mit RStudio durchgeführt wurde, wurden Daten aus dem bestehenden Projekt «PeaMaps» der Agroscope genutzt. Dabei kamen GPS‑Daten von Milchkühen dreier unterschiedlicher Rassen (Holstein, Original Braunvieh und Hinterwälder) zum Einsatz. Analysiert wurde das Bewegungsverhalten der Tiere auf dem Weg von der Weide bis zum Melkstand und zurück. Mithilfe der Zuordnung der Durchgangszahlen als Rang an fünf verschiedenen Messpunkten wurde anschliessend untersucht, ob es Leittiere gibt oder ob bestimmte Rassen tendenziell weiter vorne oder hinten laufen. Des Weiteren wurden eine Clusteranalyse und eine Distanzanalyse durchgeführt, um mögliche Subgruppen innerhalb der Herde zu identifizieren. Die Resultate zeigten, dass es sowohl rassespezifische als auch individuelle Unterschiede im Bewegungsverhalten gab.
@@ -114,9 +77,9 @@ Die vom Projektleiter Manuel Schneider zur Verfügung gestellten Rohdaten umfass
 Insgesamt umfasst der Datensatz GPS-Positionsdaten von 44 Tieren (15 Holstein, 14 Hinterwälder, 15 Original Braunvieh) während ihrem Gang zwischen Weide und Melkstand (Hin- und Rückweg) (@fig-Rassen, @fig-Melkstand). Da täglich zwei Melkungen stattfanden, beinhaltet jeder Tag zwei Aufzeichnungsintervalle, die jeweils den Weg von der Weide zum Melkstand, den Melkvorgang sowie den Rückweg zur Weide abdecken. Ein Aufzeichnungsintervall, welches somit den gesamten Ablauf von der Weide zum Melkstand, die Melkung sowie den Rückweg zur Weide umfasst, dauert im Durchschnitt etwa vier Stunden. Das Messintervall betrug 20 Sekunden. Der Datensatz umfasst insgesamt 18 Tage und somit 36 Aufzeichnungsintervalle.
 
 ::: {#fig-Weissenstein layout-ncol="2"}
-![Die Rassen Hinterwälder (links), Holstein (Mitte) und Original Braunvieh (rechts) vereint auf einer Weide der Alp Weissenstein.](images/Alp_Weissenstein_2025_(1).png){#fig-Rassen}
+![Die Rassen Hinterwälder (links), Holstein (Mitte) und Original Braunvieh (rechts) vereint auf einer Weide der Alp Weissenstein.](images/Alp_Weissenstein_2025_(1).png){#fig-Rassen height="300px"}
 
-![Die Kühe werden zweimal täglich im mobilen Weidemelkstand gemolken.](images/Alp_Weissenstein_2025.png){#fig-Melkstand}
+![Die Kühe werden zweimal täglich im mobilen Weidemelkstand gemolken.](images/Alp_Weissenstein_2025.png){#fig-Melkstand height="300px"}
 
 Fotos von den verschiedenen Rassen und dem Melkstand auf der Alp Weissenstein [@strickhof.ch2025].
 :::
@@ -137,7 +100,7 @@ Die im Datensatz enthaltenen 44 Tiere wurden dabei nicht alle zusammen von der W
 
 ### Datenvorverarbeitung
 
-Die Analyse wurde in RStudio mit R (Version 4.5.2, @R) durchgeführt. Das Paket sf von @sf wurde für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) wurden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben [@tidyverse]. Visualisierungen wurden mit tmap von @tmap oder ggplot2 von @ggplot2 erstellt. Für die Optimierung des R-Codes sowie für die Recherche wurde das KI-Sprachmodell Claude Sonnet 4.6 eingesetzt [@Anthropic2025].
+Die Analyse wurde in RStudio mit R (Version 4.5.2, @R) durchgeführt. Das Paket sf von @sf wurde für das Einlesen und die räumliche Verarbeitung der GeoPackage-Dateien verwendet. Für die Daten Vorbereitung (pre procesing) wurden die Pakages des tidyverse genutzt, tidyr und dplyr für die Datentransformation, lubridate für Datum und Zietangaben [@tidyverse]. Visualisierungen wurden mit tmap von @tmap oder ggplot2 von @ggplot2 erstellt. Für die Optimierung des R-Codes sowie für die Recherche wurde das KI-Sprachmodell Claude Sonnet 4.6 eingesetzt [@Anthropic2025]. Auf Grund der grossen Datenmenge wurde beschlossen, die Daten in einem separaten [Skript](https://rpubs.com/amachjon/1444291) zu verarbeiten  und die fertigen Grafiken anschliessend in diesen Bericht einzufügen. 
 
 Um den Rahmen dieser Semesterarbeit einzuhalten, beschränkt sich die Analyse auf die untersuchung der Daten der dritten Erhebungswoche (@tbl-Subgruppen). Rohsdaten aus GPS-Aufzeichnungen enthalten systematische Messungenauigkeiten, die auf atmosphärische Störungen, Abschattung oder Reflexion durch Gelände und Vegetation zurückzuführen sind [@FrairEtal2010; @LaubePurves2011]. Zur Positionsbestimmung benötigt ein GPS-Empfänger das Signal von mindestens vier Satelliten [@HofmannWellenhofEtal2008]. Da die Rohdaten offensichtliche Ungenauigkeiten aufwiesen, wurden alle Fixes mit ungenügender Satellitenabdeckung entfernt. Anschliessend wuden für Milchkühe unrelistisch hohe geschwindikeiten aussortiert. Dazu wuden die folgenden Konvinience variabeln berechnet, das Segment, Strecke zum nächsten Fix und die Zeit welche gebraucht wurde um diese Strecke zurück zu legen (timelag), daraus ergibt sich die Schritgeschwindikeit. Fixes am Anfang und Ende eines Segments mit Schrittgeschwindigkeit von mehr als 25 Kmh wurden entfernt. Zuletzt wurden die Trajektorien zeitlich auf die Wegphasen beschränkt, dazu wurde für den Hin- und Rückweg jeweils den Zeitraum zwischen der ersten übercshreitung der Startline und der letzten überschreitung der Zielline ermittelt (@fig-Wege_Messlinen). Ein 2 min. Buffer dient dazu sicher zustellen, dass auch das Segment der Start und Ziellinienüberschreitung sicher noch im Datensatz enthalten ist.
 
@@ -146,17 +109,13 @@ Um den Rahmen dieser Semesterarbeit einzuhalten, beschränkt sich die Analyse au
 Um die Sozialstrukturen der Tiere besser zu verstehen, wurden verschiedene Analysen zur Identifikation möglicher Subgruppen innerhalb der Versuchsgruppe durchgeführt. Einerseits wurde die Passierreihenfolge und der zeitliche Rückstand auf das erste Tier beim Überqueren von fünf über den Weg verteilten Messlinien berechnet, um die Rangordnung der Gruppe analysieren zu können. Zum anderen wurden mittels Clusteranalyse und euklidischer Distanz von Tier zu Tier Subgruppen in der Herde identifiziert.
 
 ::: {#fig-Wege_Messlinen}
-```{r}
-# Weg + Start und Ende und Messlinein Plotten. 
-tmap_mode("view")
 
-tm_shape(Wander_Weg)    + tm_lines(col = "black") +
-  tm_shape(Strasse)       + tm_lines(col = "blue")  +
-  tm_shape(Start_Ende[1, ]) + tm_lines(col = "green") +
-  tm_shape(Start_Ende[2, ]) + tm_lines(col = "red")+
-  tm_shape(ww_messline)   + tm_lines(col = "darkgreen")   +
-  tm_shape(str_messline)  + tm_lines(col = "darkgreen")
-```
+<iframe
+  src="Grafik_1.html"
+  width="100%"
+  height="600px"
+  style="border:none;">
+</iframe>
 
 Darstellung der beiden genutzten Wege und den definerten Start-, Ziel- und Messlinen. Wanderweg nördlich in schwarz, Strasse südlich in balu, Startlinie bei der 
 Weide in grün, Messlinen in dunkelgrün und Zielline beim Melkstand in rot.
@@ -165,12 +124,13 @@ Weide in grün, Messlinen in dunkelgrün und Zielline beim Melkstand in rot.
 Die Tiere nutzten für die Wege zwischen Weide und Melkstand sowie für den Rückweg zur Weide stets dieselben zwei Routen. Nördlich über den Wanderweg oder südlich über die Passstrasse (@fig-Wege_Messlinen). In allen Zeitperioden (@tbl-Subgruppen) wurden beide Routen von den Tieren genutzt, zu einem gegebenen Zeitpunkt haben jedoch alle Kühe die selbe Rute benutzt. Die beiden Routen wiesen dabei ähnliche Längen auf, wobei die insgesamt zurückgelegte Strecke für Hin- und Rückweg etwa zwei Kilometer beträgt (@fig-Hin_Rückweg). Die beiden Routentrajektorien wurden auf Grundlage der Aufzeichnungen der Kuh HO01 konstruiert. Punkte, an welchen die Kuh sich nicht oder kaum bewegt hat, wurden durch Entfernung von Segmenten mit einer Länge unter 5 m herausgefiltert, da quasi-statische Trajektorienabschnitte die abgeleiteten Bewegungsparameter verzerren [@LaubePurves2011, S. 407]. Zusätzlich wurden die Routentrajektorien mit einem gleitenden Mittelwert über drei aufeinanderfolgende Punkte geglättet. Die Start- und Ziellinie wurden nach Betrachtung der örtlichen Gegebenheiten festgelegt, die fünf Messlinien pro Route wurden so berechnet, dass sie den Weg in sechs gleich lange Teile teilen (@fig-Wege_Messlinen). Die Linien wurden als Senkrechte auf dem Wegeverlauf konstruiert. Dazu wurde an den entsprechenden Messpunkt der lokale Richtungsvektor über ein Fenster von fünf Punkten approximiert und anschliessend durch Rotation um 90° eine orthogonale Line erzeugt. Die Routenzuordnung der einzelnen Melkgänge erfolgte anhand der minimalen mittleren Distanz der GPS-Punkte zu den jeweiligen Routentrajektorien (@fig-Hin_Rückweg).
 
 ::: {#fig-Hin_Rückweg}
-```{r}
-# Visualisieren:
-tmap_mode("view")
-tm_shape(daten_weg) +
-  tm_dots(col = "route", palette = c("Wanderweg" = "green", "Strasse" = "blue"))
-```
+
+<iframe
+  src="Grafik_2.html"
+  width="100%"
+  height="600px"
+  style="border:none;">
+</iframe>
 
 Abbildung aller GPS Trajektorien und der zugeteilten Route. Grün: Punkte von Kühen, die auf dem Wanderweg unterwegs waren. Blau: Punke, die dem Weg über die Passstraße zugeordnet werden.
 :::
@@ -179,264 +139,48 @@ Der Zeitpunkt der Messlinienüberschreitung wurde mittels geometrischer Verschne
 
 ## Resultate
 
-Die Analysen zeigen, dass die Hinterwäldler-Kühe oft an der Spitze der untersuchten Gruppe zu finden sind. HW06 und HW13 sind signifikant häufiger an der Spitze der Gruppe anzutreffen als andere Kühe (siehe @fig-Rang). Es ist festzustellen, dass der Rückstand der Kühe auf die Schnellsten während des starken Anstiegs auf dem Wanderweg zunimmt (@fig-WW_Hin). Ebenso zeigt sich, dass die Gruppe kurz vor und nach dem Melkstand näher beieinander ist als in der Nähe der Weide.
+Die Analysen zeigen, dass die Hinterwäldler-Kühe oft an der Spitze der untersuchten Gruppe zu finden sind. HW06 und HW13 sind signifikant häufiger an der Spitze der Gruppe anzutreffen als andere Kühe (siehe @fig-Rang). Es ist festzustellen, dass der Rückstand der Kühe auf die Schnellsten während des starken Anstiegs auf dem Wanderweg zunimmt (@fig-WW_Hin). Ebenso zeigt sich, dass die Gruppe kurz vor und nach dem Melkstand näher beieinander ist als in der Nähe der Weide (@fig-Str_Rückweg).
 
 ::: {#fig-WW_Hin}
-```{r}
 
-#Funktion zum erstellen der Rankplots: 
-rank_plot <- function(daten, y_var, hoehen_dat) {
-  y_name     <- rlang::as_label(enquo(y_var)) #macht aus Variabelnnamen ein Teext 
-  y_label    <- if (y_name == "mean_rang") "Mittlerer Rang (1 = Erster)" else "Mittlerer Rückstand [s]"
-  route      <- unique(daten$route)
-  y_spal     <- max(dplyr::pull(daten, {{ y_var }}), na.rm = TRUE) # die als y Variable definierte Spalte aus dem Datensatz ziehen. 
-  y_max_plot <- y_spal * 1.4   # Platz für Höhenprofil unterhalb der Ränge
-  elev_min   <- min(hoehen_dat$hoehe_m, na.rm = TRUE)
-  elev_max   <- max(hoehen_dat$hoehe_m, na.rm = TRUE)
-  
-  #Höhendaten angepast an die Restlichen daten Skalieren 
-  hoehen_dat <- hoehen_dat |>
-      mutate(hoehe_skaliert = scales::rescale(hoehe_m, to = c(y_max_plot, y_spal )))
-  
-  # Plot drehen drehen fals Rückweg: 
-  richtung   <- unique(daten$richtung)
-  x_scale <- if (richtung == "Rückweg") {
-    scale_x_reverse(breaks = 0:6, labels = c("Wiese", paste("ML", 1:5), "Melkstand"))
-  } else {
-    scale_x_continuous(breaks = 0:6, labels = c("Wiese", paste("ML", 1:5), "Melkstand"))
-  }
-  
-  #Eigentlicher Plot ersten: 
-  ggplot(daten, aes(x = linie_typ, y = {{ y_var }}, group = Rasse_ID, color = Rasse_ID))+
-    geom_ribbon(
-        data        = hoehen_dat,
-        aes(x = linie_typ, ymin = hoehe_skaliert, ymax = y_max_plot, group = 1),
-        fill        = "grey85", color = "grey60",
-        inherit.aes = FALSE
-    )+
-    geom_line(linewidth = 1) +
-    geom_point(size = 3) +
-    geom_text(aes(label = Rasse_ID),
-              data = filter(daten, linie_typ == min(linie_typ)),
-              hjust = 1.2, size = 3) +
-    geom_text(aes(label = Rasse_ID),
-              data = filter(daten, linie_typ == max(linie_typ)),
-              hjust = -0.2, size = 3) +
-    scale_color_manual(values = farb_vektor) +
-    x_scale +
-    labs(title = NULL, x = NULL, y = y_label) +
-    theme_minimal() +
-    theme(legend.position = "none")+
-    scale_y_reverse(
-      limits   = c(y_max_plot, 0),
-      sec.axis = sec_axis(
-        transform = ~ scales::rescale(., from = c(y_spal, y_max_plot), to = c(elev_max, elev_min)),
-        name      = "Höhe (m ü. M.)",
-        breaks    = seq(ceiling(elev_min / 20) * 20, floor(elev_max / 20) * 20, by = 20)
-      )
-    )
-}
-
-# Farbvektor wieder in brauchbare form bringen:
-farb_vektor <- farb_vektor$x
-
-# Ploten 
-kreuzung_sum |>
-  filter(route == "Wanderweg", richtung == "Hinweg") |>
-  rank_plot( mean_rückstand, hoehen_profil_ww)
-
-```
+![](Grafik_3.png)
 
 Die Entwicklung des Rückstands in Sekunden auf die erste Kuh wurde pro Messlinie über alle Wege zum Melkstand, die über die Wanderwegroute führten, gemittelt. Die Hinterwäldler-Kühe sind in Grüntönen, die Original Braunen in Blau und die Holsteins in Rot dargestellt. Unten ist das Höhenprofil des Wanderwegs zu sehen.
 :::
 
 ::: {#fig-Str_Rückweg}
-```{r}
-# Ploten 
-# kreuzung_sum |>
-#   filter(route == "Wanderweg", richtung == "Rückweg") |>
-#   rank_plot( mean_rückstand, hoehen_profil_ww)
 
-# kreuzung_sum |>
-#   filter(route == "Strasse", richtung == "Hinweg") |>
-#   rank_plot( mean_rückstand, hoehen_profil_str)
-# 
-kreuzung_sum |>
-  filter(route == "Strasse", richtung == "Rückweg") |>
-  rank_plot( mean_rückstand, hoehen_profil_str)
-
-
-```
+![](Grafik_4.png)
 
 Die Entwicklung des Rückstands in Sekunden auf die erste Kuh wurde pro Messlinie über alle Wege zurück zur Weide, die über die Passstrase führten, gemittelt. Die Hinterwäldler-Kühe sind in Grüntönen, die Original Braunen in Blau und die Holsteins in Rot dargestellt. Unten ist das Höhenprofil des Passstrase zu sehen.
 :::
 
 ::: {#fig-Rang}
-```{r}
-library(agricolae)
 
-# Rangfolge für Kruskalwallis Test berechen.
-analyse_daten <- kreuzungs_zeiten |>
-  group_by(quelle_layer, richtung, linie_typ) |>
-  mutate(
-    rang = rank(Time_kreuzung)
-  ) %>% 
-  ungroup()
-
-# Kurskalwallis Test auf Rängen: 
-kruskal_result <- agricolae::kruskal(max(analyse_daten$rang) + 1 - analyse_daten$rang, # dreht reienfolge so das Tiere in der vordersten Gruppe a bekommen. 
-                          analyse_daten$Rasse_ID,
-                          p.adj   = "BH",
-                          group   = TRUE,
-                          console = TRUE)
-
-labels_kw <- tibble(
-  Rasse_ID = rownames(kruskal_result$groups),
-  groups   = str_trim(kruskal_result$groups$groups),
-  y_pos    = min(analyse_daten$rang, na.rm = TRUE) - 0.5
-)
-
-# Boxplot
-ggplot(analyse_daten, aes(x = Rasse_ID, y = rang, fill = Rasse)) +
-  geom_boxplot() +
-  geom_text(data = labels_kw,
-            aes(x = Rasse_ID, y = y_pos, label = groups),
-            hjust = 0.5, vjust = 1,
-            inherit.aes = FALSE) +
-  stat_summary(fun = mean, geom = "point", shape = 18, size = 3) +
-  scale_fill_manual(values = c("HO" = "#e6a8a8",
-                               "OB" = "#a8a8e6",
-                               "HW" = "#a8dba8")) +
-  labs(x = NULL, y = "Rang (1 = Erster)") +
-  scale_y_reverse() +
-  theme_minimal() +
-  theme(legend.position = "none")
-```
+![](Grafik_5.png)
 
 Die Tiere unterscheiden sich hinsichtlich ihres durchschnittlichen Ranges in der Gruppe höchst signifikant (Kruskal-Wallis-Test, H = 866,8, df = 15, p \< 0,001) und der Effekt ist groß (ε² = 0,35). Die Buchstaben zeigen die Gruppen an, die sich signifikant unterscheiden.
 :::
 
-Die Netzwerke aus der Clusteranalyse (@fig-Klust) und der 5m‑Distanzanalyse (@fig-Dist5) zeigen, dass bestimmte Tiere sich deutlich häufiger in räumlicher Nähe zu bestimmten anderen Tieren befinden. Sichtbar ist, dass Tiere innerhalb derselben Rasse häufiger näher zusammenlaufen als Tiere unterschiedlicher Rassen (@fig-Mante). Zudem lässt sich erkennen, dass die Hinterwälder‑Tiere insgesamt in grösseren Distanzen zueinander laufen als Tiere der anderen Rassen, was in der 5m‑Distanzgrafik durch die dünneren Verbindungslinien sichtbar wird.
+Die Netzwerke aus der Clusteranalyse (@fig-Klust) und der 5m‑Distanzanalyse (@fig-Dist5) zeigen, dass bestimmte Tiere sich deutlich häufiger in räumlicher Nähe zu bestimmten anderen Tieren befinden. Sichtbar ist, dass Tiere innerhalb derselben Rasse häufiger näher zusammenlaufen als Tiere unterschiedlicher Rassen (@fig-Mantel). Zudem lässt sich erkennen, dass die Hinterwälder‑Tiere insgesamt in grösseren Distanzen zueinander laufen als Tiere der anderen Rassen, was in der 5m‑Distanzgrafik durch die dünneren Verbindungslinien sichtbar wird.
 
 ::: {#fig-Klust}
-```{r}
-# Lybrary Laden
-library("vegan") 
-library(igraph)
 
-# Wieder in einen "normalen" Vector daraus mache: 
-alle_kuehe <- alle_kuehe$x
-
-# Zeilennahmen wieder hinzufügen
-rownames(clu_matrix) <- alle_kuehe
-# Clustermatrix wieder in eine Matrix umwandeln
-clu_matrix <- as.matrix(clu_matrix)
-
-
-# Daten für den Graphen extrahieren: 
-g <- graph_from_adjacency_matrix(clu_matrix, mode     = "upper", # nur die obere hälfte der Matrix verwenden
-    weighted = TRUE, diag     = FALSE)
-
-# Knotenfarben nach Rasse
-V(g)$color <- case_when(
-  str_detect(V(g)$name, "^HO") ~ "#e6a8a8",
-  str_detect(V(g)$name, "^OB") ~ "#a8a8e6",
-  str_detect(V(g)$name, "^HW") ~ "#a8dba8",
-  TRUE ~ "grey"
-)
-
-# Seed Setzen (für wiederholbarkeit)
-set.seed(73)
-
-# Graph erstellen: 
-plot(g,
-     layout       = layout_with_fr(g),
-     edge.width   = E(g)$weight / max(E(g)$weight) * 10,
-     vertex.color = V(g)$color,
-     vertex.label = V(g)$name,
-     vertex.size  = 25,
-     vertex.label.cex = 0.8,
-     main = "Wie oft waren Kühe zusammen in derselben Gruppe")
-```
+![](Grafik_6.png)
 
 Die Clusteranalyse zeigt, welche Tiere in derselben Subgruppe unterwegs sind. Je näher sich zwei Tiere in diesem Diagramm sind und je stärker die Verbindungslinie ausgeprägt ist, desto wahrscheinlicher ist es, dass die Kühe in der gleichen Subgruppe beobachtet werden können.
 :::
 
 ::: {#fig-Dist5}
-```{r}
 
-# Zeilennahmen wieder hinzufügen
-rownames(dist_matrix) <- alle_kuehe
-# Clustermatrix wieder in eine Matrix umwandeln
-dist_matrix <- as.matrix(dist_matrix)
-
-# Graph erstellen und plotten
-g_dist <- graph_from_adjacency_matrix(dist_matrix,
-                                      mode     = "upper",
-                                      weighted = TRUE,
-                                      diag     = FALSE)
-
-V(g_dist)$color <- case_when(
-  str_detect(V(g_dist)$name, "^HO") ~ "#e6a8a8",
-  str_detect(V(g_dist)$name, "^OB") ~ "#a8a8e6",
-  str_detect(V(g_dist)$name, "^HW") ~ "#a8dba8"
-)
-
-set.seed(73)
-plot(g_dist,
-     layout       = layout_with_fr(g_dist),
-     edge.width   = E(g_dist)$weight / max(E(g_dist)$weight) * 8,
-     vertex.color = V(g_dist)$color,
-     vertex.label = V(g_dist)$name,
-     vertex.size  = 25,
-     vertex.label.cex = 0.8,
-     main = "Wie oft waren Kühe innerhalb 5m beieinander")
-```
+![](Grafik_7.png)
 
 Die Analise der Distanzen zwischen den Teren zeigt auf welche Tiere oft nahe (\< 5m) bei einander anzutreffen sind. Je näher sich zwei Tiere in diesem Graphen sind und je stärker die Verbindungslinie ausgeprägt ist, desto öfter sind sie nahe beieinander an zu trefen.
 :::
 
 ::: {#fig-Mantel}
-```{r}
-# Statistik zu Gruppen: 
 
-# Rassen-Matrix erstellen (gleiche Rasse = 1, verschiedene = 0)
-rasse_vektor <- str_extract(alle_kuehe, "^[A-Z]+") #Rasse aus RassenID ziehen
-
-rassen_matrix <- outer(rasse_vektor, rasse_vektor, "==") + 0L
-dimnames(rassen_matrix) <- list(alle_kuehe, alle_kuehe) #Zeilen und Spalten nahmen hinzu fügen. 
-diag(rassen_matrix) <- 0 #Diagonal Null setzen
-
-# Mantel-Test
-mantel_result <- mantel(dist_matrix, rassen_matrix, method = "pearson", permutations = 999)
-#print(mantel_result)
-
-# Visualisierung: Co-Occurrence 
-co_long <- dist_matrix  |>
-  as.data.frame() |>
-  rownames_to_column("Kuh1") |>
-  pivot_longer(-Kuh1, names_to = "Kuh2", values_to = "co_occur") |>
-  filter(Kuh1 < Kuh2) |>   # nur oberes Dreieck der Matrix behalten / keine Duplikate
-  mutate(
-    gleiche_rasse = str_extract(Kuh1, "^[A-Z]+") == str_extract(Kuh2, "^[A-Z]+"), #Vergleichen der Rasse (extrahiert aus RassenID)
-    paar_typ      = if_else(gleiche_rasse, "Gleiche Rasse", "Verschiedene Rasse")
-  )
-
-#Plot erstllen 
-ggplot(co_long, aes(x = paar_typ, y = co_occur, fill = paar_typ)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.15, alpha = 0.3, size = 1) +
-  scale_fill_manual(values = c("Gleiche Rasse"      = "green",
-                               "Verschiedene Rasse" = "blue")) +
-  labs(
-    x        = NULL,
-    y        = "Begegnungshäufigkeit  (< 5 m)",
-    fill     = NULL
-  ) +
-  theme_minimal() +
-  theme(legend.position = "none")
-  
-```
+![](Grafik_8.png)
 
 Tiere derselben Rasse befinden sich signifikant häufiger gemeinsam innerhalb einer 5m‑Distanz als Tiere unterschiedlicher Rassen (Mantel-Test, r = 0.478, p = 0.001, 999 Permutationen) was als Co‑Occurrence bezeichnet wird.
 :::

@@ -2,6 +2,10 @@
 title: "preprocessing"
 format: html
 editor: visual
+execute:
+  warning: false
+  message: false
+author: Jonas Amacher, Stefanie Guyer
 ---
 
 ```{r}
